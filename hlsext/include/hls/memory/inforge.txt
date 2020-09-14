@@ -1,0 +1,934 @@
+Allocazione di memoria
+-----------------------------------------------------------------------------
+
+Queste sono alcune note che potrebbero essere interessanti per tutti coloro che
+iniziano a programmare in C e C++.
+
+Si suppone che si abbia gia' compreso i concetti di 'memory heap', puntatore,
+allocazione dinamica della memoria, e si sappia cosa siano le funzioni:
+
+- malloc  (C/C++)
+- calloc  (C/C++)
+- free   (C/C++)
+- new | new[]       (C++)
+- delete | delete[] (C++)
+
+Come si puo' immaginare, la gestione della memoria in applicazione C/C++ e' 
+un'aspetto FONDAMENTALE per il suo corretto funzionamento, sopprattutto se 
+l'applicazione deve funzionare 24/24 7/7.
+
+Un'errata gestione della memoria genera fondamentalmente due tipi di problemi:
+
+1) memory leak (memoria sprecata): l'applicazione alloca una certa quantita' di 
+   memoria che poi non rilascia.
+   Ora, se lo fa un numero limitato di volte, a meno di non superare fin da 
+   subito la memoria totale installata sul PC, non e' un grosso problema.
+   
+   Il problema nasce quando questa allocazione ed il mancato rilascio perdura
+   nel tempo. E' evidente che dopo un certo numero di minuti/ore/giorni/... 
+   (dipende da quanta memoria viene allocata e non rilasciata al minuto/ora/giorno/...)
+   per quanta sia la memoria disponibile, questa sara' tutta impegnata (ed
+   inutilizzata), e quindi l'applicazione non sara' piu' in grado di allocarne
+   dell'altra.
+   
+2) dangling reference (puntatore invalido): uso di un puntatore che punta ad
+   un'area di memoria non valida.
+   
+   Un puntatore puo' puntare ad un'area di memoria non valida per diversi motivi:
+   
+   - e' stato inizializzato con un valore strano (ad esempio con 0)
+   - si sta' cercando di accedere ad un elemento di un vettore al di fuori del
+     range di validita'
+   - si sta' ancora puntando ad un'area di memoria che e' stata liberata 
+
+
+In generale, identificare il motivo di questi problemi puo' essere estremamente 
+complesso e richiedere molto tempo.
+
+Generalmente, per la loro risoluzione, ci si appoggia a tool progettati 
+appositamente, come bound-checker e memory profiler.
+
+Comunque, ci sono anche semplici strategie che possono essere applicate per poter
+fare una prima analisi di possibili malfunzionamenti.
+
+
+Ha senso controllare se la malloc/calloc e' riuscita ad allocare la memoria?
+-----------------------------------------------------------------------------
+
+No! Non ha molto senso!
+I motivi sono diversi:
+
+1) le situazioni in cui si deve controllare se l'allocazione e' andata a buon fine
+   sono molto limitate.
+2) se non c'e' piu' memoria disponibile, non solo l'applicazione, ma l'intero 
+   sistema ne risente. 
+   In generale, quello che succede e' che il computer risulta irragiungibile,
+   non funziona puo' l'accesso da console, la rete, ...
+   
+Insomma, in una situazione del genere l'unica soluzione e' lo stop dell'applicazione
+ed eventualmente il riavvio del PC.
+
+Di sicuro per piccole applicazioni, si puo' tranquillamente supporre che lo spazio
+sia sempre disponibile.
+
+Puo' aver senso solo per applicazioni che allocano blocchi molto ampi di memoria,
+ma la realizzazione di queste applicazioni e' generalmente portata avanti da
+personale esperto.
+
+Se una piccola applicazione ha problemi di allocazioen di memoria, e' probabile 
+al 99.9999% che sia im problema implementativo che va affrontato opportunamente.
+
+
+Allocazione con validazione del puntatore
+-----------------------------------------------------------------------------
+
+Vediamo alcuni casi di errata gestione della memoria:
+
+1)
+[code]
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(int argc, char** argv)
+{
+    char* p;
+    p = (char*)malloc(1024);
+
+    strcpy(p, "Hello World");
+    printf("%s\n" , p);
+    free(p+1);
+    printf("Done\n");
+    return 0;
+}
+[/code]
+
+Qui si alloca il puntatore 'p' e si delloca il puntator 'p+1'.
+
+2)
+[code]
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(int argc, char** argv)
+{
+    char* p;
+    p = (char*)malloc(11);
+
+    strcpy(p, "Hello World");
+    printf("%s\n" , p);
+    free(p);
+    printf("Done\n");
+    return 0;
+}
+[/code]
+
+Qui si alloca ESATTAMENTE 11 caratteri, ma la stringa "Hello World" e' composta
+da 12 caratteri! Perche' c'e' anche il carattere '\0' terminatore della stringa.
+
+3)
+[code]
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(int argc, char** argv)
+{
+    char* p;
+    p = (char*)malloc(1024);
+
+    strcpy(p, "Hello World");
+    free(p);
+    printf("%s\n" , p);
+    printf("Done\n");
+    return 0;
+}
+[/code]
+
+Qui si utilizza un'area di memoria DOPO essere stata rilasciata! 
+
+4)
+[code]
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(int argc, char** argv)
+{
+    char* p;
+    p = (char*)malloc(11);
+
+    strcpy(p, "Hello World");
+    printf("%s\n" , p);
+    free(p);
+    free(p);
+    printf("Done\n");
+    return 0;
+}
+[/code]
+
+Qui si dealloca la memoria DUE VOLTE.
+
+In alcuni casi il programma puo' andare in errore, ma in altri anche no!
+
+Ad esempio, nel caso 2) potrebbe non succedere nulla!
+
+Questo perche' quando si allocano 'size' byte, il sistema automatcamente arrotonda
+questo valore ad un multiplo interno di una quantita' minima di allocazione,
+generalmente 8 byte.
+Quindi, anche avendo richiesto di allocare 11 byte, in realta' ne sono stati 
+allocati 16! Ed aver 'sforato' di 1 byte (scritti 12 invece di 11) non e' un
+problema.
+
+
+Un modo per identificare queste situazione e' relativamente semplice: l'idea
+e' quella di aggiungere in TESTA ed in CODA al blocco di memoria allocato, delle
+informazioni di servizio che aiutano a validare il puntatore ed il blocco di 
+memoria.
+
+[code]
+
+/*
+ *      +--------+
+ *      | nslots | <-- real pointer
+ *      +--------+
+ *      | ...... | <-- used pointer
+ *      | ...... |
+ *      | ...... |
+ *      | ...... |
+ *      | ...... |
+ *      | ...... |
+ *      | ...... |
+ *      +--------+
+ *      | magic  | nslots ^ MAGIC_NUM
+ *      +--------+
+ *
+ *      Maximum memory allocable: 2GB
+ *      Size of a slot: 8 bytes
+ */
+ 
+[/code]
+
+Quindi, i passi da fare sono:
+
+1) si vuole allocare 'size' byte
+2) 'size' viene arrotondato ad un multiplo di 8 (per la precisione di 'sizeof(size_t)')
+3) si aggiungono 16 byte, per la TESTA e la CODA
+4) si alloca con 'malloc' (o 'calloc') la quantita' di byte cosi' calcolata
+5) si scrive in TESTA ed in CODA le informazioni di servizio
+6) si ritorna, come puntatore da usare dall'applicazione, il puntatore ritornato
+   dalla 'malloc' + 8 byte!
+
+Ovviamente, non e' possibile usare la 'free' di sistema per rilasciare la memoria
+puntata da questo puntatore, ma serve una routine che lo sposta indietro di 8 byte!
+
+A questo punto la cosa si fa interessante.
+
+Supponiamo che le informazioni di servizio siano:
+
+in TESTA, il numero 'nslots' (blocchetti di 8 byte!) allocati
+in CODA,  il valore scritto in TESTA XOR un MAGIC_NUMBER
+
+Perche' questa complicazione?
+Si vuole essere ragionevolmente certi che se, per caso, si e' andati a scrivere
+al di fuori della memoria allocata, o il puntatore NON si trova esattamente
+nella posizione prevista, questi due valori NON POSSANO essere trovati per caso.
+
+A questo punto si possono fare diversi controlli:
+
+1) se 'nslots' e' < 0 o e > di un certo valore limite (digiamo 1GB/8), e' ovvio che
+   il puntatore non puo' essere valido
+2) se 'nslots' contiene un valore ragionevole, ma CODA non contiene 
+   'nslots ^ MAGIC_NUMBER', e' ovvio che c'e' qualcosa che non va:
+   - il puntatore non si trova dove dovrebbe
+   - qualcuno e' andato a sovvrascrivere TESTA o CODA!
+
+Supponiamo che tutto sia andato bene, ed il blocco di memoria puo' essere 
+correttamente rilasciato.
+
+Prima di rilasciarlo, pero', il valore di CODA puo' essere sostituito con:
+
+    ~nslots
+
+(o qualunque altra funzione di 'nslots', purche' diversa da 'nslots ^ MAGIC_NUMBER').
+
+Questo permette di controllare se un puntatore e' gia' stato rilasciato: questo
+e' dimostrato dal fatto che TESTA contiene 'nslots' e CODA '~nslots'!
+
+Si puo' fare anche 'un'altra cosa: primia di rilasciarla, riempire il blocco di
+memoria con un pattern predefinito.
+
+La scelta del pattern e' importante: deve essere tale per cui eventuali valori 
+di interi, float, puntatori, stringhe, siano sufficientemente 'strani' da attirare
+l'attenzione!
+
+[code]
+//
+// Created on 13/05/2015.
+//
+
+#ifndef HLS_MEMORY_ALLOC_HPP
+#define HLS_MEMORY_ALLOC_HPP
+
+#include <exception>
+
+namespace hls {
+namespace memory {
+
+    const size_t MAGIC_NUM = 0x3A41C52AA25C14A3L;
+
+    class out_of_memory : public std::exception {
+    public:
+        out_of_memory() { }
+        out_of_memory(const out_of_memory& e) { }
+        out_of_memory& operator =(const out_of_memory& e) { return *this; }
+    };
+
+    class memory_corrupted : public std::exception {
+    public:
+        memory_corrupted() { }
+        memory_corrupted(const memory_corrupted& e) { }
+        memory_corrupted& operator =(const memory_corrupted& e) { return *this; }
+    };
+
+    class invalid_ptr : public std::exception {
+    public:
+        invalid_ptr() { }
+        invalid_ptr(const invalid_ptr& e) { }
+        invalid_ptr& operator =(const invalid_ptr& e) { return *this; }
+    };
+
+    class already_free : public std::exception {
+    public:
+        already_free() { }
+        already_free(const invalid_ptr& e) { }
+        already_free& operator =(const already_free& e) { return *this; }
+    };
+
+    /**
+     * Alternative to malloc/calloc/free with memory check
+     */
+    void* alloc(size_t size);
+    void* alloc(size_t count, size_t size);
+    void  free(void* p);
+
+    size_t alloc_size(void* p);
+    void*  validate_p(void* p);
+
+    inline void* alloc(size_t count, size_t size) { return alloc(count*size); }
+
+    size_t msize(void* p);
+
+}};
+
+#endif // HLS_MEMORY_ALLOC_HPP
+
+[/code]
+
+[code]
+//
+// Created  on 13/05/2015.
+//
+
+#include <stdlib.h>
+#include "alloc.hpp"
+
+using namespace hls::memory;
+
+/*
+ *      +--------+
+ *      | nslots | <-- real pointer
+ *      +--------+
+ *      | ...... | <-- used pointer
+ *      | ...... |
+ *      | ...... |
+ *      | ...... |
+ *      | ...... |
+ *      | ...... |
+ *      | ...... |
+ *      +--------+
+ *      | magic  | nslots ^ MAGIC_NUM
+ *      +--------+
+ *
+ *      Maximum memory allocable: 2GB
+ *      Size of a slot: 8 bytes
+ */
+
+static const size_t GB = 1024*1024*1024L;
+static const size_t MAX_SLOTS = (2*GB)/sizeof(size_t);
+
+
+/**
+ * ATTENZIONE: e' STRETTAMENTE dipendente dall'implementazione usata
+ * Al momento funziona SOLO per GNU GCC dopo una serie di analisi sull'allocazione
+ */
+size_t hls::memory::msize(void* p)
+{
+    size_t* ptr = ((size_t*)p)-1;
+    return ptr[0]-11;
+}
+
+
+void* hls::memory::alloc(size_t size)
+{
+    // convert size in a number of slots of  sizeof(size_t) bytes
+    size_t nslots = (size + sizeof(size_t) - 1)/sizeof(size_t);
+
+    // add two slots: header and footer
+    nslots += 2;
+
+    // allocate the space (and fill it with zero))
+    size_t* ptr = (size_t*)::calloc(nslots, sizeof(size_t));
+
+    // check if the pointer is not null
+    if (!ptr)
+        throw hls::memory::out_of_memory();
+
+    // initialize the header and the footer
+    ptr[0] = nslots;
+    ptr[nslots-1] = MAGIC_NUM ^ nslots;
+
+    // return a poiter to the slot 1. The slot 0 is the header
+    return (void*)(ptr+1);
+}
+
+
+static size_t* _validate(void* p)
+{
+    size_t *ptr, nslots;
+
+    if (!p) return nullptr;
+
+    // locate the pointer to the slot 0
+    ptr = ((size_t*)p)-1;
+
+    // the slot 0 contains the number of slots allocated
+    nslots = ptr[0];
+
+    // if nslots is a strage value, the pointer is not at the start of the block
+    if (nslots < 0 || nslots > MAX_SLOTS)
+        throw hls::memory::invalid_ptr();
+
+    // if ptr[nslots-1] == ~nslots, the block is already freed
+    if (~nslots == ptr[nslots-1])
+        throw hls::memory::already_free();
+
+    // possible write before or after the block
+    if (ptr[nslots-1] != (MAGIC_NUM ^nslots))
+        throw hls::memory::memory_corrupted();
+
+    return ptr;
+}
+
+
+void hls::memory::free(void* p)
+{
+    size_t *ptr = _validate(p);
+    size_t size = ptr[0];
+    ptr[size-1] = ~size;
+    ::free(ptr);
+}
+
+
+size_t hls::memory::alloc_size(void* p)
+{
+    size_t *ptr = _validate(p);
+    return (ptr[0]-2)*sizeof(size_t);
+}
+
+
+void* hls::memory::validate_p(void* p)
+{
+    _validate(p);
+    return p;
+}
+
+[/code]
+
+
+Allocazione mediante Arene
+-----------------------------------------------------------------------------
+
+Le startegie di allocazione non si riducono ai soli alloc/free, new/delete.
+
+C'e' un'interessante stategia che aiuta in diverse situazioni.
+
+Il problema e' il seguente: supponiamo che ci sia la necessita' di allocare
+molti piccoli oggetti, associati tutti ad una stessa struttura dati (ad 
+esempio un documento XML) e che alla fine dell'elaborazione, debbano TUTTI essere
+rilasciati.
+
+Supponiamo, anche, che una volta allocati, questi oggetti non debbano essere
+modificati molto.
+
+Per questo specifico problema, esiste una strategia di allocazione decisamente
+interessante, detta [i]allocazione mediante arena[/i] o [i]region allocation[/i].
+
+L'idea e' la seguente:
+
+1) si allocano dei blocchi di memoria di dimensione ragionevole (4K o piu')
+2) la memoria per i singoli oggettini viene allocata prendendola da questi blocchi
+   di memoria
+3) alla fine, e' sufficiente rilasciare direttamente i blocchi di memoria.
+
+Ovviamente, questo modo di allocare lo spazio richiede alcune condizioni al 
+contorno:
+
+1) la struttura dati allocata non viene modificata molto
+2) la deallocazione dei singoli oggettini non necessita' di particolari elaborazioni
+
+
+[code]
+//
+// Created on 10/10/2015.
+//
+
+#ifndef HLS_MEMORY_ARENA_HPP
+#define HLS_MEMORY_ARENA_HPP
+
+#include <stddef.h>
+
+namespace hls {
+namespace memory {
+
+    class page_overflow : public std::exception {
+    public:
+        page_overflow() { }
+        page_overflow(const page_overflow& e) { }
+        page_overflow& operator =(const page_overflow& e) { return *this; }
+    };
+
+
+    class arena_t {
+
+        struct page_t {
+            page_t *next;       // prossima pagina
+            size_t available;   // slot disponibili (uno slot e' sizeof(size_t) bytes
+            size_t page[0];     // spazio allocato per la pagina
+        };
+
+        page_t* list;           // lista delle pagine allocate
+        size_t  page_size;      // dimensione di una pagina (in byte)
+        bool    expand;         // se puo' allocare multipli della dimensione di una pagina
+
+        page_t * _alloc_page(size_t size);
+    public:
+        arena_t(size_t page_size, bool expand=false);
+        ~arena_t();
+
+        void free_all();
+
+        void* alloc(size_t count, size_t size);
+        void* alloc(size_t size);
+        void  free(void* p);
+
+        size_t alloc_size(void* p);
+    };
+
+}}
+
+
+#endif // HLS_MEMORY_ARENA_HPP
+
+[/code]
+
+[code]
+//
+// Created on 10/10/2015.
+//
+
+#include "arena.hpp"
+#include "alloc.hpp"
+
+using namespace hls::memory;
+
+arena_t::arena_t(size_t page_size, bool expand)
+: page_size(page_size), expand(expand), list(nullptr)
+{ 
+
+}
+
+
+arena_t::~arena_t()
+{
+    free_all();
+}
+
+
+arena_t::page_t * arena_t::_alloc_page(size_t size)
+{
+    size_t npages = (size + page_size - 1)/page_size;
+    page_t *page = (page_t*)hls::memory::alloc(sizeof(page_t) + npages*page_size);
+
+    page->available = (hls::memory::alloc_size(page) - sizeof(page_t))/sizeof(size_t);
+    page->next = list;
+
+    list = page;
+
+    return page;
+}
+
+
+void arena_t::free_all() {
+    page_t *p, *n;
+    for(p = list; p; p = n)
+    {
+        n = p->next;
+        hls::memory::free(p);
+    }
+    list = nullptr;
+}
+
+
+void* arena_t::alloc(size_t count, size_t size) {
+    return this->alloc(count*size);
+}
+
+
+void* arena_t::alloc(size_t size)
+{
+    page_t* p;
+    size_t* ptr;
+    size_t nslots = (size + sizeof(size_t) - 1)/sizeof(size_t) + 1;
+
+    size = nslots*sizeof(size_t);
+
+    // non puo' allocare piu' spazio di quanto disponibile in una pagina
+    if (!expand && size > this->page_size)
+        throw page_overflow();
+
+    // cerca una pagina con abbastanza spazio
+    for(p = list; p; p = p->next)
+        if (p->available >= nslots)
+            break;
+
+    // non ha trovato una pagina con abbastanza spazio
+    // ne alloca una nuova
+
+    if (p == nullptr)
+        p = _alloc_page(size);
+
+    // alloca lo spazio nella pagina
+    p->available -= nslots;
+    ptr = &(p->page[p->available]);
+
+    // salva l'informazione su quanto allocato
+    ptr[0] = nslots;
+
+    // ritorna il puntatore
+    return (void*)(ptr+1);
+}
+
+
+void arena_t::free(void* p) {
+    // non fa nulla
+}
+
+
+size_t arena_t::alloc_size(void* p) {
+    size_t* ptr = ((size_t*)p) - 1;
+    return ptr[0]*sizeof(size_t);
+}
+[/code]
+
+
+Come ridurre la frammentazione della memoria
+-----------------------------------------------------------------------------
+
+Uno dei problemi fondamentali nelle applicazioni che devono funzionare per molto 
+tempo ed allocano e deallocano blocchi di memoria in continuazione e' la 
+frammentazione della stessa.
+
+Una memoria frammentata e' una memoria in cui si alternano blocchi di memoria
+allocati e blocchi liberi. Il problema e' legato alla dimensione dei blocchi 
+di memoria liberi: la quantita' di memoria allocabile e' pari SOLO alla dimensione
+del piu' grande blocco di memoria libero.
+
+Linguaggi di programmazione come Java, C#, Python, Ruy, ecc, che utilizzano il 
+Garbage Collector, possono utilizzare tecniche di [i]compattazione della memoria[/i],
+allo scopo di colassare i singoli blocchetti di memoria libera in un un'unico
+grande blocco.
+
+Il C (ed il C++) invece, non potendo spostare la memoria, risente pesantemente
+di questo problema.
+
+Un modo per ridurre la frammentazione e' quellodi usare le [b]arene[/b], come
+indicato precedentemente.
+
+Un'altro, abbastanza semplice, e' quello di allocare blocchi di memoria multipli
+di una dimensione predefinita e non troppo piccola (ad esempio 1KB), ed usare dei 
+[i]pool[/i].
+
+Situazioni di questo genere si trovano abbastanza spesso in applicazioni che 
+che utilizzano internet per la comunicazione:
+
+le informazioni che arrivano devono essere salvare in opportuni buffere e quindi
+processate (ad esempio deserializzata). Allo stesso modo, le informazioni che devono
+essere inviate, prima devono essere serializzate in un buffer, quindi inviate sulla
+connessione di rete.
+
+
+L'idea, quindi, e' la seguente:
+
+1) si chiede di allocare 'size' byte
+2) si arrotonda 'size' ad un multiplo del blocco minimo di allocazione, o ad 
+   una potenza di 2 (1024, 2048, 4096, ...)
+3) si cerca nel pool se e' gia' disponibile un blocco di memoria di quelle dimensioni
+   se c'e', lo si estrae dal pool, e lo si usa. Se non c'e', lo si crea
+4) una volta terminato l'uso del blocco di memoria, questo viene inserito nel pool
+   per un successivo riuso.
+
+   
+[code]
+
+#ifndef HLS_MEMORY_BUFFER_HPP
+#define HLS_MEMORY_BUFFER_HPP
+
+#include <stddef.h>
+
+namespace hls {
+namespace memory {
+
+    class buffer_t
+    {
+        const size_t N = 32;
+
+        struct node_t {
+            node_t *n;
+            void*p;
+        };
+
+        node_t* bucket[32];
+        node_t* free_list;
+
+    public:
+        buffer_t();
+        ~buffer_t();
+
+        void* alloc(size_t count, size_t size);
+        void* alloc(size_t size);
+        void  free(void* p);
+
+        size_t alloc_size(void* p);
+    };
+
+}};
+
+#endif // HLS_MEMORY_BUFFER_HPP
+[/code]
+
+
+[code]
+#include "buffer.hpp"
+#include "alloc.hpp"
+
+
+using namespace hls::memory;
+
+
+static size_t ilog(size_t size) {
+    size_t s = 1;
+    size_t i = 0;
+    while(s < size) {
+        s += s;
+        i += 1;
+    }
+    return i;
+}
+
+
+
+buffer_t::buffer_t() {
+    for(int i=0; i<N; ++i)
+        bucket[i] = nullptr;
+    free_list = nullptr;
+}
+
+
+buffer_t::~buffer_t() {
+    node_t *n, *t;
+
+    for(int i=0; i<N; ++i) {
+        for(n = bucket[i]; n; n = t) {
+            t = n->n;
+            hls::memory::free(n->p);
+            delete n;
+        }
+    }
+
+    for(n = free_list; n; n = t) {
+        t = n->n;
+        delete n;
+    }
+}
+
+
+void* buffer_t::alloc(size_t count, size_t size) {
+    return alloc(count*size);
+}
+
+
+void* buffer_t::alloc(size_t size) {
+    void* p;
+    node_t* n;
+    size_t rest = size%sizeof(size_t);
+    size = (size + (rest ? sizeof(size_t) - rest : 0));
+    size_t ibucket = ilog(size);
+
+    if (bucket[ibucket]) {
+        n = bucket[ibucket];
+        bucket[ibucket] = n->n;
+
+        p = n->p;
+
+        n->n = free_list;
+        n->p = nullptr;
+        free_list = n;
+    }
+    else {
+        size = 1u << ibucket;
+        p = hls::memory::alloc(size);
+    }
+
+    return p;
+}
+
+
+void buffer_t::free(void *p)
+{
+    size_t size = alloc_size(p);
+    size_t ibucker = ilog(size);
+    node_t* n;
+
+    if(free_list) {
+        n = free_list;
+        free_list = n->n;
+    } else {
+        n = new node_t;
+    }
+
+    n->p = p;
+    n->n = bucket[ibucker];
+    bucket[ibucker] = n;
+}
+
+
+size_t buffer_t::alloc_size(void *p) {
+    return hls::memory::alloc_size(p);
+}
+[/code]
+
+
+
+Allocazione di memoria in un contesto multithreading
+-----------------------------------------------------------------------------
+
+La memoria e' una risorsa [b]globale[/b] a livello di computer.
+Quando un'applicazione parte, il S.O assegna al processo una certa quantita' 
+iniziale di memoria sufficente per una partenza senza eccessivi problemi.
+
+Una volta che l'applicazione e' partita, questa puo' far partire uno o piu'
+thread.
+
+Ogni thread puo' avere la necessita' di allocare della memoria, quindi la
+chiede al processo.
+
+Poiche' il processo deve gestire piu' thread, la richiesta di memoria deve
+essere [b]sincronizzata[/b] con l'eventuale richiesta arrivata da altri thread.
+
+Questo puo' rappresentare un collo di bottiglia se ci sono molti thread in 
+esecuzione e se ogn'uno di essi richiede delle continue allocazione e 
+deallocazioni.
+
+Una strategia per ovviare a questo problema e' far si che ogni thread abbia
+una certa quantita' di memoria [i]locale[/i] dove fare le allocazioni.
+Quando questa memoria si esaurisce, un nuovo blocco di memoria viene richiesto
+al processo.
+
+Strategie di allocazione di tipo [i]arena[/i] o l'uso di [i]pool[/i], come 
+descritti nei paragrafi precedenti, possono aiutare molto in questo senso.
+
+In alternativa ci sono librerie come [b]jemalloc[/b], [b]tcmalloc[/b], [b]hoard[/b]
+e [b]nedmalloc[/b] che fanno esattamente questo, ma  mantenendo, come interfaccia,
+le solite routine [b]malloc/calloc/free[/b].
+
+
+C/C++ e Garbage Collector
+-----------------------------------------------------------------------------
+
+Gli [i]smart pointer[/i] forniti dalle STL o dalla libreria boost ([b]unique_ptr[/b],
+[b]shared_ptr[/b], [b]weak_ptr[/b]) sono un esempio di come si  puo' implementare
+un'architettura dove l'allocazione della memoria e' esplicita, ma la deallocazione
+e' automatica.
+
+Gli [i]smart_poiter[/i] sono uno strumento molto potente, ma va usato con molta
+attenzione perche' ci sono tutta una serie di regole che devono essere seguite 
+affinche' le strutture dati vengano correttamente deallocate quando non sono piu'
+necessarie.
+
+Queste regole devono essere seguite dal programmatore.
+
+C'e' un'alternativa agli [i]smart pointer[/i], ed e' un vero e proprio [i]Garbage
+Collector conservativo[/i]:
+
+http://www.hboehm.info/gc/
+
+Questa libreria e' probabilmente poco conosciuta, ma e' molto affidabile visto
+che viene correntemente usata, ad esempio, nell'implementazione dei compilatori 
+Java, Go e Objective-C GNU.
+
+Che cosa e' un [i]Garbage Collector conservativo[/i]?
+
+Fondamentalmente un GC conservativo e' un GC che scandisce la memoria facendo la
+seguente considerazione:
+
+- poiche' non sa quali oggetti contengono dei puntatori e quali no, parte
+  dall'ipotesi che qualunque blocchetto di 8 byte, possa, potenzialmente, essere
+  un puntatore
+- poiche' mantiene, comunque, una serie di blocchi di memoria in cui fa le allocazioni,
+  se questi 8 byte [i]interpretati come puntatori[/i] NON PUNTANO a queste aree di 
+  memoria, vengono scartati
+- SE PUNTANO a queste aree di memoria, allora si controlla che puntino effettivamente
+  ad un blocco allocato (con una logica simile a TESTA/CODA descritta precedentemente)
+- SE PUNTANO AD UN BLOCCO ALLOCATO, allora si SUPPONE che quel blocco sia
+  effettivamente allocato.
+
+Ci sono alcune considerazioni da fare affinche' questo meccanismo possa funzionare:
+
+1) NON SI DEVONO spostare i puntatori, cioe' l'aritmetica dei puntatori E' VIETATA
+2) quando si alloca un blocco di memoria gestito dal GC, e' utile inserire eventuali
+   puntatori in testa alla struttura dati, in modo da semplificare la vita al GC
+3) e' utile avvertire il GC che un blocco di memoria NON CONTIENE puntatori.
+
+Tutto questo ha come conseguenza che, al piu', il GC mentene allocata un po' PIU'
+memoria di quella effettivamente allocata, ma SICURAMENTE NON MENO.
+
+
+
+Reference
+-----------------------------------------------------------------------------
+
+Questi sono alcuni link che potrebbero essere interessanti:
+
+http://g.oswego.edu/dl/html/malloc.html
+http://dmalloc.com/
+
+http://locklessinc.com/benchmarks_allocator.shtml
+http://goog-perftools.sourceforge.net/doc/tcmalloc.html
+http://www.canonware.com/jemalloc/
+http://www.hoard.org/
+https://github.com/ned14/nedmalloc
+http://www.hboehm.info/gc/
+
+http://en.cppreference.com/w/cpp/memory
+http://en.cppreference.com/w/cpp/memory/new/operator_new
+http://en.cppreference.com/w/cpp/memory/new/operator_delete
+
+https://en.wikipedia.org/wiki/Memory_management
+https://en.wikipedia.org/wiki/Region-based_memory_management
+https://en.wikipedia.org/wiki/C_dynamic_memory_allocation
+https://en.wikipedia.org/wiki/Boehm_garbage_collector
+
+https://en.wikipedia.org/wiki/Dangling_pointer
+https://en.wikipedia.org/wiki/Memory_leak

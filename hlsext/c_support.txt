@@ -1,0 +1,11 @@
+Una serie di funzioni a supporto dell'implementazione
+in Cygwin delle applicazioni per Linux
+
+sys: 
+    sys/sysctl.h  e sys/sysctl.c
+        implementazione di 'sysctlnametomib' e 'sysctl' SOLO per poter conoscere
+        il numero di core
+
+cstd: libreria standard per il C
+    realpath.c
+        implementazione di 'realpath' che non risulta disponibile in cygwin

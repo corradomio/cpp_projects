@@ -1,0 +1,40 @@
+Standard
+--------
+
+heap:
+    malloc
+    calloc
+    realloc
+    free
+
+    aligned_alloc/posix_memalloc
+    
+    brk/sbrk/mmap
+
+
+stack:
+    alloca
+
+C++:
+
+    new
+    new[]
+    delete
+    delete[]
+
+
+http://en.wikipedia.org/wiki/C_dynamic_memory_allocation
+
+http://locklessinc.com/benchmarks_allocator.shtml
+
+http://www.hboehm.info/gc/
+http://dmalloc.com/                                                     2007
+http://google-perftools.googlecode.com/svn/trunk/doc/tcmalloc.html      
+http://www.nedprod.com/programs/Win32/ptmalloc2/                        2005
+http://www.nedprod.com/programs/portable/nedmalloc/                     2013
+http://people.freebsd.org/~jasone/jemalloc/bsdcan2006/jemalloc.pdf      2006
+http://www.canonware.com/jemalloc/
+ftp://g.oswego.edu/pub/misc/    dlmalloc                                2012
+http://www.hoard.org/                                                   2013
+http://tlsf.baisoku.org
+
