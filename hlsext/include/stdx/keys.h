@@ -9,7 +9,6 @@
 
 #include <vector>
 #include <map>
-#include "ref_map.h"
 #include <algorithm>
 
 namespace stdx {

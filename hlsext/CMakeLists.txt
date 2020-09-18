@@ -23,7 +23,14 @@ set(SOURCE_FILES
     src/hls/memory/global.cpp
     src/hls/memory/arena.cpp
     src/hls/memory/buffer.cpp
-    include/stdx/keys.h include/stdx/ref_map.h include/stdx/ref_vector.h include/stdx/ref_set.h include/stdx/ref_unordered_map.h include/stdx/ref_unordered_set.h include/stdx/ref_collections.h)
+    include/stdx/keys.h
+    include/stdx/ref_map.h
+    include/stdx/ref_vector.h
+    include/stdx/ref_set.h
+    include/stdx/ref_unordered_map.h
+    include/stdx/ref_unordered_set.h
+    include/boostx/date_time_op.h
+)
 
 add_library(hlsext ${SOURCE_FILES})
 

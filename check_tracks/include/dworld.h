@@ -16,6 +16,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time.hpp>
+#include <boostx/date_time_op.h>
 
 #include <cereal/types/map.hpp>
 #include <cereal/types/set.hpp>
@@ -81,6 +82,12 @@ namespace summer {
     {
         ar(c.i, c.j, c.t);
     }
+
+    struct dwpoint_t {
+        double latitude;
+        double longitude;
+        ptime timestamp;
+    };
 
     // ----------------------------------------------------------------------
 
@@ -247,6 +254,18 @@ namespace summer {
             }
 
             return encs;
+        }
+
+        ptime to_timestamp(int t) const {
+            return ptime(_begin_time.date(), t*_interval);
+        }
+
+        dwpoint_t to_point(const coords_t& c) const {
+            dwpoint_t p;
+            p.latitude  = c.i*_angle;
+            p.longitude = c.j*_angle;
+            p.timestamp = to_timestamp(c.t);
+            return p;
         }
 
         // ----------------------------------------------------------------------

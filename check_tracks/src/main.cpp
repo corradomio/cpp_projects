@@ -74,7 +74,7 @@ void save_encounters(const DiscreteWorld& dworld) {
 
         for(int t : tlist) {
             if (encs[t].eids.size() > 1)
-                std::cout << "  " << t << ": " << encs[t].eids.size() << std::endl;
+                std::cout << "  " << to_simple_string(dworld.to_timestamp(t)) << ": " << encs[t].eids.size() << std::endl;
         }
 
     }
