@@ -1,0 +1,18 @@
+
+set(CMAKE_CXX_STANDARD 17)
+
+include_directories(
+    "D:/MinGW/msys64/usr/include"
+    "D:/MinGW/msys64/usr/local/include"
+    "D:/MinGW/userlibs/include"
+    "D:/Projects/cpp/hlsext/include"
+    "./include"
+)
+
+link_directories(
+    "D:/MinGW/msys64/usr/lib"
+    "D:/MinGW/msys64/usr/local/lib"
+    "D:/MinGW/userlibs/lib"
+    "D:/Projects/cpp/hlsext/lib"
+    "./lib"
+)

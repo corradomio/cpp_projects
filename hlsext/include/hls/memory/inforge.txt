@@ -9,7 +9,7 @@ allocazione dinamica della memoria, e si sappia cosa siano le funzioni:
 
 - malloc  (C/C++)
 - calloc  (C/C++)
-- free   (C/C++)
+- free    (C/C++)
 - new | new[]       (C++)
 - delete | delete[] (C++)
 
@@ -256,7 +256,7 @@ Prima di rilasciarlo, pero', il valore di CODA puo' essere sostituito con:
 Questo permette di controllare se un puntatore e' gia' stato rilasciato: questo
 e' dimostrato dal fatto che TESTA contiene 'nslots' e CODA '~nslots'!
 
-Si puo' fare anche 'un'altra cosa: primia di rilasciarla, riempire il blocco di
+Si puo' fare anche 'un'altra cosa: prima di rilasciarla, riempire il blocco di
 memoria con un pattern predefinito.
 
 La scelta del pattern e' importante: deve essere tale per cui eventuali valori 

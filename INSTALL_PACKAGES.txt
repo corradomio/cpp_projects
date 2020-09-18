@@ -1,0 +1,8 @@
+Per installare 'pacboy'
+
+    pacman -S pactoys
+    
+Installare qualcosa per x64
+
+    pacboy -S <lib>:x
+

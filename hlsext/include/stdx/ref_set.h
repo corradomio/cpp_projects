@@ -5,4 +5,7 @@
 #ifndef HLSEXT_REF_SET_H
 #define HLSEXT_REF_SET_H
 
+#include <memory>
+#include <set>
+
 #endif //HLSEXT_REF_SET_H

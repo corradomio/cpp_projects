@@ -26,9 +26,9 @@ namespace collection {
         T* ptr;
 
         void add_ref() const { if (ptr) ++ptr->count; }
-        void release() { if (ptr && 0 == --ptr->count) { delete ptr; ptr = 0; } }
+        void release() { if (ptr && 0 == --ptr->count) { delete ptr; ptr = nullptr; } }
     public:
-        ref_ptr() : ptr(0) { }
+        ref_ptr() : ptr(nullptr) { }
         ref_ptr(T* p) : ptr(p) { add_ref(); }
         ref_ptr(const ref_ptr& rp) : ptr(rp.ptr) { add_ref(); }
        ~ref_ptr() { release(); }
@@ -53,16 +53,16 @@ namespace collection {
         T& operator *() const { return *ptr; }
 
         T* get() const { return ptr; }
-        T* detach() { T* p = ptr; ptr = 0; return p; }
+        T* detach() { T* p = ptr; ptr = nullptr; return p; }
 
     };
 
     template<typename T, typename R>
     T* ref_cast(const ref_ptr<R>& rp) {
-        R* r = rp.get();
-        T* p = dynamic_cast<T*>(r);
-        if (r && !p) throw std::bad_cast();
-        return p;
+        R* p = rp.get();
+        T* t = dynamic_cast<T*>(p);
+        if (t && !p) throw std::bad_cast();
+        return t;
     }
 
 }}
