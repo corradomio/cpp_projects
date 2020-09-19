@@ -17,51 +17,51 @@ namespace ref {
         typename _Alloc = std::allocator<std::pair<const _Key, _Tp> >
     >
     struct map {
-        std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>> p;
+        std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>> ptr;
 
         // Constructor
 
-        map() { p = std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>>(new std::map<_Key, _Tp, _Compare, _Alloc>()); }
-        map(const map& m): p(m.p) { }
-        ~map() { p = nullptr; }
+        map() { ptr = std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>>(new std::map<_Key, _Tp, _Compare, _Alloc>()); }
+        map(const map& m): ptr(m.ptr) { }
+        ~map() { ptr = nullptr; }
 
         // Member functions
 
         map& operator =(const map& that) {
-            p = that.p;
+            ptr = that.ptr;
             return *this;
         }
 
         // Element access
 
-              _Tp& operator[](const _Key& k)       { return (*p)[k]; }
-        const _Tp& operator[](const _Key& k) const { return (*p)[k]; }
+              _Tp& operator[](const _Key& k)       { return (*ptr)[k]; }
+        const _Tp& operator[](const _Key& k) const { return (*ptr)[k]; }
 
-              _Tp& at(const _Key& k)       { return (*p).at(k); }
-        const _Tp& at(const _Key& k) const { return (*p).at(k); }
+              _Tp& at(const _Key& k)       { return (*ptr).at(k); }
+        const _Tp& at(const _Key& k) const { return (*ptr).at(k); }
 
         // Iterators
 
-        typename std::map<_Key, _Tp, _Compare, _Alloc>::iterator       begin()       { return (*p).begin(); }
-        typename std::map<_Key, _Tp, _Compare, _Alloc>::const_iterator begin() const { return (*p).begin(); }
-        typename std::map<_Key, _Tp, _Compare, _Alloc>::iterator       end()         { return (*p).begin(); }
-        typename std::map<_Key, _Tp, _Compare, _Alloc>::const_iterator end()   const { return (*p).begin(); }
+        typename std::map<_Key, _Tp, _Compare, _Alloc>::iterator       begin()       { return (*ptr).begin(); }
+        typename std::map<_Key, _Tp, _Compare, _Alloc>::const_iterator begin() const { return (*ptr).begin(); }
+        typename std::map<_Key, _Tp, _Compare, _Alloc>::iterator       end()         { return (*ptr).begin(); }
+        typename std::map<_Key, _Tp, _Compare, _Alloc>::const_iterator end()   const { return (*ptr).begin(); }
 
         // Capacity
 
-        bool  empty() const { return (*p).empty(); }
-        size_t size() const { return (*p).size(); }
+        bool  empty() const { return (*ptr).empty(); }
+        size_t size() const { return (*ptr).size(); }
 
         // Modifiers
 
-        void clear() { (*p).clear(); }
-
-        void insert(const _Key& k, const _Tp& v) { (*p)[k] = v; }
+        void clear() { (*ptr).clear(); }
+        void insert(const _Key& k, const _Tp& v) { (*ptr)[k] = v; }
+        void  erase(const _Key& k) { (*ptr).erase(k); }
 
         // Pointers
 
-        std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>> get() const { return p; }
-        std::map<_Key, _Tp, _Compare, _Alloc>&                 ref() const { return *p; }
+        std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>> get() const { return  ptr; }
+        std::map<_Key, _Tp, _Compare, _Alloc>&                 ref() const { return *ptr; }
     };
 
 }
