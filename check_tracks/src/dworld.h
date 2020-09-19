@@ -27,6 +27,9 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
 
+#include <stdx/keys.h>
+#include <stdx/format.h>
+
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -39,7 +42,7 @@ namespace summer {
     struct coords_t {
         int i, j, t;
 
-        coords_t() { }
+        coords_t():i(0), j(0), t(0) { }
         coords_t(int i, int j, int t):i(i),j(j),t(t){}
         coords_t(const coords_t& c): i(c.i), j(c.j), t(c.t){}
 
@@ -63,7 +66,22 @@ namespace summer {
             return i == c.i && j == c.j && t == c.t;
         }
 
-        std::string string() const {
+        coords_t& operator +=(const coords_t& c) {
+            i += c.i;
+            j += c.j;
+            t += c.t;
+            return *this;
+        }
+
+        coords_t operator /(int scalar) const {
+            coords_t c;
+            c.i = i/scalar;
+            c.j = j/scalar;
+            c.t = t/scalar;
+            return c;
+        }
+
+        std::string str() const {
             char buffer[128];
             sprintf(buffer, "(%d,%d,%d)", i,j,t);
             return buffer;
@@ -87,34 +105,31 @@ namespace summer {
         double latitude;
         double longitude;
         ptime timestamp;
+
+        std::string str() const {
+            char buffer[256];
+            sprintf(buffer, "%.06f,%.06f,\"%s\",\"%s\"", latitude, longitude,
+                    to_iso_extended_string(timestamp.date()).c_str(),
+                    to_simple_string(timestamp.time_of_day()).c_str());
+            return buffer;
+        }
     };
 
     // ----------------------------------------------------------------------
 
     struct encounters_set_t {
         int count;
-        coords_t min;
-        coords_t max;
+        coords_t sum;
         std::unordered_set<std::string> eids;
 
         void add(const coords_t& c, const std::unordered_set<std::string>& ids) {
-            if (eids.empty()) {
-                min = c;
-                max = c;
-                count = 1;
-            }
-            else {
-                min.i = std::min(min.i, c.i);
-                min.j = std::min(min.j, c.j);
-                min.t = std::min(min.t, c.t);
-
-                max.i = std::min(max.i, c.i);
-                max.j = std::min(max.j, c.j);
-                max.t = std::min(max.t, c.t);
-
-                count += 1;
-            }
+            sum += c;
+            count += 1;
             eids.insert(ids.begin(), ids.end());
+        }
+
+        coords_t get_coords() const {
+            return sum/count;
         }
     };
 
@@ -253,6 +268,10 @@ namespace summer {
                 encs[c.t].add(c, sdata);
             }
 
+            std::vector<int> tv = stdx::keys(encs);
+            for (int t : tv)
+                encs[t].eids.erase(id);
+
             return encs;
         }
 
@@ -320,17 +339,7 @@ namespace summer {
 
 } } }
 
-template<typename ... Args>
-std::string string_format( const std::string& format, Args ... args )
-{
-    size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
-    std::unique_ptr<char[]> buf( new char[ size ] );
-    snprintf( buf.get(), size, format.c_str(), args ... );
-    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-}
-
-extern void create_grid(int side, int interval, std::string path);
+extern void create_grid(int side, int interval, const std::string& path);
 
 extern void load_grid(hls::khalifa::summer::DiscreteWorld& dworld, const std::string& fname);
 
