@@ -9,6 +9,8 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <stdx/random.h>
+#include "dworld.h"
 
 namespace hls {
 namespace khalifa {
@@ -23,12 +25,16 @@ namespace summer {
     struct state_t {
         int t;          // time id
         double prob;    // proability of infection
-    };
 
-    struct infected_t {
-        Infections* parent;
-        std::string id;
-        std::vector<state_t> infected;
+        state_t() { }
+        state_t(int t, double p):t(t), prob(p){ }
+        state_t(const state_t& s): t(s.t),prob(s.prob){ }
+
+        state_t& operator =(const state_t& s) {
+            t = s.t;
+            prob = s.prob;
+            return *this;
+        }
     };
 
     struct Infections {
@@ -56,12 +62,17 @@ namespace summer {
         contact_mode mode;      // contact mode
         double contact_prob;    // contact probability
 
+        DiscreteWorld const* dworld_p;
+
         // starting list of infected ids
-        std::vector<std::string>  infected_ids;
+        std::unordered_set<std::string>  infected;
 
         // infection status for each id
         // id -> infected
-        std::unordered_map<std::string, infected_t> infections;
+        std::unordered_map<std::string, std::vector<state_t>> infections;
+
+        // random generator
+        stdx::random_t rnd;
 
         // ------------------------------------------------------------------
         //
@@ -75,6 +86,28 @@ namespace summer {
             seed = 123;
         }
 
+        // ------------------------------------------------------------------
+        // Properties
+        // ------------------------------------------------------------------
+
+        Infections& set_d(int d_) { this->d = d_; return *this; }
+        Infections& set_beta(double beta_) { this->beta = beta_; return *this; }
+        Infections& set_l(int l_) { this->l = l_; return *this; }
+        Infections& set_m(int m_) { this->m = m_; return *this; }
+
+        Infections& set_dworld(const DiscreteWorld& dworld_);
+
+        /// Quota [0,1] of infected ids
+        Infections& set_infected(float quota);
+        /// Number of infected ids
+        Infections& set_infected(int n);
+        /// Select the list of infected ids
+        Infections& set_infected(const std::unordered_set<std::string>& ids);
+
+
+        const DiscreteWorld& dworld() { return *dworld_p; }
+    private:
+        void init_infections();
     };
 
 }}}

@@ -17,10 +17,10 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(check_tracks
     include/csvstream.h
-    include/dworld.h
+    src/dworld.h
     src/main.cpp
     src/dworld.cpp
-)
+    ../hlsext/include/stdx/to_string.h ../hlsext/include/stdx/format.h src/infections.h src/infections.cpp)
 
 target_link_libraries(check_tracks
 #    gcmt-lib

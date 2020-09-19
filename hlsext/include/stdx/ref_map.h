@@ -17,11 +17,14 @@ namespace ref {
         typename _Alloc = std::allocator<std::pair<const _Key, _Tp> >
     >
     struct map {
-        std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>> ptr;
+        typedef std::map<_Key, _Tp, _Compare, _Alloc> collection;
+        typedef std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>> pointer;
+
+        pointer ptr;
 
         // Constructor
 
-        map() { ptr = std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>>(new std::map<_Key, _Tp, _Compare, _Alloc>()); }
+        map() { ptr = pointer(new collection()); }
         map(const map& m): ptr(m.ptr) { }
         ~map() { ptr = nullptr; }
 
@@ -42,10 +45,10 @@ namespace ref {
 
         // Iterators
 
-        typename std::map<_Key, _Tp, _Compare, _Alloc>::iterator       begin()       { return (*ptr).begin(); }
-        typename std::map<_Key, _Tp, _Compare, _Alloc>::const_iterator begin() const { return (*ptr).begin(); }
-        typename std::map<_Key, _Tp, _Compare, _Alloc>::iterator       end()         { return (*ptr).begin(); }
-        typename std::map<_Key, _Tp, _Compare, _Alloc>::const_iterator end()   const { return (*ptr).begin(); }
+        typename collection::iterator       begin()       { return (*ptr).begin(); }
+        typename collection::const_iterator begin() const { return (*ptr).begin(); }
+        typename collection::iterator       end()         { return (*ptr).end(); }
+        typename collection::const_iterator end()   const { return (*ptr).end(); }
 
         // Capacity
 
@@ -60,8 +63,8 @@ namespace ref {
 
         // Pointers
 
-        std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>> get() const { return  ptr; }
-        std::map<_Key, _Tp, _Compare, _Alloc>&                 ref() const { return *ptr; }
+        pointer     get() const { return  ptr; }
+        collection& ref() const { return *ptr; }
     };
 
 }

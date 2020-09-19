@@ -27,7 +27,7 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
 
-#include <stdx/keys.h>
+#include <stdx/containers.h>
 #include <stdx/format.h>
 
 
@@ -197,6 +197,7 @@ namespace summer {
             int j = int(longitude / _angle);
             int t = int((timestamp - _begin_time).total_seconds() / _interval.total_seconds());
 
+
             return coords_t(i, j, t);
         }
 
@@ -234,6 +235,12 @@ namespace summer {
         }
 
         //
+        // Get parameters
+        //
+        double side() const { return _side; }
+        time_duration interval() const { return _interval; }
+
+        //
         // Populate
         //
 
@@ -246,7 +253,7 @@ namespace summer {
 
         // ----------------------------------------------------------------------
 
-        const std::vector<std::string>& get_ids() const {
+        const std::vector<std::string>& ids() const {
             if (_users.empty()) {
                 for (auto it = _ucoords._data.begin(); it != _ucoords._data.end(); it++)
                     _users.push_back(it->first);

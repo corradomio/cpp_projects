@@ -16,11 +16,14 @@ namespace ref {
         typename _Alloc = std::allocator<_Value>
     >
     struct unordered_set {
-        std::shared_ptr<std::unordered_set<_Value, _Hash, _Pred, _Alloc>> ptr;
+        typedef std::unordered_set<_Value, _Hash, _Pred, _Alloc> collection;
+        typedef std::shared_ptr<std::unordered_set<_Value, _Hash, _Pred, _Alloc>> pointer;
+
+        pointer ptr;
 
         // Constructor
 
-        unordered_set() { ptr = std::shared_ptr<std::unordered_set<_Value, _Hash, _Pred, _Alloc>>(new std::unordered_set<_Value, _Hash, _Pred, _Alloc>()); }
+        unordered_set() { ptr = pointer(new collection()); }
         unordered_set(const unordered_set& v): ptr(v.ptr) { }
         ~unordered_set() { ptr = nullptr; }
 
@@ -35,10 +38,10 @@ namespace ref {
 
         // Iterators
 
-        typename std::unordered_set<_Value, _Hash, _Pred, _Alloc>::iterator       begin()       { return (*ptr).begin(); }
-        typename std::unordered_set<_Value, _Hash, _Pred, _Alloc>::const_iterator begin() const { return (*ptr).begin(); }
-        typename std::unordered_set<_Value, _Hash, _Pred, _Alloc>::iterator       end()         { return (*ptr).end(); }
-        typename std::unordered_set<_Value, _Hash, _Pred, _Alloc>::const_iterator end()   const { return (*ptr).end(); }
+        typename collection::iterator       begin()       { return (*ptr).begin(); }
+        typename collection::const_iterator begin() const { return (*ptr).begin(); }
+        typename collection::iterator       end()         { return (*ptr).end(); }
+        typename collection::const_iterator end()   const { return (*ptr).end(); }
 
         // Capacity
 
@@ -53,8 +56,8 @@ namespace ref {
 
         // Pointers
 
-        std::shared_ptr<std::unordered_set<_Value, _Hash, _Pred, _Alloc>> get() const { return  ptr; }
-        std::unordered_set<_Value, _Hash, _Pred, _Alloc>&                 ref() const { return *ptr; }
+        pointer     get() const { return  ptr; }
+        collection& ref() const { return *ptr; }
     };
 }
 

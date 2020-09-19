@@ -15,11 +15,14 @@ namespace ref {
         typename _Alloc = std::allocator<_Tp>
     >
     struct vector {
-        std::shared_ptr<std::vector<_Tp, _Alloc>> ptr;
+        typedef std::vector<_Tp, _Alloc> collection;
+        typedef std::shared_ptr<std::vector<_Tp, _Alloc>> pointer;
+
+        pointer ptr;
 
         // Constructor
 
-        vector() { ptr = std::shared_ptr<std::vector<_Tp, _Alloc>>(new std::vector<_Tp, _Alloc>()); }
+        vector() { ptr = pointer(new collection()); }
         vector(const vector& v): ptr(v.ptr) { }
         ~vector() { ptr = nullptr; }
 
@@ -40,10 +43,10 @@ namespace ref {
 
         // Iterators
 
-        typename std::vector<_Tp, _Alloc>::iterator       begin()       { return (*ptr).begin(); }
-        typename std::vector<_Tp, _Alloc>::const_iterator begin() const { return (*ptr).begin(); }
-        typename std::vector<_Tp, _Alloc>::iterator       end()         { return (*ptr).begin(); }
-        typename std::vector<_Tp, _Alloc>::const_iterator end()   const { return (*ptr).begin(); }
+        typename collection::iterator       begin()       { return (*ptr).begin(); }
+        typename collection::const_iterator begin() const { return (*ptr).begin(); }
+        typename collection::iterator       end()         { return (*ptr).end(); }
+        typename collection::const_iterator end()   const { return (*ptr).end(); }
 
         // Capacity
 
@@ -58,8 +61,8 @@ namespace ref {
 
         // Pointers
 
-        std::shared_ptr<std::vector<_Tp, _Alloc>> get() const { return  ptr; }
-        std::vector<_Tp, _Alloc>&                 ref() const { return *ptr; }
+        pointer     get() const { return  ptr; }
+        collection& ref() const { return *ptr; }
     };
 }
 

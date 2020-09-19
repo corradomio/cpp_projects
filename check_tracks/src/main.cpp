@@ -1,15 +1,15 @@
 #include <string>
 #include <iostream>
 
-#include "../include/dworld.h"
-#include <stdx/keys.h>
+#include "dworld.h"
+#include <stdx/to_string.h>
 #include <tbb/parallel_for_each.h>
 
 using namespace hls::khalifa::summer;
 
 
 std::string grid_fname(int side, int interval) {
-    std::string fname = string_format(R"(D:\Projects.github\cpp_projects\check_tracks\data\tracksgrid_%d_%d_3months.bin)", side, interval);
+    std::string fname = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\data\tracksgrid_%d_%d_3months.bin)", side, interval);
     return fname;
 }
 
@@ -59,33 +59,53 @@ void create_load_grid() {
     load_grid(dworld, fname);
 }
 
-typedef std::unordered_set<std::string> encounters_t;
+void save_encounters(const DiscreteWorld& dworld, const std::string& id, int side, int interval) {
+    std::cout << "-- " << id << ", " << side << ", " << interval << " --" << std::endl;
 
-void save_encounters(const DiscreteWorld& dworld) {
+    std::string dir = stdx::format(
+        "D:/Projects.github/cpp_projects/check_tracks/encounters/%d_%d", side, interval);
+    boost::filesystem::create_directory(dir);
 
-    const std::vector<std::string>& ids = dworld.get_ids();
+    std::string fname = stdx::format("%s/%s_%d_%d.csv",
+                                      dir.c_str(),
+                                      id.c_str(),
+                                      side, interval);
 
-    for(const std::string& id : ids) {
-        std::cout << "-- " << id << " --" << std::endl;
+    std::ofstream ofs(fname);
+    ofs << "\"id\",\"latitude\",\"longitude\",\"date\",\"time\",\"encounters\"" << std::endl;
 
-        std::map<int, encounters_set_t> encs = dworld.get_encounters(id);
-
-        std::vector<int> tlist = stdx::keys(encs, true);
-
-        for(int t : tlist) {
-            if (encs[t].eids.size() > 1)
-                std::cout << "  " << to_simple_string(dworld.to_timestamp(t)) << ": " << encs[t].eids.size() << std::endl;
-        }
-
+    std::map<int, encounters_set_t> encs = dworld.get_encounters(id);
+    std::vector<int> tlist = stdx::keys(encs, true);
+    for(int t : tlist) {
+        encounters_set_t& eset = encs[t];
+        dwpoint_t pt = dworld.to_point(eset.get_coords());
+        if (eset.eids.size() > 1)
+            ofs << id <<"," << pt.str() << ",\"" << stdx::str(encs[t].eids, "|") << "\"" << std::endl;
     }
-
 }
 
-void print_encounters() {
+void save_encounters(int side, int interval) {
     DiscreteWorld dworld;
-    dworld.load(grid_fname(100, 60));
+    dworld.load(grid_fname(side, interval));
 
-    save_encounters(dworld);
+    const std::vector<std::string>& ids = dworld.ids();
+    for(const std::string& id : ids) {
+        save_encounters(dworld, id, side, interval);
+    }
+}
+
+void save_encounters() {
+    std::vector<int> sides{5,10,20,50,100};
+    std::vector<int> intervals{1,5,10,15,30,60};
+
+    //save_encounters(100, 60);
+
+    save_encounters(5, 0);
+    for(int side : sides) {
+        tbb::parallel_for_each(intervals.begin(), intervals.end(), [&](int interval) {
+            save_encounters(side, interval);
+        });
+    }
 }
 
 
@@ -97,7 +117,9 @@ int main() {
     
     //load_grids();
 
-    print_encounters();
+    //save_encounters();
+
+
 
     return 0;
 }

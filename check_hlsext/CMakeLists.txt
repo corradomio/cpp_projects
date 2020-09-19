@@ -11,7 +11,13 @@ link_directories(
     ../hlsext/lib
 )
 
-add_executable(check_hlsext main.cpp)
+add_executable(check_hlsext
+    main2.cpp
+    main1.cpp
+    ../hlsext/include/stdx/random.h
+    ../hlsext/include/stdx/cmath.h
+    ../hlsext/include/stdx/containers.h
+)
 
 target_link_libraries(check_hlsext
     hlsext

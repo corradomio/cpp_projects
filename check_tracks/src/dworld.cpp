@@ -5,7 +5,7 @@
 #include <iostream>
 #include <csvstream.h>
 
-#include "../include/dworld.h"
+#include "dworld.h"
 
 using namespace boost::filesystem;
 using namespace boost::gregorian;
@@ -17,7 +17,7 @@ using namespace hls::khalifa::summer;
 const std::string DATASET = R"(D:\Dropbox\2_Khalifa\Progetto Summer\Dataset_3months)";
 
 
-void create_grid(int side, int interval, std::string fname) {
+void create_grid(int side, int interval, const std::string& fname) {
 
     DiscreteWorld dworld(side, interval);
 

@@ -18,11 +18,14 @@ namespace ref {
         typename _Alloc = std::allocator<std::pair<const _Key, _Tp> >
     >
     struct unordered_map {
+        typedef std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc> collection;
+        typedef std::shared_ptr<std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>> pointer;
+
         std::shared_ptr<std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>> ptr;
 
         // Constructor
 
-        unordered_map() { ptr = std::shared_ptr<std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>>(new std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>()); }
+        unordered_map() { ptr = pointer(new collection()); }
         unordered_map(const unordered_map& m): ptr(m.ptr) { }
         ~unordered_map() { ptr = nullptr; }
 
@@ -43,10 +46,10 @@ namespace ref {
 
         // Iterators
 
-        typename std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::iterator       begin()       { return (*ptr).begin(); }
-        typename std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::const_iterator begin() const { return (*ptr).begin(); }
-        typename std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::iterator       end()         { return (*ptr).begin(); }
-        typename std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::const_iterator end()   const { return (*ptr).begin(); }
+        typename collection::iterator       begin()       { return (*ptr).begin(); }
+        typename collection::const_iterator begin() const { return (*ptr).begin(); }
+        typename collection::iterator       end()         { return (*ptr).end(); }
+        typename collection::const_iterator end()   const { return (*ptr).end(); }
 
         // Capacity
 
@@ -61,8 +64,8 @@ namespace ref {
 
         // Pointers
 
-        std::shared_ptr<std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>> get() const { return  ptr; }
-        std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>&                 ref() const { return *ptr; }
+        pointer     get() const { return  ptr; }
+        collection& ref() const { return *ptr; }
     };
 
 }
