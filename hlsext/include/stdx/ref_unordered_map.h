@@ -25,7 +25,7 @@ namespace ref {
 
         // Constructor
 
-        unordered_map() { ptr = pointer(new collection()); }
+        unordered_map():ptr(new collection) { }
         unordered_map(const unordered_map& m): ptr(m.ptr) { }
         ~unordered_map() { ptr = nullptr; }
 

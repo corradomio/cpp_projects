@@ -53,13 +53,13 @@ namespace stdx {
     // Containment
     // ----------------------------------------------------------------------
 
-    template<typename _Tp>
-    bool contains(const std::set<_Tp>& set, const _Tp& v) {
+    template<typename _Tp, typename _Compare>
+    bool contains(const std::set<_Tp, _Compare>& set, const _Tp& v) {
         return set.find(v) != set.end();
     }
 
-    template<typename _Tp>
-    bool contains(const std::unordered_set<_Tp>& set, const _Tp& v) {
+    template<typename _Tp, typename _Compare>
+    bool contains(const std::unordered_set<_Tp, _Compare>& set, const _Tp& v) {
         return set.find(v) != set.end();
     }
 
@@ -71,6 +71,24 @@ namespace stdx {
     template<typename _Key, typename _Tp>
     bool contains_key(const std::unordered_map<_Key, _Tp>& map, const _Key& k) {
         return map.find(k) != map.end();
+    }
+
+    // ----------------------------------------------------------------------
+    // Inersection
+    // ----------------------------------------------------------------------
+
+    template<typename _Set>
+    bool has_intersection(const _Set& s1, const _Set& s2){
+        for(auto it=s1.cbegin(); it != s1.cend(); ++it)
+            if (contains(s2, *it))
+                return true;
+        return false;
+    }
+
+    template<typename _Set>
+    void merge(_Set& s1, const _Set& s2) {
+        for(auto it = s2.cbegin(); it != s2.cend(); ++it)
+            s1.insert(*it);
     }
 
 }

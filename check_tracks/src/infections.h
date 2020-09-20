@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <list>
 #include <unordered_map>
+#include <stdx/ref_unordered_map.h>
 #include <stdx/random.h>
 #include "dworld.h"
 
@@ -59,8 +61,8 @@ namespace summer {
         int start;              // l in 'time slots'
         int reset;              // m in 'time slots'
         int oneday;             // 1 day in 'time slots'
-        contact_mode mode;      // contact mode
-        double contact_prob;    // contact probability
+        contact_mode cmode;     // contact mode
+        double cmode_prob;     // contact probability
 
         DiscreteWorld const* dworld_p;
 
@@ -94,20 +96,30 @@ namespace summer {
         Infections& set_beta(double beta_) { this->beta = beta_; return *this; }
         Infections& set_l(int l_) { this->l = l_; return *this; }
         Infections& set_m(int m_) { this->m = m_; return *this; }
+        Infections& set_contact_mode(contact_mode cmode, double cmode_prob) {
+            this->cmode = cmode;
+            this->cmode_prob = cmode_prob;
+            return *this;
+        }
 
         Infections& set_dworld(const DiscreteWorld& dworld_);
 
         /// Quota [0,1] of infected ids
-        Infections& set_infected(float quota);
+        Infections& set_infected(float quota){ return set_infected(double(quota)); }
+        /// Quota [0,1] of infected ids
+        Infections& set_infected(double quota);
         /// Number of infected ids
         Infections& set_infected(int n);
         /// Select the list of infected ids
         Infections& set_infected(const std::unordered_set<std::string>& ids);
 
+        void propagate();
 
-        const DiscreteWorld& dworld() { return *dworld_p; }
     private:
-        void init_infections();
+        const DiscreteWorld& dworld() { return *dworld_p; }
+        ref::unordered_map<int, std::vector<std::unordered_set<std::string>>>
+            get_all_encounters();
+
     };
 
 }}}

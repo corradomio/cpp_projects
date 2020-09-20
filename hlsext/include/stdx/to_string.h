@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <iosfwd>
 #include <vector>
 #include <set>
 #include <unordered_set>
@@ -46,7 +47,7 @@ namespace stdx {
 
     template<typename _Tp>
     std::string str(const std::unordered_set<_Tp>& v, const std::string sep) {
-        std::stringstream sbuf;
+        std::stringstream sbuf("{");
 
         sbuf << "{";
         if (!v.empty()) {
@@ -59,6 +60,7 @@ namespace stdx {
         sbuf << "}";
         return sbuf.str();
     }
+
 
 }
 
