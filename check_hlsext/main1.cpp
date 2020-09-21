@@ -109,8 +109,6 @@ void check_containment() {
     }
 }
 
-
-
 int main() {
 
     // -- ref::vector

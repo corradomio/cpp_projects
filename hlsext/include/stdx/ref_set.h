@@ -16,6 +16,9 @@ namespace ref {
         typename _Alloc = std::allocator<_Key>
     >
     struct set {
+        typedef std::set<_Key, _Compare, _Alloc> collection;
+        typedef std::shared_ptr<std::set<_Key, _Compare, _Alloc>> pointer;
+
         std::shared_ptr<std::set<_Key, _Compare, _Alloc>> ptr;
 
         // Constructor
@@ -35,10 +38,13 @@ namespace ref {
 
         // Iterators
 
-        typename std::set<_Key, _Compare, _Alloc>::iterator       begin()       { return (*ptr).begin(); }
-        typename std::set<_Key, _Compare, _Alloc>::const_iterator begin() const { return (*ptr).begin(); }
-        typename std::set<_Key, _Compare, _Alloc>::iterator       end()         { return (*ptr).end(); }
-        typename std::set<_Key, _Compare, _Alloc>::const_iterator end()   const { return (*ptr).end(); }
+        typename collection::iterator       begin()        { return (*ptr).begin(); }
+        typename collection::iterator       end()          { return (*ptr).end(); }
+        typename collection::const_iterator begin()  const { return (*ptr).begin(); }
+        typename collection::const_iterator end()    const { return (*ptr).end(); }
+
+        typename collection::const_iterator cbegin() const { return (*ptr).cbegin(); }
+        typename collection::const_iterator cend()   const { return (*ptr).cend(); }
 
         // Capacity
 

@@ -77,6 +77,11 @@ Infections& Infections::set_infected(const std::unordered_set<std::string>& ids)
 
 void Infections::propagate() {
     ref::unordered_map<int, vs_users> encs = get_all_encounters();
+    std::cout << encs.size() << std::endl;
+
+    std::vector<int> times = stdx::keys(encs.ref(), true);
+    for(auto it = times.cbegin(); it != times.cend(); ++it)
+        std::cout << "  " << *it << std::endl;
 
     std::cout << encs.size() << std::endl;
 }

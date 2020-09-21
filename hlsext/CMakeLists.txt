@@ -23,7 +23,7 @@ set(SOURCE_FILES
     src/hls/memory/global.cpp
     src/hls/memory/arena.cpp
     src/hls/memory/buffer.cpp
-    include/stdx/keys.h
+    include/stdx/containers.h
     include/stdx/ref_map.h
     include/stdx/ref_vector.h
     include/stdx/ref_set.h

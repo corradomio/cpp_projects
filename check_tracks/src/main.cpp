@@ -38,6 +38,7 @@ void simulate(int side, int interval) {
 }
 
 void simulate() {
+//    simulate(5, 0);
     simulate(100, 60);
 }
 

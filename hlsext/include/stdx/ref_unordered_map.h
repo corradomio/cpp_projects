@@ -46,10 +46,13 @@ namespace ref {
 
         // Iterators
 
-        typename collection::iterator       begin()       { return (*ptr).begin(); }
-        typename collection::const_iterator begin() const { return (*ptr).begin(); }
-        typename collection::iterator       end()         { return (*ptr).end(); }
-        typename collection::const_iterator end()   const { return (*ptr).end(); }
+        typename collection::iterator       begin()        { return (*ptr).begin(); }
+        typename collection::iterator       end()          { return (*ptr).end(); }
+        typename collection::const_iterator begin()  const { return (*ptr).begin(); }
+        typename collection::const_iterator end()    const { return (*ptr).end(); }
+
+        typename collection::const_iterator cbegin() const { return (*ptr).cbegin(); }
+        typename collection::const_iterator cend()   const { return (*ptr).cend(); }
 
         // Capacity
 
