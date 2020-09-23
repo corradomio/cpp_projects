@@ -59,14 +59,14 @@ namespace summer {
             return *this;
         }
 
-        bool operator <(const coords_t& c) const {
-            if (i < c.i) return true;
-            if (i > c.i) return false;
-            if (j < c.j) return true;
-            if (j > c.j) return false;
-            if (t < c.t) return true;
-            return false;
-        }
+        //bool operator <(const coords_t& c) const {
+        //    if (i < c.i) return true;
+        //    if (i > c.i) return false;
+        //    if (j < c.j) return true;
+        //    if (j > c.j) return false;
+        //    if (t < c.t) return true;
+        //    return false;
+        //}
 
         bool operator ==(const coords_t& c) const {
             return i == c.i && j == c.j && t == c.t;
@@ -79,11 +79,11 @@ namespace summer {
             return *this;
         }
 
-        coords_t operator /(int scalar) const {
+        coords_t operator /(int s) const {
             coords_t c;
-            c.i = i/scalar;
-            c.j = j/scalar;
-            c.t = t/scalar;
+            c.i = i/s;
+            c.j = j/s;
+            c.t = t/s;
             return c;
         }
 
@@ -96,7 +96,10 @@ namespace summer {
 
     struct coords_hash {
         size_t operator()(const coords_t& c) const {
-            return ((c.i * 17) ^ c.j) * 17 ^ c.t;
+            return
+                ((size_t) c.i) <<  0 ^
+                ((size_t) c.j) << 16 ^
+                ((size_t) c.t) << 32;
         }
     };
 
@@ -178,10 +181,10 @@ namespace summer {
         }
     };
 
-    struct time_data_t {
-        // t-> [{id},...]
-        std::unordered_map<int, std::vector<std::set<std::string>>> _data;
-    };
+    //struct time_data_t {
+    //    // t-> [{id},...]
+    //    std::unordered_map<int, std::vector<std::set<std::string>>> _data;
+    //};
 
     // ----------------------------------------------------------------------
 
@@ -210,7 +213,7 @@ namespace summer {
         user_data_t _udata;
 
         /// t -> [{id},...]
-        time_data_t _tdata;
+        //time_data_t _tdata;
 
     public:
         DiscreteWorld() {
@@ -222,6 +225,8 @@ namespace summer {
             this->side(side);
             this->interval(minutes);
         }
+
+        ~DiscreteWorld();
 
         //
         // Set parameters
@@ -259,7 +264,10 @@ namespace summer {
         const v_users& ids() const;
 
         // id: map[t -> set[id]]
-        std::map<int, encounters_set_t> get_encounters(const std::string& id) const;
+        //void get_encounters(std::map<int, encounters_set_t>& encs, const std::string& id) const;
+
+        // t -> [{id},...]
+        void get_time_encounters(std::map<int, vs_users>& encs) const;
 
         // ----------------------------------------------------------------------
         // Conversions
@@ -290,6 +298,13 @@ namespace summer {
             ar(_side, _angle, seconds, _sdata._data, _udata._data);
             _interval = time_duration(0, 0, seconds);
         }
+
+
+        // ----------------------------------------------------------------------
+
+        void save_slot_encounters(const std::string filename);
+
+        void save_time_encounters(const std::string filename);
 
         // ----------------------------------------------------------------------
 

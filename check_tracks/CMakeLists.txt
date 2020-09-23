@@ -20,7 +20,7 @@ add_executable(check_tracks
     src/dworld.h
     src/main.cpp
     src/dworld.cpp
-    ../hlsext/include/stdx/to_string.h ../hlsext/include/stdx/format.h src/infections.h src/infections.cpp include/other.cpp)
+    ../hlsext/include/stdx/to_string.h ../hlsext/include/stdx/format.h src/infections.h src/infections.cpp other.cpp)
 
 target_link_libraries(check_tracks
 #    gcmt-lib
