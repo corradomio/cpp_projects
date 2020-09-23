@@ -28,7 +28,7 @@ namespace stdx {
             }
 
             bool operator !=(const iter& it) { return value != it.value; }
-            bool operator  <(const iter& it) { return value < it.value; }
+            bool operator  <(const iter& it) { return value  < it.value; }
 
             iter& operator ++() {
                 value += 1;
