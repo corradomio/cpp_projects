@@ -78,15 +78,18 @@ void save_time_encounters(int side, int interval) {
 
 void save_time_encounters() {
 
-    save_time_encounters(100, 60);
+    //save_time_encounters(100, 60);
 
-    //save_time_encounters(5, 0);
-    //
-    //std::vector<int> sides{5,10,20,50,100};
-    //std::vector<int> intervals{1,5,10,15,30,60};
-    //for (int side : sides)
-    //    for (int interval : intervals)
-    //        save_time_encounters(side, interval);
+    save_time_encounters(5, 0);
+
+    std::vector<int> sides{5,10,20,50,100};
+    std::vector<int> intervals{1,5,10,15,30,60};
+    for (int side : sides)
+        //for (int interval : intervals)
+        //    save_time_encounters(side, interval);
+        tbb::parallel_for_each(sides.begin(), sides.end(), [&](int interval) {
+            save_time_encounters(side, interval);
+        });
 }
 
 // --------------------------------------------------------------------------
@@ -124,11 +127,11 @@ int main() {
 
     //crete_grids();
     
-    load_grids();
+    //load_grids();
 
     //save_slot_encounters();
 
-    //save_time_encounters();
+    save_time_encounters();
 
     //simulate();
 
