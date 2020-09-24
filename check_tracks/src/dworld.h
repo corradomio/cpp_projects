@@ -181,21 +181,17 @@ namespace summer {
         }
     };
 
-    //struct time_data_t {
-    //    // t-> [{id},...]
-    //    std::unordered_map<int, std::vector<std::set<std::string>>> _data;
-    //};
-
     // ----------------------------------------------------------------------
 
     struct DiscreteWorld {
         /// length of 1 degree (in meters)
         double _onedegree = 111319;
-        /// first day
-        ptime  _begin_time = ptime(date(2020,1,1));
 
         /// grid side (in meters)
         double _side;
+
+        /// first day
+        ptime  _begin_time = ptime(date(2020,1,1));
 
         /// time interval
         time_duration _interval;

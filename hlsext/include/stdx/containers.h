@@ -77,6 +77,15 @@ namespace stdx {
     // Inersection
     // ----------------------------------------------------------------------
 
+    /// s1 subsetof s2
+    template<typename _Set>
+    bool is_subset(const _Set& s1, const _Set& s2) {
+        for(auto it=s1.cbegin(); it != s1.cend(); ++it)
+            if (!contains(s2, *it))
+                return false;
+        return true;
+    }
+
     template<typename _Set>
     bool has_intersection(const _Set& s1, const _Set& s2){
         for(auto it=s1.cbegin(); it != s1.cend(); ++it)

@@ -5,7 +5,7 @@
 #include <iostream>
 #include "stdx/ranges.h"
 
-int main() {
+int main3() {
 
     printf("%d\n", sizeof(long long));
     printf("%d\n", sizeof(long));

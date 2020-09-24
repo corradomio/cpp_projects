@@ -126,12 +126,49 @@ const v_users& DiscreteWorld::ids() const {
 //}
 
 
+void merge_encs(vs_users& encs) {
+    std::set<int, std::greater<int>> skip;
+    bool invalid = true;
+
+    while(invalid) {
+        int n = encs.size();
+
+        invalid = false;
+        skip.clear();
+
+        for(int i=0; i<n; ++i) {
+            if (stdx::contains(skip, i)) continue;
+            for(int j=i+1; j<n; ++j) {
+                if (stdx::contains(skip, j)) continue;
+
+                if (stdx::has_intersection(encs[i], encs[j])) {
+                    skip.insert(j);
+                    encs[i].insert(encs[j].cbegin(), encs[j].cend());
+                    invalid = true;
+                }
+            }
+        }
+
+        for(int i : skip)
+            encs.erase(encs.begin() + i);
+    }
+
+}
+
+
 void DiscreteWorld::get_time_encounters(std::map<int, vs_users>& encs) const {
+    std::set<int> tids;
+
     for(auto it = _sdata._data.cbegin(); it != _sdata._data.cend(); ++it) {
         int t = it->first.t;
+        tids.insert(t);
         if (it->second.size() > 1) {
             encs[t].push_back(it->second);
         }
+    }
+
+    for(int t : tids) {
+        merge_encs(encs[t]);
     }
 }
 
@@ -203,25 +240,47 @@ void DiscreteWorld::save_slot_encounters(const std::string filename) {
     std::cout << "slot encounters " << filename << "[" << this->_sdata._data.size() << "]..." << std::endl;
 
     std::ofstream ofs(filename);
-    ofs << R"("latitude","longitude","date","time","encounters")" << std::endl;
+    ofs << R"("latitude","longitude","timestamp","encounters")" << std::endl;
 
     int count = 0;
     for (auto it=this->_sdata._data.begin(); it != this->_sdata._data.end(); it++) {
-        const coords_t &coords = it->first;
-        const s_users &users = it->second;
+        const coords_t &c = it->first;
+        const s_users  &u = it->second;
 
         ++count;
-        if (count%1000000 == 0)
+        if (count % 1000000 == 0)
             std::cout << "... " << count << "\r";
 
-        if (users.size() > 1) {
-            dwpoint_t pt = to_point(coords);
-            ofs << pt.str() << ",\"" << stdx::str(users, "|") << "\"" << std::endl;
+        if (u.size() > 1) {
+            //dwpoint_t pt = to_point(coords);
+            ofs << c.i << "," << c.j << "," << c.t << ",\"" << stdx::str(u, "|") << "\"" << std::endl;
         }
     }
-
-    std::cout << "done" << std::endl;
 }
+
+//void DiscreteWorld::save_slot_encounters(const std::string filename) {
+//    std::cout << "slot encounters " << filename << "[" << this->_sdata._data.size() << "]..." << std::endl;
+//
+//    std::ofstream ofs(filename);
+//    ofs << R"("latitude","longitude","date","time","encounters")" << std::endl;
+//
+//    int count = 0;
+//    for (auto it=this->_sdata._data.begin(); it != this->_sdata._data.end(); it++) {
+//        const coords_t &coords = it->first;
+//        const s_users &users = it->second;
+//
+//        ++count;
+//        if (count%1000000 == 0)
+//            std::cout << "... " << count << "\r";
+//
+//        if (users.size() > 1) {
+//            dwpoint_t pt = to_point(coords);
+//            ofs << pt.str() << ",\"" << stdx::str(users, "|") << "\"" << std::endl;
+//        }
+//    }
+//
+//    std::cout << "done" << std::endl;
+//}
 
 
 static std::string to_str(const vs_users& vs) {
@@ -231,7 +290,7 @@ static std::string to_str(const vs_users& vs) {
     if (!vs.empty()) {
         sbuf << stdx::str(vs[0], "|");
         for(size_t i=1; i<vs.size(); ++i)
-            sbuf << " " << stdx::str(vs[i], "|");
+            sbuf << ";" << stdx::str(vs[i], "|");
     }
 
     sbuf << "]";
@@ -239,24 +298,45 @@ static std::string to_str(const vs_users& vs) {
 }
 
 
+//void DiscreteWorld::save_time_encounters(const std::string filename) {
+//    std::cout << "time encounters " << filename << "[" << this->_sdata._data.size() << "]..." << std::endl;
+//
+//    std::ofstream ofs(filename);
+//    ofs << R"("date","time","encounters")" << std::endl;
+//
+//    std::map<int, vs_users> encs;
+//    get_time_encounters(encs);
+//
+//    std::vector<int> tids = stdx::keys(encs, true);
+//
+//    for (int t : tids) {
+//        ptime timestamp = to_timestamp(t);
+//
+//        ofs << "\"" << to_iso_extended_string(timestamp.date()).c_str() << "\","
+//            << "\"" << to_simple_string(timestamp.time_of_day()).c_str()   << "\","
+//            << "\"" << to_str(encs[t]) << "\"" << std::endl;
+//
+//    }
+//
+//    std::cout << "done" << std::endl;
+//}
+
 void DiscreteWorld::save_time_encounters(const std::string filename) {
     std::cout << "time encounters " << filename << "[" << this->_sdata._data.size() << "]..." << std::endl;
 
-    std::ofstream ofs(filename);
-    ofs << R"("date","time","encounters")" << std::endl;
-
     std::map<int, vs_users> encs;
     get_time_encounters(encs);
+
+    std::ofstream ofs(filename);
+    ofs << R"("timestamp","encounters")" << std::endl;
 
     std::vector<int> tids = stdx::keys(encs, true);
 
     for (int t : tids) {
         ptime timestamp = to_timestamp(t);
 
-        ofs << "\"" << to_iso_extended_string(timestamp.date()).c_str() << "\","
-            << "\"" << to_simple_string(timestamp.time_of_day()).c_str()   << "\","
-            << "\"" << to_str(encs[t]) << "\"" << std::endl;
-
+        if (!encs[t].empty())
+            ofs << t << "," << "\"" << to_str(encs[t]) << "\"" << std::endl;
     }
 
     std::cout << "done" << std::endl;

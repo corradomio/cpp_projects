@@ -1,7 +1,6 @@
 #include <string>
 #include <iostream>
 
-//#include <stdx/to_string.h>
 #include <tbb/parallel_for_each.h>
 
 #include "dworld.h"
@@ -10,11 +9,6 @@
 
 using namespace hls::khalifa::summer;
 
-
-//std::string grid_fname(int side, int interval) {
-//    std::string fname = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\data\tracksgrid_%d_%d_3months.bin)", side, interval);
-//    return fname;
-//}
 
 void simulate(const DiscreteWorld& dworld,
               contact_mode cmode, double cmode_prob,
@@ -70,26 +64,25 @@ void save_time_encounters(int side, int interval) {
     DiscreteWorld dworld;
     dworld.load(grid_fname(side, interval));
 
-    std::string fname = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\data\tracksgrid_%d_%d_3months.bin)", side, interval);
     std::string oname = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\encounters_%d_%d_3months.csv)", side, interval);
-
     dworld.save_time_encounters(oname);
 }
 
 void save_time_encounters() {
 
     //save_time_encounters(100, 60);
+    //return;
 
     save_time_encounters(5, 0);
 
     std::vector<int> sides{5,10,20,50,100};
     std::vector<int> intervals{1,5,10,15,30,60};
     for (int side : sides)
-        //for (int interval : intervals)
-        //    save_time_encounters(side, interval);
-        tbb::parallel_for_each(sides.begin(), sides.end(), [&](int interval) {
+        for (int interval : intervals)
             save_time_encounters(side, interval);
-        });
+        //tbb::parallel_for_each(sides.begin(), sides.end(), [&](int interval) {
+        //    save_time_encounters(side, interval);
+        //});
 }
 
 // --------------------------------------------------------------------------
@@ -98,38 +91,33 @@ void save_slot_encounters(int side, int interval) {
     DiscreteWorld dworld;
     dworld.load(grid_fname(side, interval));
 
-    std::string fname = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\data\tracksgrid_%d_%d_3months.bin)", side, interval);
     std::string oname = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\encounters_%d_%d_3months.csv)", side, interval);
-
     dworld.save_slot_encounters(oname);
 }
 
 void save_slot_encounters() {
 
     //save_slot_encounters(100, 60);
+    //return
 
     save_slot_encounters(5, 0);
 
     std::vector<int> sides{5,10,20,50,100};
     std::vector<int> intervals{1,5,10,15,30,60};
     for (int side : sides)
-        //tbb::parallel_for(intervals, [&](int interval) {
-        //    save_slot_encounters(side, interval);
-        //});
         for (int interval : intervals)
             save_slot_encounters(side, interval);
+        //tbb::parallel_for_each(sides.begin(), sides.end(), [&](int interval) {
+        //    save_slot_encounters(side, interval);
+        //});
 }
 
 
 int main() {
-    //pfor();
-    //create_load_grid();
-
     //crete_grids();
-    
     //load_grids();
 
-    //save_slot_encounters();
+    save_slot_encounters();
 
     save_time_encounters();
 

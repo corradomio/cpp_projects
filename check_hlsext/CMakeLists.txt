@@ -17,7 +17,7 @@ add_executable(check_hlsext
     ../hlsext/include/stdx/random.h
     ../hlsext/include/stdx/cmath.h
     ../hlsext/include/stdx/containers.h
-    ../hlsext/include/stdx/ranges.h main3.cpp)
+    ../hlsext/include/stdx/ranges.h main3.cpp main4.cpp)
 
 target_link_libraries(check_hlsext
     hlsext

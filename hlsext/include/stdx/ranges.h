@@ -17,7 +17,7 @@ namespace stdx {
     public:
         class iter {
             const range& r;
-            T value;
+            mutable T value;
         public:
             explicit iter(const range& rng, const T& v): r(rng), value(v) { }
             iter(const iter& it): r(it.r), value(it.value) { }
@@ -46,11 +46,13 @@ namespace stdx {
         friend class range::iter;
 
     public:
+        typedef iter const_iterator;
+
         range(const T& end): _begin(0),_end(end) { }
         range(const T& begin, const T& end): _begin(begin),_end(end) { }
 
-        iter begin() const { return iter(*this, _begin); }
-        iter   end() const { return iter(*this, _end); }
+        const_iterator cbegin() const { return iter(*this, _begin); }
+        const_iterator   cend() const { return iter(*this, _end); }
 
     };
 

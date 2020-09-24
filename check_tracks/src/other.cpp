@@ -50,15 +50,6 @@ void load_grids() {
 
 }
 
-//void create_load_grid() {
-//    std::string fname = grid_fname(100, 60);
-//
-//    create_grid(100, 60, fname);
-//
-//    DiscreteWorld dworld;
-//    load_grid(dworld, fname);
-//}
-
 //void save_encounters(const DiscreteWorld& dworld, const std::string& id, int side, int interval) {
 //    std::cout << "-- " << id << ", " << side << ", " << interval << " --" << std::endl;
 //
