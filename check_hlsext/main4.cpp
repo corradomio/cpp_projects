@@ -8,7 +8,7 @@
 #include <tuple>
 #include <stdx/default_unordered_map.h>
 
-int main() {
+int main4() {
     std::set<int, std::greater<int>> s1{3,5,1,7,4};
     std::set<int, std::less<int>> s2{3,5,1,7,4};
 

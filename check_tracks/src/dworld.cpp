@@ -201,6 +201,7 @@ void DiscreteWorld::dump() {
               << "  user_cells: " << _cusers.size()  << "\n"
               << " user_coords: " << _ucoords.size() << "\n"
               << "  encounters: " << _encs.size()    << "\n"
+              << "      merges: " << _nmerges        << "\n"
               << "end" << std::endl;
 }
 

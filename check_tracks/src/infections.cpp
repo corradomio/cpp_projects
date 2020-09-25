@@ -68,10 +68,10 @@ Infections& Infections::infected(int n) {
 Infections& Infections::infected(const s_users& users) {
     _infected.insert(users.begin(), users.end());
 
-    for (const user_t& user : dworld().users())
-        _infections[user].prob(0, 0.).dworld(dworld());
+    //for (const user_t& user : dworld().users())
+    //    _infections[user].prob(0, 0.);
     for (const user_t& user : _infected)
-        _infections[user].prob(0, 1.).dworld(dworld());
+        _infections[user].prob(0, 1.);
 
     return *this;
 }
@@ -103,6 +103,9 @@ Infections& Infections::init() {
     lts = l*dts;
     // m in time slots
     mts = m*dts;
+
+    for (const user_t& user : dworld().users())
+        _infections[user].dworld(dworld());
 
     return *this;
 }

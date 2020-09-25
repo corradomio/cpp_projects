@@ -73,43 +73,20 @@ void simulate() {
 
 // --------------------------------------------------------------------------
 
-void save_time_encounters(int side, int interval) {
+void save_encounters(int side, int interval) {
+    std::string filename;
     DiscreteWorld dworld;
+
     dworld.load(grid_fname(side, interval));
 
-    std::string filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\encounters_%d_%d_3months.csv)", side, interval);
+    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\encounters_%d_%d_3months.csv)", side, interval);
+    dworld.save_slot_encounters(filename);
+
+    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\encounters_%d_%d_3months.csv)", side, interval);
     dworld.save_time_encounters(filename);
 }
 
-void save_time_encounters() {
-
-    std::vector<std::tuple<int, int>> params = make_params();
-    tbb::parallel_for_each(params.cbegin(), params.cend(), [&](const std::tuple<int, int>& p) {
-        int side = std::get<0>(p);
-        int interval = std::get<1>(p);
-
-        save_time_encounters(side, interval);
-    });
-}
-
-// --------------------------------------------------------------------------
-
-void save_slot_encounters(int side, int interval) {
-    DiscreteWorld dworld;
-    dworld.load(grid_fname(side, interval));
-
-    std::string filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\encounters_%d_%d_3months.csv)", side, interval);
-    dworld.save_slot_encounters(filename);
-}
-
-void save_slot_encounters() {
-
-    //save_slot_encounters(100, 60);
-    //return
-
-    //save_slot_encounters(5, 0);
-    //std::vector<int> sides{5,10,20,50,100};
-    //std::vector<int> intervals{1,5,10,15,30,60};
+void save_encounters() {
 
     std::vector<std::tuple<int, int>> params = make_params();
 
@@ -117,14 +94,18 @@ void save_slot_encounters() {
         int side = std::get<0>(p);
         int interval = std::get<1>(p);
 
-        save_slot_encounters(side, interval);
+        save_encounters(side, interval);
     });
 }
 
+// --------------------------------------------------------------------------
+
 
 int main() {
-    crete_grids();
+    //crete_grids();
     //load_grids();
+
+    save_encounters();
 
     //save_slot_encounters();
     //save_time_encounters();

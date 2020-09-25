@@ -11,30 +11,70 @@
 
 namespace mem {
 
-    template<typename _Tp>
+    template<typename T>
     class ref_ptr {
-        mutable size_t *pcnt;
-        _Tp *ptr;
+        mutable size_t *_cnt;
+        T *_ptr;
+
+        void add_ref(ref_ptr& rp) {
+            if (_ptr != nullptr) (*_cnt)++;
+        }
+
+        void release(ref_ptr& rp) {
+            if (_ptr != nullptr && --(*_cnt) == 0) {
+                delete _cnt;
+                delete _ptr;
+            }
+        }
     public:
-        ref_ptr() : ptr(nullptr), pcnt(new size_t(1)) {
-            *pcnt = 0;
+        typedef T      * pointer;
+        typedef T const* const_pointer;
+        typedef T      & reference;
+        typedef T const& const_reference;
+    public:
+        explicit ref_ptr() : _ptr(nullptr), _cnt(new size_t(0)) {
+            add_ref(*this);
         }
-        ref_ptr(_Tp* ptr) : ptr(ptr), pcnt(new size_t) {
-            *pcnt = (ptr == nullptr) ? 0 : 1;
+
+        explicit ref_ptr(pointer ptr) : _ptr(ptr), _cnt(new size_t(0)) {
+            add_ref(*this);
         }
-        ref_ptr(const ref_ptr& p) : ptr(p.ptr), pcnt(p.pnct) {
-            if (ptr != nullptr)
-                *pcnt += 1;
+
+        ref_ptr(const_reference p) : _ptr(p._ptr), _cnt(p._cnt) {
+            add_ref(*this);
+        }
+
+        ref_ptr& operator =(const_reference p) {
+            add_ref(p);
+            release(*this);
+            _cnt = p._cnt;
+            _ptr = p._ptr;
+            return *this;
         }
 
         ~ref_ptr() {
-            if (--*pcnt > 0)
-                return;
-            delete pcnt;
-            delete ptr;
+            release(*this);
         }
+
+        operator pointer()       const { return _ptr; }
+        operator const_pointer() const { return _ptr; }
+
+        pointer         operator->()       { return _ptr; }
+        const_pointer   operator->() const { return _ptr; }
+
+        reference       operator *()       { return*_ptr; }
+        const_pointer   operator *() const { return*_ptr; }
+        pointer         ptr()              { return _ptr; }
+        const_pointer   ptr() const        { return _ptr; }
+        reference       ref()              { return*_ptr; }
+        const_reference ref() const        { return*_ptr; }
     };
 
+    template<typename R, typename T>
+    ref_ptr<R> ref_cast(ref_ptr<T>& rp) {
+        T* ptr = rp.ptr();
+        return static_cast<R*>(ptr);
+    }
 
 
     //class refcount_t {
