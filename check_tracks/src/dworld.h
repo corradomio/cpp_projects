@@ -115,46 +115,6 @@ namespace hls {
 namespace khalifa {
 namespace summer {
 
-    //struct sparse_data_t {
-    //    // (i,j,t) -> {id}
-    //    std::unordered_map<coords_t, s_users/*, coords_hash*/> _data;
-    //    s_users _empty;
-    //
-    //    const s_users& operator[](const coords_t& loc) const {
-    //        if (_data.find(loc) == _data.end())
-    //            return _empty;
-    //        else
-    //            return _data.at(loc);
-    //    }
-    //
-    //    void add(const coords_t& loc, const user_t& user) {
-    //        _data[loc].insert(user);
-    //    }
-    //
-    //    size_t size() const {
-    //        return _data.size();
-    //    }
-    //};
-
-    //struct user_data_t {
-    //    // id -> [(i,j,t), ...]
-    //    std::unordered_map<user_t, std::vector<coords_t>> _data;
-    //
-    //    const std::vector<coords_t>& operator[](const user_t& user) const {
-    //        return const_cast<std::unordered_map<user_t, std::vector<coords_t>>&>(_data)[user];
-    //    }
-    //
-    //    void add(const user_t& user, const coords_t& coords) {
-    //        _data[user].push_back(coords);
-    //    }
-    //
-    //    size_t size() const {
-    //        return _data.size();
-    //    }
-    //};
-
-    // ----------------------------------------------------------------------
-
     struct DiscreteWorld {
         /// length of 1 degree (in meters)
         double _onedegree = 111319;
@@ -260,7 +220,5 @@ namespace summer {
 } } }
 
 extern void create_grid(int side, int interval, const std::string& path);
-
-//extern void load_grid(hls::khalifa::summer::DiscreteWorld& dworld, const std::string& fname);
 
 #endif //CHECK_TRACKS_DWORLD_H

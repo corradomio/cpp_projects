@@ -77,7 +77,6 @@ namespace summer {
         // infection status for each user
         // user -> infected
         //         infected = [state_0, state_1,...]
-        //std::unordered_map<std::string, std::vector<state_t>> infections;
         std::unordered_map<user_t, state_t> _infections;
 
         // random generator
