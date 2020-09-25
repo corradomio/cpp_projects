@@ -20,7 +20,7 @@ add_executable(check_tracks
     src/dworld.h
     src/main.cpp
     src/dworld.cpp
-    ../hlsext/include/stdx/to_string.h ../hlsext/include/stdx/format.h src/infections.h src/infections.cpp src/other.cpp src/other.h)
+    ../hlsext/include/stdx/to_string.h ../hlsext/include/stdx/format.h src/infections.h src/infections.cpp src/other.cpp src/other.h ../hlsext/include/stdx/default_unordered_map.h)
 
 target_link_libraries(check_tracks
 #    gcmt-lib

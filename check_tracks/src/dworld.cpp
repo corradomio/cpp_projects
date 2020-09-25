@@ -15,18 +15,18 @@ using namespace boost;
 using namespace hls::khalifa::summer;
 
 
-const std::string DATASET = R"(D:\Dropbox\2_Khalifa\Progetto Summer\Dataset_3months)";
+const std::string& DATASET = R"(D:\Dropbox\2_Khalifa\Progetto Summer\Dataset_3months)";
 
 
 // --------------------------------------------------------------------------
 // Generic functions
 // --------------------------------------------------------------------------
 
-void create_grid(int side, int interval, const std::string& fname) {
+void create_grid(int side, int interval, const std::string& filename) {
+
+    std::cout << "create_grid(" << side << "," << interval << ") ..." << std::endl;
 
     DiscreteWorld dworld(side, interval);
-
-    std::cout << "create_grid(" << side << "," << interval << ")" << std::endl;
 
     try {
         int count = 0;
@@ -40,8 +40,6 @@ void create_grid(int side, int interval, const std::string& fname) {
             if (de.path().extension() != ".csv")
                 continue;
 
-            //std::cout << "  " << de.path().string()<< std::endl;
-
             csvstream csvin(de.path().string());
 
             std::vector<std::string> row;
@@ -52,7 +50,7 @@ void create_grid(int side, int interval, const std::string& fname) {
                 //if (count%100000 == 0)
                 //    std::cout << "    " << count << std::endl;
 
-                std::string id = row[8];
+                std::string user = row[8];
                 double latitude  = lexical_cast<double>(row[1]);
                 double longitude = lexical_cast<double>(row[2]);
 
@@ -60,13 +58,14 @@ void create_grid(int side, int interval, const std::string& fname) {
                 time_duration duration = duration_from_string(row[7]);
                 ptime timestamp(date, duration);
 
-                dworld.add(id, latitude, longitude, timestamp);
+                dworld.add(user, latitude, longitude, timestamp);
             }
         }
+        dworld.done();
         std::cout << "    " << count << std::endl;
 
-        std::cout << "save in(" << fname << ")" << std::endl;
-        dworld.save(fname);
+        std::cout << "save in(" << filename << ")" << std::endl;
+        dworld.save(filename);
         dworld.dump();
         std::cout << std::endl;
     }
@@ -77,54 +76,68 @@ void create_grid(int side, int interval, const std::string& fname) {
 }
 
 
-void load_grid(DiscreteWorld& dworld, const std::string& fname) {
-    std::cout << "load from(" << fname << ")" << std::endl;
-    dworld.load(fname);
-    dworld.dump();
-}
+//void load_grid(DiscreteWorld& dworld, const std::string& filename) {
+//    std::cout << "load from(" << filename << ") ..." << std::endl;
+//    dworld.load(filename);
+//    dworld.dump();
+//}
 
 
 // --------------------------------------------------------------------------
 // DiscreteWorld
 // --------------------------------------------------------------------------
 
-void DiscreteWorld::add(const std::string& id, double latitude, double longitude, const ptime& timestamp) {
-    coords_t loc = to_coords(latitude, longitude, timestamp);
+DiscreteWorld::DiscreteWorld() {
+    this->side(100);
+    this->interval(5);
+}
 
-    _sdata.add(loc, id);
-    _udata.add(id, loc);
+
+DiscreteWorld::DiscreteWorld(int side, int minutes) {
+    this->side(side);
+    this->interval(minutes);
 }
 
 
 DiscreteWorld::~DiscreteWorld() {
-    _sdata._data.clear();
-    _udata._data.clear();
+    _susers.clear();
+    _cusers.clear();
+    _ucoords.clear();
+    _encs.clear();
 }
-
 
 // --------------------------------------------------------------------------
 
-const v_users& DiscreteWorld::ids() const {
-    if (_users.empty()) {
-        for (auto it = _udata._data.begin(); it != _udata._data.end(); it++)
-            _users.push_back(it->first);
-    }
-    return _users;
+DiscreteWorld& DiscreteWorld::side(int side) {
+    _side  = side;
+    _angle = _side / _onedegree;
+    return *this;
 }
 
-//void DiscreteWorld::get_encounters(std::map<int, encounters_set_t>& encs, const std::string& id) const {
-//    const std::vector<coords_t>& ucoords = _udata[id];
-//    for (const coords_t& c : ucoords) {
-//        const std::unordered_set<std::string>& sdata = _sdata[c];
-//
-//        encs[c.t].add(c, sdata);
-//    }
-//
-//    std::vector<int> tv = stdx::keys(encs);
-//    for (int t : tv)
-//        encs[t].eids.erase(id);
-//}
+DiscreteWorld& DiscreteWorld::interval(int minutes) {
+    if (minutes == 0)
+        _interval = time_duration(0, 0, 5);
+    else
+        _interval = time_duration(0, minutes, 0);
+    return *this;
+}
 
+// --------------------------------------------------------------------------
+
+void DiscreteWorld::add(const user_t& user, double latitude, double longitude, const ptime& timestamp) {
+    coords_t c = to_coords(latitude, longitude, timestamp);
+
+    _cusers[c].insert(user);
+    _ucoords[user].push_back(c);
+    _susers.insert(user);
+}
+
+
+void DiscreteWorld::done() {
+    time_encounters();
+}
+
+// --------------------------------------------------------------------------
 
 void merge_encs(vs_users& encs) {
     std::set<int, std::greater<int>> skip;
@@ -152,25 +165,37 @@ void merge_encs(vs_users& encs) {
         for(int i : skip)
             encs.erase(encs.begin() + i);
     }
-
 }
 
-
-void DiscreteWorld::get_time_encounters(std::map<int, vs_users>& encs) const {
+void DiscreteWorld::time_encounters() {
     std::set<int> tids;
-
-    for(auto it = _sdata._data.cbegin(); it != _sdata._data.cend(); ++it) {
+    for(auto it = _cusers.cbegin(); it != _cusers.cend(); ++it) {
         int t = it->first.t;
         tids.insert(t);
         if (it->second.size() > 1) {
-            encs[t].push_back(it->second);
+            _encs[t].push_back(it->second);
         }
     }
 
     for(int t : tids) {
-        merge_encs(encs[t]);
+        merge_encs(_encs[t]);
     }
 }
+
+void DiscreteWorld::dump() {
+    std::cout << "DiscreteWorld(" << _side << "," << _interval.minutes() << ")\n"
+              << "  one_degree: " << _onedegree << "\n"
+              << "  begin_time: " << to_simple_string(_begin_time) << "\n"
+              << "        side: " << _side << "\n"
+              << "    interval: " << _interval.total_seconds()/60 << "\n"
+              << "       angle: " << _angle << "\n"
+              << "       users: " << _susers.size()  << "\n"
+              << "  user_cells: " << _cusers.size()  << "\n"
+              << " user_coords: " << _ucoords.size() << "\n"
+              << "  encounters: " << _encs.size()    << "\n"
+              << "end" << std::endl;
+}
+
 
 // --------------------------------------------------------------------------
 // Conversions
@@ -188,47 +213,29 @@ ptime DiscreteWorld::to_timestamp(int t) const {
     return ptime(_begin_time.date(), t*_interval);
 }
 
-dwpoint_t DiscreteWorld::to_point(const coords_t& c) const {
-    dwpoint_t p;
-    p.latitude  = c.i*_angle;
-    p.longitude = c.j*_angle;
-    p.timestamp = to_timestamp(c.t);
-    return p;
-}
 
 // --------------------------------------------------------------------------
 // IO
 // --------------------------------------------------------------------------
 
-void DiscreteWorld::save(const std::string filename) const {
-    std::cout << "Saving in " << filename << " ..." << std::endl;
+void DiscreteWorld::save(const std::string& filename) const {
+    std::cout << "DiscreteWorld::saving in " << filename << " ..." << std::endl;
 
     std::ofstream ofs(filename, std::ios::binary);
     cereal::BinaryOutputArchive oa(ofs);
     oa << *this;
 
-    std::cout << "  done" << std::endl;
+    std::cout << "DiscreteWorld::done" << std::endl;
 }
 
-void DiscreteWorld::load(const std::string filename) {
-    std::cout << "Loading " << filename << " ..." << std::endl;
+void DiscreteWorld::load(const std::string& filename) {
+    std::cout << "DiscreteWorld::load " << filename << " ..." << std::endl;
 
     std::ifstream ifs(filename, std::ios::binary);
     cereal::BinaryInputArchive ia(ifs);
     ia >> *this;
 
-    std::cout << "  done" << std::endl;
-}
-
-// --------------------------------------------------------------------------
-
-void DiscreteWorld::dump() {
-    std::cout << "DiscreteWorld(" << _side << "," << _interval.minutes() << ")\n"
-              << "  one_degree: " << _onedegree << "\n"
-              << "  begin_time: " << to_simple_string(_begin_time) << "\n"
-              << "  sparse_data:" << _sdata.size() << "\n"
-              << "  user_coords:" << _udata.size() << "\n"
-              << "end" << std::endl;
+    std::cout << "DiscreteWorld::done" << std::endl;
 }
 
 
@@ -236,54 +243,7 @@ void DiscreteWorld::dump() {
 // Special saves
 // --------------------------------------------------------------------------
 
-void DiscreteWorld::save_slot_encounters(const std::string filename) {
-    std::cout << "slot encounters " << filename << "[" << this->_sdata._data.size() << "]..." << std::endl;
-
-    std::ofstream ofs(filename);
-    ofs << R"("latitude","longitude","timestamp","encounters")" << std::endl;
-
-    int count = 0;
-    for (auto it=this->_sdata._data.begin(); it != this->_sdata._data.end(); it++) {
-        const coords_t &c = it->first;
-        const s_users  &u = it->second;
-
-        ++count;
-        if (count % 1000000 == 0)
-            std::cout << "... " << count << "\r";
-
-        if (u.size() > 1) {
-            //dwpoint_t pt = to_point(coords);
-            ofs << c.i << "," << c.j << "," << c.t << ",\"" << stdx::str(u, "|") << "\"" << std::endl;
-        }
-    }
-}
-
-//void DiscreteWorld::save_slot_encounters(const std::string filename) {
-//    std::cout << "slot encounters " << filename << "[" << this->_sdata._data.size() << "]..." << std::endl;
-//
-//    std::ofstream ofs(filename);
-//    ofs << R"("latitude","longitude","date","time","encounters")" << std::endl;
-//
-//    int count = 0;
-//    for (auto it=this->_sdata._data.begin(); it != this->_sdata._data.end(); it++) {
-//        const coords_t &coords = it->first;
-//        const s_users &users = it->second;
-//
-//        ++count;
-//        if (count%1000000 == 0)
-//            std::cout << "... " << count << "\r";
-//
-//        if (users.size() > 1) {
-//            dwpoint_t pt = to_point(coords);
-//            ofs << pt.str() << ",\"" << stdx::str(users, "|") << "\"" << std::endl;
-//        }
-//    }
-//
-//    std::cout << "done" << std::endl;
-//}
-
-
-static std::string to_str(const vs_users& vs) {
+static std::string str(const vs_users& vs) {
     std::stringstream sbuf;
 
     sbuf << "[";
@@ -298,46 +258,48 @@ static std::string to_str(const vs_users& vs) {
 }
 
 
-//void DiscreteWorld::save_time_encounters(const std::string filename) {
-//    std::cout << "time encounters " << filename << "[" << this->_sdata._data.size() << "]..." << std::endl;
-//
-//    std::ofstream ofs(filename);
-//    ofs << R"("date","time","encounters")" << std::endl;
-//
-//    std::map<int, vs_users> encs;
-//    get_time_encounters(encs);
-//
-//    std::vector<int> tids = stdx::keys(encs, true);
-//
-//    for (int t : tids) {
-//        ptime timestamp = to_timestamp(t);
-//
-//        ofs << "\"" << to_iso_extended_string(timestamp.date()).c_str() << "\","
-//            << "\"" << to_simple_string(timestamp.time_of_day()).c_str()   << "\","
-//            << "\"" << to_str(encs[t]) << "\"" << std::endl;
-//
-//    }
-//
-//    std::cout << "done" << std::endl;
-//}
+static std::string str(const coords_t& c) {
+    return stdx::format("%d,%d,%d", c.i, c.j, c.t);
+}
 
-void DiscreteWorld::save_time_encounters(const std::string filename) {
-    std::cout << "time encounters " << filename << "[" << this->_sdata._data.size() << "]..." << std::endl;
 
-    std::map<int, vs_users> encs;
-    get_time_encounters(encs);
+void DiscreteWorld::save_slot_encounters(const std::string& filename) {
+    std::cout << "DiscreteWorld::slot encounters " << filename << "[" << _cusers.size() << "]..." << std::endl;
+
+    std::ofstream ofs(filename);
+    ofs << R"("latitude","longitude","timestamp","encounters")" << std::endl;
+
+    int count = 0;
+    for (auto it=this->_cusers.cbegin(); it != _cusers.end(); it++) {
+        const coords_t& c = it->first;
+        const s_users& users = it->second;
+
+        ++count;
+        if (count % 1000000 == 0)
+            std::cout << "... " << count << "\r";
+
+        if (users.size() > 1) {
+            ofs << str(c) << ",\"" << stdx::str(users, "|") << "\"" << std::endl;
+        }
+    }
+
+    std::cout << "DiscreteWorld::done" << std::endl;
+}
+
+void DiscreteWorld::save_time_encounters(const std::string& filename) {
+    std::cout << "DiscreteWorld::time encounters " << filename << "[" << _encs.size() << "]..." << std::endl;
 
     std::ofstream ofs(filename);
     ofs << R"("timestamp","encounters")" << std::endl;
 
-    std::vector<int> tids = stdx::keys(encs, true);
+    std::vector<int> tids = stdx::keys(_encs, true);
 
     for (int t : tids) {
         ptime timestamp = to_timestamp(t);
 
-        if (!encs[t].empty())
-            ofs << t << "," << "\"" << to_str(encs[t]) << "\"" << std::endl;
+        if (!_encs[t].empty())
+            ofs << t << "," << "\"" << str(_encs[t]) << "\"" << std::endl;
     }
 
-    std::cout << "done" << std::endl;
+    std::cout << "DiscreteWorld::done" << std::endl;
 }

@@ -29,21 +29,17 @@
 
 #include <stdx/containers.h>
 #include <stdx/format.h>
+#include <stdx/default_unordered_map.h>
 
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
 
+
 namespace hls {
 namespace khalifa {
 namespace summer {
-
-    typedef std::vector<std::string> v_users;
-    typedef std::unordered_set<std::string> s_users;
-    typedef std::vector<s_users> vs_users;
-
-    // ----------------------------------------------------------------------
 
     struct coords_t {
         int i, j, t;
@@ -59,33 +55,24 @@ namespace summer {
             return *this;
         }
 
-        //bool operator <(const coords_t& c) const {
-        //    if (i < c.i) return true;
-        //    if (i > c.i) return false;
-        //    if (j < c.j) return true;
-        //    if (j > c.j) return false;
-        //    if (t < c.t) return true;
-        //    return false;
-        //}
-
         bool operator ==(const coords_t& c) const {
             return i == c.i && j == c.j && t == c.t;
         }
 
-        coords_t& operator +=(const coords_t& c) {
-            i += c.i;
-            j += c.j;
-            t += c.t;
-            return *this;
-        }
+        //coords_t& operator +=(const coords_t& c) {
+        //    i += c.i;
+        //    j += c.j;
+        //    t += c.t;
+        //    return *this;
+        //}
 
-        coords_t operator /(int s) const {
-            coords_t c;
-            c.i = i/s;
-            c.j = j/s;
-            c.t = t/s;
-            return c;
-        }
+        //coords_t operator /(int s) const {
+        //    coords_t c;
+        //    c.i = i/s;
+        //    c.j = j/s;
+        //    c.t = t/s;
+        //    return c;
+        //}
 
         std::string str() const {
             char buffer[128];
@@ -94,14 +81,6 @@ namespace summer {
         }
     };
 
-    struct coords_hash {
-        size_t operator()(const coords_t& c) const {
-            return
-                ((size_t) c.i) <<  0 ^
-                ((size_t) c.j) << 16 ^
-                ((size_t) c.t) << 32;
-        }
-    };
 
     template<class Archive>
     void serialize(Archive & ar, coords_t& c)
@@ -109,77 +88,70 @@ namespace summer {
         ar(c.i, c.j, c.t);
     }
 
-    struct dwpoint_t {
-        double latitude;
-        double longitude;
-        ptime timestamp;
+}}}
 
-        std::string str() const {
-            char buffer[256];
-            sprintf(buffer, "%.06f,%.06f,\"%s\",\"%s\"", latitude, longitude,
-                    to_iso_extended_string(timestamp.date()).c_str(),
-                    to_simple_string(timestamp.time_of_day()).c_str());
-            return buffer;
+namespace hks = hls::khalifa::summer;
+
+namespace std {
+    template<>
+    struct hash<hks::coords_t> {
+        size_t operator()(const hls::khalifa::summer::coords_t& c) const {
+            return
+                ((size_t) c.i) <<  0 ^
+                ((size_t) c.j) << 16 ^
+                ((size_t) c.t) << 32;
         }
     };
+}
 
-    // ----------------------------------------------------------------------
 
-    struct encounters_set_t {
-        int count;
-        coords_t sum;
-        s_users eids;
+typedef std::string                 user_t;     // an user
+typedef std::unordered_set<user_t> s_users;     // set of users
+typedef std::vector<s_users>      vs_users;     // vector of sets of users
+typedef stdx::default_unordered_map<hks::coords_t, s_users>    c_users;     // coords -> set of users
+typedef std::unordered_map<user_t, std::vector<hks::coords_t>> u_coords;    // user -> list of coords
 
-        void add(const coords_t& c, const s_users& ids) {
-            sum += c;
-            count += 1;
-            eids.insert(ids.begin(), ids.end());
-        }
+namespace hls {
+namespace khalifa {
+namespace summer {
 
-        coords_t get_coords() const {
-            return sum/count;
-        }
-    };
+    //struct sparse_data_t {
+    //    // (i,j,t) -> {id}
+    //    std::unordered_map<coords_t, s_users/*, coords_hash*/> _data;
+    //    s_users _empty;
+    //
+    //    const s_users& operator[](const coords_t& loc) const {
+    //        if (_data.find(loc) == _data.end())
+    //            return _empty;
+    //        else
+    //            return _data.at(loc);
+    //    }
+    //
+    //    void add(const coords_t& loc, const user_t& user) {
+    //        _data[loc].insert(user);
+    //    }
+    //
+    //    size_t size() const {
+    //        return _data.size();
+    //    }
+    //};
 
-    // ----------------------------------------------------------------------
-
-    struct sparse_data_t {
-        // (i,j,t) -> {id}
-        std::unordered_map<coords_t, s_users, coords_hash> _data;
-        s_users _empty;
-
-        const s_users& operator[](const coords_t& loc) const {
-            if (_data.find(loc) == _data.end())
-                return _empty;
-            else
-                return _data.at(loc);
-        }
-
-        void add(const coords_t& loc, const std::string& id) {
-            _data[loc].insert(id);
-        }
-
-        size_t size() const {
-            return _data.size();
-        }
-    };
-
-    struct user_data_t {
-        // id -> [(i,j,t), ...]
-        std::unordered_map<std::string, std::vector<coords_t>> _data;
-
-        const std::vector<coords_t>& operator[](const std::string& id) const {
-            return const_cast<std::unordered_map<std::string, std::vector<coords_t>>&>(_data)[id];
-        }
-
-        void add(const std::string& id, const coords_t& coords) {
-            _data[id].push_back(coords);
-        }
-
-        size_t size() const {
-            return _data.size();
-        }
-    };
+    //struct user_data_t {
+    //    // id -> [(i,j,t), ...]
+    //    std::unordered_map<user_t, std::vector<coords_t>> _data;
+    //
+    //    const std::vector<coords_t>& operator[](const user_t& user) const {
+    //        return const_cast<std::unordered_map<user_t, std::vector<coords_t>>&>(_data)[user];
+    //    }
+    //
+    //    void add(const user_t& user, const coords_t& coords) {
+    //        _data[user].push_back(coords);
+    //    }
+    //
+    //    size_t size() const {
+    //        return _data.size();
+    //    }
+    //};
 
     // ----------------------------------------------------------------------
 
@@ -187,11 +159,11 @@ namespace summer {
         /// length of 1 degree (in meters)
         double _onedegree = 111319;
 
-        /// grid side (in meters)
-        double _side;
-
         /// first day
         ptime  _begin_time = ptime(date(2020,1,1));
+
+        /// grid side (in meters)
+        double _side;
 
         /// time interval
         time_duration _interval;
@@ -199,71 +171,51 @@ namespace summer {
         /// side in degrees
         double _angle;
 
-        /// users
-        mutable v_users _users;
+        /// {user, ...}
+        s_users _susers;
 
-        /// (i,j,t) -> {id, ...}
-        sparse_data_t _sdata;
+        /// content of each cell
+        /// (i,j,t) -> {user, ...}
+        c_users _cusers;
 
-        /// id -> [(i,j,t), ...]
-        user_data_t _udata;
+        /// user -> [(i,j,t), ...]
+        u_coords _ucoords;
 
-        /// t -> [{id},...]
-        //time_data_t _tdata;
+        /// t -> {user, ...}
+        std::map<int, vs_users> _encs;
+
+        void time_encounters();
 
     public:
-        DiscreteWorld() {
-            this->side(100);
-            this->interval(5);
-        }
-
-        DiscreteWorld(double side, int minutes) {
-            this->side(side);
-            this->interval(minutes);
-        }
-
+        DiscreteWorld();
+        DiscreteWorld(int size, int minutes);
         ~DiscreteWorld();
 
         //
-        // Set parameters
+        // Parameters
         //
 
-        DiscreteWorld& side(double side) {
-            _side  = side;
-            _angle = _side / _onedegree;
-            return *this;
-        }
+        DiscreteWorld& side(int side);
+        DiscreteWorld& interval(int minutes);
 
-        DiscreteWorld& interval(int minutes) {
-            if (minutes == 0)
-                _interval = time_duration(0, 0, 5);
-            else
-                _interval = time_duration(0, minutes, 0);
-            return *this;
-        }
-
-        //
-        // Get parameters
-        //
-
-        double side() const { return _side; }
+        int side() const { return _side; }
         const time_duration& interval() const { return _interval; }
 
         //
         // Populate
         //
 
-        void add(const std::string& id, double latitude, double longitude, const ptime& timestamp);
+        void add(const user_t& user, double latitude, double longitude, const ptime& timestamp);
+
+        void done();
 
         // ----------------------------------------------------------------------
+        // Extract information
+        // ----------------------------------------------------------------------
 
-        const v_users& ids() const;
+        const s_users& users() const { return _susers; }
 
-        // id: map[t -> set[id]]
-        //void get_encounters(std::map<int, encounters_set_t>& encs, const std::string& id) const;
-
-        // t -> [{id},...]
-        void get_time_encounters(std::map<int, vs_users>& encs) const;
+        const std::map<int, vs_users>& get_time_encounters() const { return _encs; }
 
         // ----------------------------------------------------------------------
         // Conversions
@@ -272,35 +224,32 @@ namespace summer {
 
         ptime to_timestamp(int t) const;
 
-        dwpoint_t to_point(const coords_t& c) const;
-
         // ------------------------------------------------------------------
         // IO
 
-        void save(const std::string filename) const;
+        void save(const std::string& filename) const;
 
-        void load(const std::string filename);
+        void load(const std::string& filename);
+
+        void save_slot_encounters(const std::string& filename);
+
+        void save_time_encounters(const std::string& filename);
+
+        // ------------------------------------------------------------------
 
         template<class Archive>
         void save(Archive & ar) const
         {
             int seconds = _interval.total_seconds();
-            ar(_side, _angle, seconds, _sdata._data, _udata._data);
+            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs);
         }
         template<class Archive>
         void load(Archive & ar)
         {
             int seconds;
-            ar(_side, _angle, seconds, _sdata._data, _udata._data);
+            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs);
             _interval = time_duration(0, 0, seconds);
         }
-
-
-        // ----------------------------------------------------------------------
-
-        void save_slot_encounters(const std::string filename);
-
-        void save_time_encounters(const std::string filename);
 
         // ----------------------------------------------------------------------
 
@@ -308,12 +257,10 @@ namespace summer {
 
     };
 
-    // ----------------------------------------------------------------------
-
 } } }
 
 extern void create_grid(int side, int interval, const std::string& path);
 
-extern void load_grid(hls::khalifa::summer::DiscreteWorld& dworld, const std::string& fname);
+//extern void load_grid(hls::khalifa::summer::DiscreteWorld& dworld, const std::string& fname);
 
 #endif //CHECK_TRACKS_DWORLD_H

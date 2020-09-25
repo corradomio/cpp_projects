@@ -1,9 +1,9 @@
 //
 // Created by Corrado Mio on 19/09/2020.
 //
+#include <algorithm>
 #include <tbb/parallel_for_each.h>
 #include <boostx/date_time_op.h>
-#include <boost/date_time.hpp>
 #include "infections.h"
 #include <stdx/cmath.h>
 #include <stdx/containers.h>
@@ -13,125 +13,219 @@ using namespace stdx::math;
 using namespace boost::posix_time;
 
 
-Infections& Infections::set_dworld(const DiscreteWorld& dworld_) {
-    (*this).dworld_p = &dworld_;
+int state_t::select(int t) const {
+    int p = -1;
+    for (auto it = _prob.cbegin(); it != _prob.cend(); ++it) {
+        if (it->first > t)
+            break;
+        else
+            p = it->first;
+    }
+    return p;
+}
 
-    // cell side
-    double side = dworld().side();
-
-    // time interval
-    time_duration interval = dworld().interval();
-
-    // (d/D)^2
-    double D = side;
-    dratio = sq(d/D);
-
-    // (1-exp(-beta*delta_t))
-    double DT = interval/time_duration(24,0,0);
-    betadt = (1 - exp(-beta * DT));
-
-    // intervals in time slots
-    oneday = int(time_duration(24, 0, 0)/interval);
-    start = l*oneday;
-    reset = m*oneday;
-
+state_t& state_t::prob(int t, double p) {
+    if (p != 0.) {
+        int s = select(t);
+        if (s == -1 || _prob[s] != p) _prob[t] = p;
+    }
     return *this;
 }
 
+double state_t::prob(int t) const {
+    int s = select(t);
+    return (s == -1) ? 0. : _prob.at(s);
+}
 
-/// Quota [0,1] of infected ids
-Infections& Infections::set_infected(double quota) {
-    int n = int(quota*dworld().ids().size());
-    return set_infected(n);
+// --------------------------------------------------------------------------
+
+/// Quota [0,1] of infected users
+Infections& Infections::infected(double quota) {
+    int n = int(quota*dworld().users().size());
+    return infected(n);
 }
 
 
-/// Number of infected ids
-Infections& Infections::set_infected(int n) {
-    const std::vector<std::string>& ids = dworld().ids();
-    int nids = ids.size();
+/// Number of infected users
+Infections& Infections::infected(int n) {
+    const s_users& susers = dworld().users();
+
+    std::vector<user_t> users(susers.begin(), susers.end());
+    int nUsers = users.size();
 
     std::unordered_set<std::string> selected;
 
     while(n != selected.size()) {
-        std::string id = ids[rnd.next_int(nids)];
-        selected.insert(id);
+        const user_t& user = users[rnd.next_int(nUsers)];
+        selected.insert(user);
     }
 
-    return set_infected(selected);
+    return infected(selected);
 }
 
 
-/// Select the list of infected ids
-Infections& Infections::set_infected(const std::unordered_set<std::string>& ids) {
-    infected.insert(ids.begin(), ids.end());
+/// Set the list of infected ids
+Infections& Infections::infected(const s_users& users) {
+    _infected.insert(users.begin(), users.end());
 
-    for(const std::string& id : infected)
-        infections[id].push_back(state_t(0, 1.));
-    for(const std::string& id : dworld().ids())
-        if (!stdx::contains(infected, id))
-            infections[id].push_back(state_t(0, 0.));
+    for (const user_t& user : dworld().users())
+        _infections[user].prob(0, 0.).dworld(dworld());
+    for (const user_t& user : _infected)
+        _infections[user].prob(0, 1.).dworld(dworld());
+
     return *this;
 }
 
 
-void Infections::propagate() {
-    ref::unordered_map<int, vs_users> encs = get_all_encounters();
-    std::cout << encs.size() << std::endl;
+// --------------------------------------------------------------------------
 
-    std::vector<int> times = stdx::keys(encs.ref(), true);
-    for(auto it = times.cbegin(); it != times.cend(); ++it)
-        std::cout << "  " << *it << std::endl;
+Infections& Infections::init() {
+    std::cout << "Infection::init" << std::endl;
 
-    std::cout << encs.size() << std::endl;
+    // cell side
+    double D = dworld().side();
+
+    // (d/D)^2
+    dratio = sq(d/D);
+
+    // time interval
+    time_duration interval = dworld().interval();
+
+    // DT: infection's prob in a single time slot
+    double DT = interval/time_duration(24,0,0);
+    // (1-exp(-beta*delta_t))
+    betadt = (1 - exp(-beta * DT));
+
+    // time slots
+    // one day in time slots
+    dts = int(time_duration(24, 0, 0)/interval);
+    // l in time slots
+    lts = l*dts;
+    // m in time slots
+    mts = m*dts;
+
+    return *this;
 }
 
 
-void collapse(vs_users& users) {
-    bool removed = true;
+Infections& Infections::propagate() {
+    std::cout << "Infection::propagate ..." << std::endl;
 
-    while (removed) {
-        int n = users.size();
-        std::set<int, std::greater<>> toremove;
+    const std::map<int, vs_users>& encs = dworld().get_time_encounters();
 
-        for (int i = 0; i < n; ++i) {
-            if (stdx::contains(toremove, i)) continue;
+    int n = encs.size();
+    int i = 0;
+    for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
+        int t = it->first;
+        const vs_users& usets = it->second;
 
-            for (int j = i + 1; j < n; ++j) {
-                if (stdx::contains(toremove, j)) continue;
+        ++i;
+        if (i%1000 == 0)
+            std::cout << "  " << i << "/"<< n << std::endl;
 
-                if (stdx::has_intersection(users[i], users[j])) {
-                    stdx::merge(users[i], users[j]);
-                    toremove.insert(j);
-                }
-            }
+        for(auto uit = usets.cbegin(); uit != usets.cend(); ++uit) {
+            const s_users& users = *uit;
+
+            double prob = compute_aggregate_prob(t, users);
+            update_prob(t, users, prob);
+            continue;
         }
-
-        removed = !toremove.empty();
-        if (removed)
-        for(auto it=toremove.cbegin(); it != toremove.cend(); ++it)
-            users.erase(users.cbegin()+(*it));
     }
 
-    return;
-}
-
-ref::unordered_map<int, vs_users>
-Infections::get_all_encounters() {
-    ref::unordered_map<int, vs_users> encs;
-    std::unordered_set<int> keys;
-
-    int n = dworld()._sdata._data.size(), i=1;
-    for (auto it = dworld()._sdata._data.begin(); it != dworld()._sdata._data.end(); ++it, ++i) {
-        if (i%100000 == 0)
-            std::cout << "... " << i << "/" << n << std::endl;
-        int t = it->first.t;
-        keys.insert(t);
-        encs[t].push_back(it->second);
-        collapse(encs[t]);
-    }
-
-    return encs;
+    std::cout << "Infection::end" << std::endl;
+    return *this;
 }
 
 
+double Infections::compute_aggregate_prob(int t, const s_users &users) {
+    double f = betadt*dratio;
+    double p = 1.;
+
+    for (const std::string& user : users) {
+        double prob = _infections[user].prob(t);
+        p *= (1. - f*prob);
+    }
+    if (p != 1.)
+        return 1. - p;
+    else
+        return 0.;
+}
+
+
+
+void Infections::update_prob(int t, const s_users &users, double aprob) {
+    for (const std::string& user : users) {
+        double uprob = _infections[user].prob(t);
+        double nprob = 1 - (1 - uprob)*(1 - aprob);
+
+        _infections[user].prob(t, nprob);
+    }
+}
+
+// --------------------------------------------------------------------------
+// IO
+//
+
+static int max(int x, int y) { return x > y ? x : y; }
+
+
+void Infections::save(const std::string& filename) const {
+    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+
+    const std::map<int, vs_users>& encs = dworld().get_time_encounters();
+    std::ofstream ofs(filename);
+
+    // header
+    ofs << "\"timestamp\"";
+    for (const user_t& user : dworld().users())
+        ofs << ",\"" << user.c_str() << "\"";
+    ofs << std::endl;
+
+    // data
+    int i = 0, n = encs.size();
+    for (auto it = encs.cbegin(); it != encs.cend(); ++it) {
+        int t = it->first;
+
+        ofs << t;
+
+        i += 1; if (i % 500 == 0)
+            std::cout << "    " << stdx::format("%5d/%d", i, n) << " ..." << std::endl;
+
+        for(const user_t& user : dworld().users()) {
+            double prob = _infections.at(user).prob(t);
+            ofs << stdx::format(",%.5g", prob);
+        }
+        ofs << std::endl;
+    }
+
+    std::cout << "Infections::done" << std::endl;
+}
+
+void Infections::save(const std::string& filename, const time_duration& interval) const {
+    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+
+    const std::map<int, vs_users>& encs = dworld().get_time_encounters();
+    std::ofstream ofs(filename);
+
+    // header
+    ofs << "\"timestamp\"";
+    for (const user_t& user : dworld().users())
+        ofs << ",\"" << user.c_str() << "\"";
+    ofs << std::endl;
+
+    int dslots = max(1, interval/dworld().interval());
+    int eslot = (ptime(date(2020, 4, 1)) - ptime(date(2020,1,1)))/dworld().interval();
+
+    for(int t=0; t < eslot; t += dslots) {
+
+        ofs << t;
+
+        for (const user_t &user : dworld().users()) {
+            double prob = _infections.at(user).prob(t);
+            ofs << stdx::format(",%.5g", prob);
+        }
+        ofs << std::endl;
+    }
+
+    std::cout << "Infections::done" << std::endl;
+}

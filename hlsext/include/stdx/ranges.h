@@ -6,6 +6,7 @@
 #define CHECK_HLSEXT_RANGES_H
 
 #include <iterator>
+#include <vector>
 
 namespace stdx {
 
@@ -51,10 +52,10 @@ namespace stdx {
         range(const T& end): _begin(0),_end(end) { }
         range(const T& begin, const T& end): _begin(begin),_end(end) { }
 
-        const_iterator cbegin() const { return iter(*this, _begin); }
-        const_iterator   cend() const { return iter(*this, _end); }
-
+        const_iterator begin() const { return iter(*this, _begin); }
+        const_iterator   end() const { return iter(*this, _end); }
     };
+
 
 }
 

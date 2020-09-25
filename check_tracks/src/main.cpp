@@ -11,25 +11,35 @@ using namespace hls::khalifa::summer;
 
 
 void simulate(const DiscreteWorld& dworld,
+              int d, double beta,
               contact_mode cmode, double cmode_prob,
               double iprob) {
 
     Infections infections;
     infections
-        .set_d(2)
-        .set_beta(0.1)
-        .set_dworld(dworld)
-        .set_contact_mode(cmode, cmode_prob)
-        .set_infected(iprob);
+        .contact_range(d)
+        .infection_rate(beta)
+        .contact_mode(cmode, cmode_prob)
+        .dworld(dworld);
 
+    infections.infected(iprob);
+
+    infections.init();
     infections.propagate();
+
+    std::string filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\infections\infections_%d_%d_3months.csv)",
+                                        dworld.side(), dworld.interval().total_seconds()/60);
+    infections.save(filename, time_duration(24, 0, 0));
 }
 
+
+// --------------------------------------------------------------------------
 
 void simulate(int side, int interval) {
     DiscreteWorld dworld;
     dworld.load(grid_fname(side, interval));
-    simulate(dworld, none, 1., .05);
+
+    simulate(dworld, 2, 0.01, none, 1., .05);
 }
 
 void simulate() {
@@ -64,8 +74,8 @@ void save_time_encounters(int side, int interval) {
     DiscreteWorld dworld;
     dworld.load(grid_fname(side, interval));
 
-    std::string oname = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\encounters_%d_%d_3months.csv)", side, interval);
-    dworld.save_time_encounters(oname);
+    std::string filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\encounters_%d_%d_3months.csv)", side, interval);
+    dworld.save_time_encounters(filename);
 }
 
 void save_time_encounters() {
@@ -91,8 +101,8 @@ void save_slot_encounters(int side, int interval) {
     DiscreteWorld dworld;
     dworld.load(grid_fname(side, interval));
 
-    std::string oname = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\encounters_%d_%d_3months.csv)", side, interval);
-    dworld.save_slot_encounters(oname);
+    std::string filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\encounters_%d_%d_3months.csv)", side, interval);
+    dworld.save_slot_encounters(filename);
 }
 
 void save_slot_encounters() {
@@ -114,18 +124,13 @@ void save_slot_encounters() {
 
 
 int main() {
-    //crete_grids();
+    crete_grids();
     //load_grids();
 
-    save_slot_encounters();
-
-    save_time_encounters();
+    //save_slot_encounters();
+    //save_time_encounters();
 
     //simulate();
-
-    //DiscreteWorld dworld;
-    //dworld.load(grid_fname(100, 60));
-
 
     return 0;
 }
