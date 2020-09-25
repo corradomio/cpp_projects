@@ -144,7 +144,10 @@ namespace summer {
         /// t -> {user, ...}
         std::map<int, vs_users> _encs;
 
+        int _nmerges;
+
         void time_encounters();
+        void merge_encounters();
 
     public:
         DiscreteWorld();
@@ -201,13 +204,13 @@ namespace summer {
         void save(Archive & ar) const
         {
             int seconds = _interval.total_seconds();
-            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs);
+            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs, _nmerges);
         }
         template<class Archive>
         void load(Archive & ar)
         {
             int seconds;
-            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs);
+            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs, _nmerges);
             _interval = time_duration(0, 0, seconds);
         }
 

@@ -10,6 +10,9 @@
 using namespace hls::khalifa::summer;
 
 
+// --------------------------------------------------------------------------
+
+
 void simulate(const DiscreteWorld& dworld,
               int d, double beta,
               contact_mode cmode, double cmode_prob,
@@ -80,19 +83,13 @@ void save_time_encounters(int side, int interval) {
 
 void save_time_encounters() {
 
-    //save_time_encounters(100, 60);
-    //return;
+    std::vector<std::tuple<int, int>> params = make_params();
+    tbb::parallel_for_each(params.cbegin(), params.cend(), [&](const std::tuple<int, int>& p) {
+        int side = std::get<0>(p);
+        int interval = std::get<1>(p);
 
-    save_time_encounters(5, 0);
-
-    std::vector<int> sides{5,10,20,50,100};
-    std::vector<int> intervals{1,5,10,15,30,60};
-    for (int side : sides)
-        for (int interval : intervals)
-            save_time_encounters(side, interval);
-        //tbb::parallel_for_each(sides.begin(), sides.end(), [&](int interval) {
-        //    save_time_encounters(side, interval);
-        //});
+        save_time_encounters(side, interval);
+    });
 }
 
 // --------------------------------------------------------------------------
@@ -110,16 +107,18 @@ void save_slot_encounters() {
     //save_slot_encounters(100, 60);
     //return
 
-    save_slot_encounters(5, 0);
+    //save_slot_encounters(5, 0);
+    //std::vector<int> sides{5,10,20,50,100};
+    //std::vector<int> intervals{1,5,10,15,30,60};
 
-    std::vector<int> sides{5,10,20,50,100};
-    std::vector<int> intervals{1,5,10,15,30,60};
-    for (int side : sides)
-        for (int interval : intervals)
-            save_slot_encounters(side, interval);
-        //tbb::parallel_for_each(sides.begin(), sides.end(), [&](int interval) {
-        //    save_slot_encounters(side, interval);
-        //});
+    std::vector<std::tuple<int, int>> params = make_params();
+
+    tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
+        int side = std::get<0>(p);
+        int interval = std::get<1>(p);
+
+        save_slot_encounters(side, interval);
+    });
 }
 
 

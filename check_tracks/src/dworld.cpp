@@ -135,13 +135,15 @@ void DiscreteWorld::add(const user_t& user, double latitude, double longitude, c
 
 void DiscreteWorld::done() {
     time_encounters();
+    merge_encounters();
 }
 
 // --------------------------------------------------------------------------
 
-void merge_encs(vs_users& encs) {
+int merge_encs(vs_users& encs) {
     std::set<int, std::greater<int>> skip;
     bool invalid = true;
+    int count = 1;
 
     while(invalid) {
         int n = encs.size();
@@ -162,24 +164,30 @@ void merge_encs(vs_users& encs) {
             }
         }
 
+        count += skip.size();
         for(int i : skip)
             encs.erase(encs.begin() + i);
+    }
+    return count;
+}
+
+
+void DiscreteWorld::merge_encounters() {
+    _nmerges = 0;
+    for(auto it = _encs.begin(); it != _encs.end(); ++it) {
+        vs_users& encs = it->second;
+        _nmerges += merge_encs(encs);
     }
 }
 
 void DiscreteWorld::time_encounters() {
-    std::set<int> tids;
     for(auto it = _cusers.cbegin(); it != _cusers.cend(); ++it) {
         int t = it->first.t;
-        tids.insert(t);
         if (it->second.size() > 1) {
             _encs[t].push_back(it->second);
         }
     }
 
-    for(int t : tids) {
-        merge_encs(_encs[t]);
-    }
 }
 
 void DiscreteWorld::dump() {

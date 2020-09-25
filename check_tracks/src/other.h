@@ -6,6 +6,7 @@
 #define CHECK_TRACKS_OTHER_H
 
 extern std::string grid_fname(int side, int interval);
+extern std::vector<std::tuple<int, int>> make_params();
 extern void crete_grids();
 extern void load_grids();
 
