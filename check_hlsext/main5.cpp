@@ -19,14 +19,14 @@ struct D : public C {
 
 int C::gid = 0;
 
-int main() {
+int main5() {
 
-    C* pc = new D;
-    D* pd = static_cast<D*>(pc);
+    //C* pc = new D;
+    //D* pd = static_cast<D*>(pc);
+    //
+    //mem::ref_ptr<C> p(new D);
+    //mem::ref_ptr<C> q = mem::ref_ptr<C>(new C);
+    //mem::ref_ptr<D> r = mem::ref_cast<D>(p);
 
-    mem::ref_ptr<C> p(new D);
-    mem::ref_ptr<C> q = mem::ref_ptr<C>(new C);
-    mem::ref_ptr<D> r = mem::ref_cast<D>(p);
-
-
+    return 0;
 }

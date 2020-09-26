@@ -25,20 +25,40 @@ namespace summer {
         none, random, daily, user
     };
 
+    /**
+     * Infection state of each user.
+     * 'infected' is used to mark the time slot for the first infection
+     *
+     * It is necessary to use a special trick for the users marked as 'infected'
+     * because, at the begin, the corrected 'infected' timeslot is unknown.
+     * The trick consists in to update 'infected' the FIRST time that the
+     * infection probability is updated. In this case, the correct infected timeslot
+     * is
+     *
+     *      t - latent_days_ts
+     *
+     * This number can be negative but this is not a problem.
+     */
     class state_t {
-        const DiscreteWorld* dworld_p;
-        //int susceptible;    // time slot not infected
-        //int exposed;        // time slot infected but not infective
-        //int infective;      // time slot when infective
-        //int removed;        // time slot when removed from the infective pool
+        const Infections* inf_p;
+        int infected;                   // time slot when received the infection
+        bool initial;                   // it is an 'initial infected user'
         std::map<int, double> _prob;
 
         int select(int t) const;
     public:
-        state_t& dworld(const DiscreteWorld& dworld_) { dworld_p = &dworld_; return *this; }
+        state_t(): infected(0), initial(false){ }
 
-        state_t& prob(int t, double p);
+        state_t& inf(Infections* ptr) { inf_p = ptr; return *this; }
+
+        // initial infected user
+        state_t& infective();
+
+        // get & set & update
         double   prob(int t) const;
+        state_t& update(int t, double u);
+
+        state_t& clear() { _prob.clear(); return *this; }
     };
 
     class Infections {
@@ -95,18 +115,33 @@ namespace summer {
         // Properties
         // ------------------------------------------------------------------
 
-        /// Set the world
-        Infections& dworld(const DiscreteWorld& dworld_){ dworld_p = &dworld_; return *this; }
+        /// set the world
+        Infections& dworld(const DiscreteWorld& dw){ dworld_p = &dw; return *this; }
 
-        Infections& contact_range(int d_) { this->d = d_; return *this; }
-        Infections& infection_rate(double beta_) { this->beta = beta_; return *this; }
-        Infections& latent_days(int l_) { this->l = l_; return *this; }
-        Infections& removed_days(int m_) { this->m = m_; return *this; }
-        Infections& contact_mode(const contact_mode cmode, const double cmode_prob) {
-            this->_cmode = cmode;
-            this->_cmode_prob = cmode_prob;
+        /// contact range (in meters)
+        Infections& contact_range(int cr) { this->d = cr; return *this; }
+        int         contact_range() const { return this->d; }
+        /// infection rate per day
+        Infections& infection_rate(double ir) { this->beta = ir; return *this; }
+        double      infection_rate() const { return this->beta; }
+        /// n days after infection to became infective
+        Infections& latent_days(int ld) { this->l = ld; return *this; }
+        int         latent_days() const { return this->l; }
+        /// n days after infection to became removed
+        Infections& removed_days(int rd) { this->m = rd; return *this; }
+        int         removed_days() const { return this->m; }
+
+        /// contact mode:
+        Infections& contact_mode(const contact_mode cm, double cmp) {
+            this->_cmode = cm;
+            this->_cmode_prob = cmp;
             return *this;
         }
+
+        /// latent days in time slots (available AFTER 'init()')
+        int latent_days_ts()  const { return lts; }
+        /// removed days in time slots (available AFTER 'init()')
+        int removed_days_ts() const { return mts; }
 
         /// Quota [0,1] of infected users
         Infections& infected(double quota);
@@ -120,8 +155,10 @@ namespace summer {
         /// Simulate
         Infections& propagate();
 
+        Infections& simulate(int n,double quota);
+
         ///
-        void save(const std::string& filename) const;
+        //void save(const std::string& filename) const;
         void save(const std::string& filename, const time_duration& interval) const;
 
     private:

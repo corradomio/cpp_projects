@@ -13,8 +13,6 @@
 #include <string>
 #include <memory>
 
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/date_time.hpp>
 #include <boostx/date_time_op.h>
 
@@ -159,10 +157,12 @@ namespace summer {
         //
 
         DiscreteWorld& side(int side);
-        DiscreteWorld& interval(int minutes);
-
         int side() const { return _side; }
-        const time_duration& interval() const { return _interval; }
+
+        DiscreteWorld& interval(int minutes);
+        int interval() const { return (int)(_interval.total_seconds()/60); }
+
+        const time_duration& interval_td() const { return _interval; }
 
         //
         // Populate

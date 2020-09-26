@@ -1,86 +1,16 @@
 //
 // Created by Corrado Mio on 17/09/2020.
 //
+#include <stdx/to_string.h>
 #include <string>
 #include <iostream>
-#include <csvstream.h>
-#include <stdx/to_string.h>
 
 #include "dworld.h"
 
-using namespace boost::filesystem;
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 using namespace boost;
 using namespace hls::khalifa::summer;
-
-
-const std::string& DATASET = R"(D:\Dropbox\2_Khalifa\Progetto Summer\Dataset_3months)";
-
-
-// --------------------------------------------------------------------------
-// Generic functions
-// --------------------------------------------------------------------------
-
-void create_grid(int side, int interval, const std::string& filename) {
-
-    std::cout << "create_grid(" << side << "," << interval << ") ..." << std::endl;
-
-    DiscreteWorld dworld(side, interval);
-
-    try {
-        int count = 0;
-
-        path p(DATASET);
-
-        // 0,  1          2           3    4          5                  6      7      8           9
-        // "","latitude","longitude","V3","altitude","date.Long.format","date","time","person.id","track.id"
-
-        for (directory_entry &de : directory_iterator(p)) {
-            if (de.path().extension() != ".csv")
-                continue;
-
-            csvstream csvin(de.path().string());
-
-            std::vector<std::string> row;
-
-            while  (csvin >> row) {
-                count += 1;
-
-                //if (count%100000 == 0)
-                //    std::cout << "    " << count << std::endl;
-
-                std::string user = row[8];
-                double latitude  = lexical_cast<double>(row[1]);
-                double longitude = lexical_cast<double>(row[2]);
-
-                date date = from_string(row[6]);
-                time_duration duration = duration_from_string(row[7]);
-                ptime timestamp(date, duration);
-
-                dworld.add(user, latitude, longitude, timestamp);
-            }
-        }
-        dworld.done();
-        std::cout << "    " << count << std::endl;
-
-        std::cout << "save in(" << filename << ")" << std::endl;
-        dworld.save(filename);
-        dworld.dump();
-        std::cout << std::endl;
-    }
-    catch(std::exception& e) {
-        std::cout << e.what() << std::endl;
-    }
-
-}
-
-
-//void load_grid(DiscreteWorld& dworld, const std::string& filename) {
-//    std::cout << "load from(" << filename << ") ..." << std::endl;
-//    dworld.load(filename);
-//    dworld.dump();
-//}
 
 
 // --------------------------------------------------------------------------
@@ -254,12 +184,13 @@ void DiscreteWorld::load(const std::string& filename) {
 
 static std::string str(const vs_users& vs) {
     std::stringstream sbuf;
+    std::string sep = "|";
 
     sbuf << "[";
     if (!vs.empty()) {
-        sbuf << stdx::str(vs[0], "|");
+        sbuf << stdx::str(vs[0], sep);
         for(size_t i=1; i<vs.size(); ++i)
-            sbuf << ";" << stdx::str(vs[i], "|");
+            sbuf << ";" << stdx::str(vs[i], sep);
     }
 
     sbuf << "]";
@@ -274,6 +205,7 @@ static std::string str(const coords_t& c) {
 
 void DiscreteWorld::save_slot_encounters(const std::string& filename) {
     std::cout << "DiscreteWorld::slot encounters " << filename << "[" << _cusers.size() << "]..." << std::endl;
+    std::string sep = "|";
 
     std::ofstream ofs(filename);
     ofs << R"("latitude","longitude","timestamp","encounters")" << std::endl;
@@ -288,7 +220,7 @@ void DiscreteWorld::save_slot_encounters(const std::string& filename) {
             std::cout << "... " << count << "\r";
 
         if (users.size() > 1) {
-            ofs << str(c) << ",\"" << stdx::str(users, "|") << "\"" << std::endl;
+            ofs << str(c) << ",\"" << stdx::str(users, sep) << "\"" << std::endl;
         }
     }
 

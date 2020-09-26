@@ -2,12 +2,21 @@
 // Created by Corrado Mio on 19/09/2020.
 //
 
-#include "dworld.h"
+#include <csvstream.h>
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <tbb/parallel_for_each.h>
+#include "infections.h"
 
+using namespace boost::filesystem;
+using namespace boost;
 using namespace hls::khalifa::summer;
 
 // --------------------------------------------------------------------------
+// Parameters
+// --------------------------------------------------------------------------
+
+const std::string& DATASET = R"(D:\Dropbox\2_Khalifa\Progetto Summer\Dataset_3months)";
 
 std::string grid_fname(int side, int interval) {
     std::string fname = stdx::format(
@@ -15,9 +24,6 @@ std::string grid_fname(int side, int interval) {
         side, interval);
     return fname;
 }
-
-
-// --------------------------------------------------------------------------
 
 std::vector<std::tuple<int, int>> make_params(bool skip50=false) {
     std::vector<std::tuple<int, int>> params;
@@ -35,10 +41,64 @@ std::vector<std::tuple<int, int>> make_params(bool skip50=false) {
     return params;
 }
 
-
+// --------------------------------------------------------------------------
+// Generic functions
 // --------------------------------------------------------------------------
 
-void crete_grids() {
+void create_grid(int side, int interval, const std::string& filename) {
+
+    std::cout << "create_grid(" << side << "," << interval << ") ..." << std::endl;
+
+    DiscreteWorld dworld(side, interval);
+
+    try {
+        int count = 0;
+
+        path p(DATASET);
+
+        // 0,  1          2           3    4          5                  6      7      8           9
+        // "","latitude","longitude","V3","altitude","date.Long.format","date","time","person.id","track.id"
+
+        for (directory_entry &de : directory_iterator(p)) {
+            if (de.path().extension() != ".csv")
+                continue;
+
+            csvstream csvin(de.path().string());
+
+            std::vector<std::string> row;
+
+            while  (csvin >> row) {
+                count += 1;
+
+                //if (count%100000 == 0)
+                //    std::cout << "    " << count << std::endl;
+
+                std::string user = row[8];
+                double latitude  = lexical_cast<double>(row[1]);
+                double longitude = lexical_cast<double>(row[2]);
+
+                date date = from_string(row[6]);
+                time_duration duration = duration_from_string(row[7]);
+                ptime timestamp(date, duration);
+
+                dworld.add(user, latitude, longitude, timestamp);
+            }
+        }
+        dworld.done();
+        std::cout << "    " << count << std::endl;
+
+        std::cout << "save in(" << filename << ")" << std::endl;
+        dworld.save(filename);
+        dworld.dump();
+        std::cout << std::endl;
+    }
+    catch(std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
+
+}
+
+void create_grids() {
 
     std::vector<std::tuple<int, int>> params = make_params();
 
@@ -64,6 +124,35 @@ void load_grids() {
         dworld.dump();
     });
 
+}
+
+// --------------------------------------------------------------------------
+// IO
+// --------------------------------------------------------------------------
+
+void save_encounters(int side, int interval) {
+    std::string filename;
+    DiscreteWorld dworld;
+
+    dworld.load(grid_fname(side, interval));
+
+    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\encounters_%d_%d_3months.csv)", side, interval);
+    dworld.save_slot_encounters(filename);
+
+    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\encounters_%d_%d_3months.csv)", side, interval);
+    dworld.save_time_encounters(filename);
+}
+
+void save_encounters() {
+
+    std::vector<std::tuple<int, int>> params = make_params();
+
+    tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
+        int side = std::get<0>(p);
+        int interval = std::get<1>(p);
+
+        save_encounters(side, interval);
+    });
 }
 
 // --------------------------------------------------------------------------
@@ -101,13 +190,6 @@ void save_slot_encounters(int side, int interval) {
 
 void save_slot_encounters() {
 
-    //save_slot_encounters(100, 60);
-    //return
-
-    //save_slot_encounters(5, 0);
-    //std::vector<int> sides{5,10,20,50,100};
-    //std::vector<int> intervals{1,5,10,15,30,60};
-
     std::vector<std::tuple<int, int>> params = make_params();
 
     tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
@@ -117,4 +199,66 @@ void save_slot_encounters() {
         save_slot_encounters(side, interval);
     });
 }
+
+// --------------------------------------------------------------------------
+// Simulate
+// --------------------------------------------------------------------------
+
+
+void simulate(const DiscreteWorld& dworld, Infections& infections,
+              double quota) {
+
+    infections.infected(quota);
+
+    infections.init();
+    infections.propagate();
+
+    int side = dworld.side();
+    int interval = dworld.interval();
+
+    std::string filename = stdx::format(
+        R"(D:\Projects.github\cpp_projects\check_tracks\infections\infections_%d_%d_3months.csv)",
+        side, interval);
+    infections.save(filename, time_duration(24, 0, 0));
+}
+
+
+// --------------------------------------------------------------------------
+
+void simulate(int side, int interval) {
+    DiscreteWorld dworld;
+    dworld.load(grid_fname(side, interval));
+
+    Infections infections;
+    infections
+        .contact_range(2)
+        .infection_rate(.01)
+        .latent_days(5)
+        .removed_days(15)
+        .contact_mode(none, 1.)
+        .dworld(dworld);
+
+    // quota of users infected at the start of simulation
+    double quota = 0.05;
+    simulate(dworld, infections, quota);
+}
+
+void simulate() {
+    //simulate(5, 0);
+    //simulate(100, 60);
+    //return;
+
+    std::vector<std::tuple<int, int>> params = make_params();
+
+    tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
+        int side = std::get<0>(p);
+        int interval = std::get<1>(p);
+
+        simulate(side, interval);
+    });
+}
+
+// --------------------------------------------------------------------------
+// End
+// --------------------------------------------------------------------------
 
