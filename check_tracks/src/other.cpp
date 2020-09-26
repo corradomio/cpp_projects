@@ -7,6 +7,7 @@
 #include <boost/lexical_cast.hpp>
 #include <tbb/parallel_for_each.h>
 #include "infections.h"
+#include <stdx/ranges.h>
 
 using namespace boost::filesystem;
 using namespace boost;
@@ -136,10 +137,10 @@ void save_encounters(int side, int interval) {
 
     dworld.load(grid_fname(side, interval));
 
-    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\encounters_%d_%d_3months.csv)", side, interval);
+    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\by_slot_%d_%d_3months.csv)", side, interval);
     dworld.save_slot_encounters(filename);
 
-    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\encounters_%d_%d_3months.csv)", side, interval);
+    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\by_time_%d_%d_3months.csv)", side, interval);
     dworld.save_time_encounters(filename);
 }
 
@@ -206,26 +207,29 @@ void save_slot_encounters() {
 
 
 void simulate(const DiscreteWorld& dworld, Infections& infections,
-              double quota) {
+              int i, const s_users& infected) {
 
-    infections.infected(quota);
-
+    infections.infected(infected);
     infections.init();
     infections.propagate();
 
     int side = dworld.side();
     int interval = dworld.interval();
 
+    std::string dir = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\infections\%d_%d)", side, interval);
+    create_directory(path(dir));
+
     std::string filename = stdx::format(
-        R"(D:\Projects.github\cpp_projects\check_tracks\infections\infections_%d_%d_3months.csv)",
-        side, interval);
+        R"(%s\infections_%d_%d_%03d_3months.csv)",
+        dir.c_str(), side, interval, i);
+
     infections.save(filename, time_duration(24, 0, 0));
 }
 
 
 // --------------------------------------------------------------------------
 
-void simulate(int side, int interval) {
+void simulate(int side, int interval, const vs_users& vinfected) {
     DiscreteWorld dworld;
     dworld.load(grid_fname(side, interval));
 
@@ -238,15 +242,29 @@ void simulate(int side, int interval) {
         .contact_mode(none, 1.)
         .dworld(dworld);
 
-    // quota of users infected at the start of simulation
-    double quota = 0.05;
-    simulate(dworld, infections, quota);
+    for (int i : stdx::range(vinfected.size())) {
+        // quota of users infected at the start of simulation
+        simulate(dworld, infections, i, vinfected[i]);
+    }
 }
 
 void simulate() {
     //simulate(5, 0);
     //simulate(100, 60);
     //return;
+    double quota = 0.05;
+    int nsims = 100;
+
+    DiscreteWorld dworld;
+    dworld.load(grid_fname(100, 60));
+
+    vs_users vinfected;
+
+    for(int i : stdx::range(nsims)) {
+        s_users infected = dworld.users(quota);
+        vinfected.push_back(infected);
+    }
+
 
     std::vector<std::tuple<int, int>> params = make_params();
 
@@ -254,7 +272,7 @@ void simulate() {
         int side = std::get<0>(p);
         int interval = std::get<1>(p);
 
-        simulate(side, interval);
+        simulate(side, interval, vinfected);
     });
 }
 

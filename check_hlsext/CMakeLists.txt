@@ -20,9 +20,10 @@ add_executable(check_hlsext
     ../hlsext/include/stdx/cmath.h
     ../hlsext/include/stdx/containers.h
     ../hlsext/include/stdx/ranges.h
-    main5.cpp main6.cpp ../hlsext/include/stdx/params.h)
+    main5.cpp main6.cpp ../hlsext/include/stdx/params.h main7.cpp)
 
 target_link_libraries(check_hlsext
     hlsext
+#    gcmt-lib
 )
 

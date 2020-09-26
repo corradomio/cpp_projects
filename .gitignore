@@ -8,3 +8,4 @@ cmake-build-debug
 *.lib
 *.a
 *.bin
+gc-8.0.4

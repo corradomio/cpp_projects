@@ -122,7 +122,7 @@ Infections& Infections::infected(const s_users& users) {
 Infections& Infections::simulate(int n, double quota) {
     init();
 
-    for(int i : stdx::range<int>(n)) {
+    for(int i : stdx::range(n)) {
         infected(quota);
         propagate();
     }

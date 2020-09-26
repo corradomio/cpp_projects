@@ -1,9 +1,10 @@
 //
 // Created by Corrado Mio on 17/09/2020.
 //
-#include <stdx/to_string.h>
 #include <string>
 #include <iostream>
+#include <stdx/to_string.h>
+#include <stdx/random.h>
 
 #include "dworld.h"
 
@@ -121,6 +122,21 @@ void DiscreteWorld::merge_encounters() {
 void DiscreteWorld::done() {
     time_encounters();
     merge_encounters();
+}
+
+
+// --------------------------------------------------------------------------
+
+s_users DiscreteWorld::users(int s) const {
+    stdx::random_t rnd;
+    int n = _susers.size();
+    s_users selected;
+    std::vector<user_t> vusers(_susers.begin(), _susers.end());
+
+    while (selected.size() != s) {
+        selected.insert(vusers[rnd.next_int(n)]);
+    }
+    return selected;
 }
 
 

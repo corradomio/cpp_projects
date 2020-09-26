@@ -9,7 +9,7 @@
 #include <iostream>
 #include <stdx/to_string.h>
 
-int main() {
+int main6() {
 
     std::set<std::string> m{"a","b"};
     std::vector<int> v{1,2,3,4,5};

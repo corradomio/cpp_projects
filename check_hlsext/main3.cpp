@@ -13,7 +13,7 @@ int main3() {
     printf("%d\n", sizeof(size_t));
 
     printf("--\n", sizeof(size_t));
-    stdx::range<int>  r(2,5);
+    auto  r = stdx::range(2,5);
 
     //for (auto it = r.begin(); it != r.end(); ++it)
     //    std::cout << *it << std::endl;

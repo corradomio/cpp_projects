@@ -186,6 +186,8 @@ namespace summer {
 
         /// set of users presents in the world
         const s_users& users() const { return _susers; }
+        s_users users(double quota) const { return users((int)(quota*_susers.size())); }
+        s_users users(int n) const;
 
         const std::map<int, vs_users>& get_time_encounters() const { return _encs; }
 
