@@ -33,8 +33,9 @@ DiscreteWorld::~DiscreteWorld() {
     _susers.clear();
     _cusers.clear();
     _ucoords.clear();
-    _encs.clear();
+    //_encs.clear();
 }
+
 
 // --------------------------------------------------------------------------
 
@@ -43,6 +44,7 @@ DiscreteWorld& DiscreteWorld::side(int side) {
     _angle = _side / _onedegree;
     return *this;
 }
+
 
 DiscreteWorld& DiscreteWorld::interval(int minutes) {
     if (minutes == 0)
@@ -60,12 +62,6 @@ void DiscreteWorld::add(const user_t& user, double latitude, double longitude, c
     _cusers[c].insert(user);
     _ucoords[user].push_back(c);
     _susers.insert(user);
-}
-
-
-void DiscreteWorld::done() {
-    time_encounters();
-    merge_encounters();
 }
 
 // --------------------------------------------------------------------------
@@ -102,14 +98,6 @@ int merge_encs(vs_users& encs) {
 }
 
 
-void DiscreteWorld::merge_encounters() {
-    _nmerges = 0;
-    for(auto it = _encs.begin(); it != _encs.end(); ++it) {
-        vs_users& encs = it->second;
-        _nmerges += merge_encs(encs);
-    }
-}
-
 void DiscreteWorld::time_encounters() {
     for(auto it = _cusers.cbegin(); it != _cusers.cend(); ++it) {
         int t = it->first.t;
@@ -120,18 +108,36 @@ void DiscreteWorld::time_encounters() {
 
 }
 
+
+void DiscreteWorld::merge_encounters() {
+    if (_merged)
+    for(auto it = _encs.begin(); it != _encs.end(); ++it) {
+        vs_users& encs = it->second;
+        merge_encs(encs);
+    }
+}
+
+
+void DiscreteWorld::done() {
+    time_encounters();
+    merge_encounters();
+}
+
+
+// --------------------------------------------------------------------------
+
 void DiscreteWorld::dump() {
-    std::cout << "DiscreteWorld(" << _side << "," << _interval.minutes() << ")\n"
+    std::cout << "DiscreteWorld(" << side() << "," << interval() << ")\n"
               << "  one_degree: " << _onedegree << "\n"
               << "  begin_time: " << to_simple_string(_begin_time) << "\n"
               << "        side: " << _side << "\n"
-              << "    interval: " << _interval.total_seconds()/60 << "\n"
+              << "    interval: " << interval() << "\n"
               << "       angle: " << _angle << "\n"
-              << "       users: " << _susers.size()  << "\n"
-              << "  user_cells: " << _cusers.size()  << "\n"
+              << "       users: " << _susers.size() << "\n"
+              << "  user_cells: " << _cusers.size() << "\n"
               << " user_coords: " << _ucoords.size() << "\n"
-              << "  encounters: " << _encs.size()    << "\n"
-              << "      merges: " << _nmerges        << "\n"
+              << "      merged: " << _merged << "\n"
+              << "  encounters: " << _encs.size() << "\n"
               << "end" << std::endl;
 }
 
@@ -196,7 +202,6 @@ static std::string str(const vs_users& vs) {
     sbuf << "]";
     return sbuf.str();
 }
-
 
 static std::string str(const coords_t& c) {
     return stdx::format("%d,%d,%d", c.i, c.j, c.t);

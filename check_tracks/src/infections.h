@@ -99,6 +99,9 @@ namespace summer {
         //         infected = [state_0, state_1,...]
         std::unordered_map<user_t, state_t> _infections;
 
+        // if to merge user sets with not empty intersection
+        //bool _users_merged;
+
         // random generator
         stdx::random_t rnd;
 
@@ -130,8 +133,11 @@ namespace summer {
         /// n days after infection to became removed
         Infections& removed_days(int rd) { this->m = rd; return *this; }
         int         removed_days() const { return this->m; }
+        /// if to merge sets with a not empty intersection
+        //Infections& users_merged(bool m) { this->_users_merged = m; return *this; }
+        //bool        users_merged() const { return this->_users_merged; }
 
-        /// contact mode:
+            /// contact mode:
         Infections& contact_mode(const contact_mode cm, double cmp) {
             this->_cmode = cm;
             this->_cmode_prob = cmp;

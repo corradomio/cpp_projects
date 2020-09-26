@@ -12,6 +12,11 @@ using namespace hls::khalifa::summer;
 using namespace stdx::math;
 using namespace boost::posix_time;
 
+
+// --------------------------------------------------------------------------
+// state_t
+// --------------------------------------------------------------------------
+
 state_t& state_t::infective() {
     _prob[0] = 1.;
     initial = true;
@@ -29,6 +34,7 @@ int state_t::select(int t) const {
     }
     return p;
 }
+
 
 double state_t::prob(int t) const {
     int s = select(t);
@@ -51,13 +57,6 @@ double state_t::prob(int t) const {
     return p;
 }
 
-//state_t& state_t::prob(int t, double p) {
-//    if (p != 0.) {
-//        int s = select(t);
-//        if (s == -1 || _prob[s] != p) _prob[t] = p;
-//    }
-//    return *this;
-//}
 
 state_t& state_t::update(int t, double u) {
     int s = select(t);
@@ -80,6 +79,10 @@ state_t& state_t::update(int t, double u) {
     return *this;
 }
 
+
+
+// --------------------------------------------------------------------------
+// Infections
 // --------------------------------------------------------------------------
 
 /// Quota [0,1] of infected users
@@ -128,8 +131,6 @@ Infections& Infections::simulate(int n, double quota) {
 }
 
 // --------------------------------------------------------------------------
-
-
 
 Infections& Infections::init() {
     std::cout << "Infection::init" << std::endl;
@@ -222,46 +223,13 @@ void Infections::update_prob(int t, const s_users &users, double aprob) {
     }
 }
 
+
 // --------------------------------------------------------------------------
 // IO
 //
 
 static int max(int x, int y) { return x > y ? x : y; }
 
-
-//void Infections::save(const std::string& filename) const {
-//    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
-//
-//    const std::map<int, vs_users>& encs = dworld().get_time_encounters();
-//    std::ofstream ofs(filename);
-//
-//    // header
-//    {
-//        ofs << "\"timestamp\"";
-//        for (const user_t& user : dworld().users())
-//            ofs << ",\"" << user.c_str() << "\"";
-//        ofs << std::endl;
-//    }
-//
-//    // data
-//    int i = 0, n = encs.size();
-//    for (auto it = encs.cbegin(); it != encs.cend(); ++it) {
-//        int t = it->first;
-//
-//        ofs << t;
-//
-//        i += 1; if (i % 500 == 0)
-//            std::cout << "    " << stdx::format("%5d/%d", i, n) << " ..." << std::endl;
-//
-//        for(const user_t& user : dworld().users()) {
-//            double prob = _infections.at(user).prob(t);
-//            ofs << stdx::format(",%.5g", prob);
-//        }
-//        ofs << std::endl;
-//    }
-//
-//    std::cout << "Infections::done" << std::endl;
-//}
 
 void Infections::save(const std::string& filename, const time_duration& interval) const {
     std::cout << "Infections::saving in " << filename << " ..." << std::endl;
@@ -280,6 +248,7 @@ void Infections::save(const std::string& filename, const time_duration& interval
             << "# infection_rate: " << infection_rate() << "/day\n"
             << "# latent_days   : " << latent_days() << " days\n"
             << "# removed_days  : " << removed_days() << " days\n"
+            << "# " << "\n"
             << "# n_infected    : " << _infected.size() << "\n"
             << "# infected      : " << stdx::str(_infected) << "\n"
             << "# "

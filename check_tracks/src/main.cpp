@@ -6,16 +6,15 @@
 
 // --------------------------------------------------------------------------
 
-
 int main() {
-    //create_grids();
+    create_grids();
     //load_grids();
 
     //save_encounters();
     //save_slot_encounters();
     //save_time_encounters();
 
-    simulate();
+    //simulate();
 
     return 0;
 }

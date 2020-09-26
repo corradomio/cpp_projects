@@ -139,10 +139,9 @@ namespace summer {
         /// user -> [(i,j,t), ...]
         u_coords _ucoords;
 
-        /// t -> {user, ...}
+        /// t -> [{user, ...}, ...]
         std::map<int, vs_users> _encs;
-
-        int _nmerges;
+        bool _merged;
 
         void time_encounters();
         void merge_encounters();
@@ -156,26 +155,36 @@ namespace summer {
         // Parameters
         //
 
+        /// Length of the cell side (in meters)
         DiscreteWorld& side(int side);
         int side() const { return _side; }
 
+        /// length of the time interval (in minutes)
         DiscreteWorld& interval(int minutes);
         int interval() const { return (int)(_interval.total_seconds()/60); }
 
+        /// length of the time interval in 'boost::posix_time::time_duration'
         const time_duration& interval_td() const { return _interval; }
+
+        ///
+        DiscreteWorld& merged(bool m) { this->_merged = m; return *this; }
+        bool           merged() const { return _merged; }
 
         //
         // Populate
         //
 
+        /// populate the discrete world
         void add(const user_t& user, double latitude, double longitude, const ptime& timestamp);
 
+        /// finalize the data structure
         void done();
 
         // ----------------------------------------------------------------------
         // Extract information
         // ----------------------------------------------------------------------
 
+        /// set of users presents in the world
         const s_users& users() const { return _susers; }
 
         const std::map<int, vs_users>& get_time_encounters() const { return _encs; }
@@ -183,37 +192,48 @@ namespace summer {
         // ----------------------------------------------------------------------
         // Conversions
 
+        /// convert a discrete world coordinate in standard format
         coords_t to_coords(double latitude, double longitude, const ptime& timestamp);
 
+        /// convert a time slot in standard format
         ptime to_timestamp(int t) const;
 
         // ------------------------------------------------------------------
         // IO
 
+        /// save in the file
         void save(const std::string& filename) const;
 
+        /// load from file
         void load(const std::string& filename);
 
+        /// save slot encounters
         void save_slot_encounters(const std::string& filename);
 
+        /// save time encounters
         void save_time_encounters(const std::string& filename);
 
+        // ------------------------------------------------------------------
+        // Cereal's serialization support
         // ------------------------------------------------------------------
 
         template<class Archive>
         void save(Archive & ar) const
         {
             int seconds = _interval.total_seconds();
-            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs, _nmerges);
+            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _merged, _encs);
         }
+
         template<class Archive>
         void load(Archive & ar)
         {
             int seconds;
-            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs, _nmerges);
+            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _merged, _encs);
             _interval = time_duration(0, 0, seconds);
         }
 
+        // ----------------------------------------------------------------------
+        // Debug
         // ----------------------------------------------------------------------
 
         void dump();
@@ -222,6 +242,14 @@ namespace summer {
 
 } } }
 
+/**
+ * Create DataWorld with the specified parameters, ppulate it and save it
+ * in the specified file
+ *
+ * @param side      length of the cell side
+ * @param interval  length of the time interval
+ * @param path      path where to save DiscreteWorld
+ */
 extern void create_grid(int side, int interval, const std::string& path);
 
 #endif //CHECK_TRACKS_DWORLD_H

@@ -1,3 +1,7 @@
+Gabriele Gianini <gabriele.gianini@unimi.it>,
+Khouloud Khaled Eledlebi <khouloud.edlebi@ku.ac.ae>,
+
+
 Nota:
     c'e' il seguente 'inghippo':
     se le cello sono piccole e l'intervallo ampio, risulta che nello stesso
