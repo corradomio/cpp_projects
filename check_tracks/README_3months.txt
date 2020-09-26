@@ -2,7 +2,7 @@ File names:
 
     <prefix>_<side>_<interval>_3months.csv
 
-<side>:     length (meters) of the square'side
+<side>:     length (meters)  of the square's side
 <interval>: length (minutes) of the time interval
             when 'interval = 0' its length is 5 seconds.
 

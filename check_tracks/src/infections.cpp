@@ -272,15 +272,16 @@ void Infections::save(const std::string& filename, const time_duration& interval
     // comments
     {
         ofs << "# " << "\n"
-            << "#           side: "<< dworld().side() << " m\n"
-            << "#       interval: "<< dworld().interval() << " min (0 -> 5s)\n"
+            << "# side          : "<< dworld().side() << " m\n"
+            << "# interval      : "<< dworld().interval() << " min (0 -> 5s)\n"
+            << "# n users       : "<< dworld().users().size() << "\n"
             << "# " << "\n"
-            << "#  contact_range: " << contact_range() << " m\n"
+            << "# contact_range : " << contact_range() << " m\n"
             << "# infection_rate: " << infection_rate() << "/day\n"
-            << "#    latent_days: " << latent_days() << " days\n"
-            << "#   removed_days: " << removed_days() << " days\n"
-            << "#     n_infected: " << _infected.size() << "\n"
-            << "#       infected: " << stdx::str(_infected) << "\n"
+            << "# latent_days   : " << latent_days() << " days\n"
+            << "# removed_days  : " << removed_days() << " days\n"
+            << "# n_infected    : " << _infected.size() << "\n"
+            << "# infected      : " << stdx::str(_infected) << "\n"
             << "# "
             << std::endl;
     }
