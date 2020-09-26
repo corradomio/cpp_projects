@@ -112,21 +112,9 @@ Infections& Infections::infected(int n) {
 
 /// Set the list of infected ids
 Infections& Infections::infected(const s_users& users) {
+    _infected.clear();
     _infected.insert(users.begin(), users.end());
-    return *this;
-}
-
-
-// --------------------------------------------------------------------------
-
-Infections& Infections::simulate(int n, double quota) {
-    init();
-
-    for(int i : stdx::range(n)) {
-        infected(quota);
-        propagate();
-    }
-
+    _infections.clear();
     return *this;
 }
 
@@ -156,10 +144,6 @@ Infections& Infections::init() {
     // m in time slots
     mts = m*dts;
 
-    // set the parent
-    for (const user_t& user : dworld().users())
-        _infections[user].inf(this);
-
     return *this;
 }
 
@@ -169,9 +153,9 @@ Infections& Infections::propagate() {
 
     const std::map<int, vs_users>& encs = dworld().get_time_encounters();
 
-    // reset infection results
+    // set the parent
     for (const user_t& user : dworld().users())
-        _infections[user].clear();
+        _infections[user].inf(this).clear();
     // set initial infected
     for (const user_t& user : _infected)
         _infections[user].infective();

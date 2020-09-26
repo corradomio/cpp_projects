@@ -17,17 +17,10 @@ namespace stdx {
 
     public:
         class iter_t {
-            const range_t& r;
+            //const range_t& r;
             mutable T value;
         public:
-            explicit iter_t(const range_t& rng, const T& v): r(rng), value(v) { }
-            iter_t(const iter_t& it): r(it.r), value(it.value) { }
-
-            iter_t& operator =(const iter_t& it) {
-                value = it.value;
-                return *this;
-            }
-
+            iter_t(const range_t& rng, const T& v): /*r(rng),*/ value(v) { }
             bool operator !=(const iter_t& it) { return value != it.value; }
             bool operator  <(const iter_t& it) { return value  < it.value; }
 
@@ -36,7 +29,7 @@ namespace stdx {
                 return *this;
             }
 
-            iter_t& operator++(int) {
+            iter_t& operator ++(int) {
                 value += 1;
                 return *this;
             }
@@ -47,17 +40,9 @@ namespace stdx {
         friend class range_t::iter_t;
 
     public:
-        typedef iter_t const_iterator;
+        typedef const iter_t const_iterator;
 
-        //range_t(const T& end): _begin(0),_end(end) { }
         range_t(const T& begin, const T& end): _begin(begin),_end(end) { }
-        range_t(const range_t& r): _begin(r._begin), _end(r._end) { }
-        range_t& operator =(const range_t& r) {
-            _begin = r._begin;
-            _end = r._end;
-            return *this;
-        }
-
         const_iterator begin() const { return iter_t(*this, _begin); }
         const_iterator   end() const { return iter_t(*this, _end); }
     };

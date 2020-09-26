@@ -134,8 +134,6 @@ namespace summer {
         Infections& removed_days(int rd) { this->m = rd; return *this; }
         int         removed_days() const { return this->m; }
         /// if to merge sets with a not empty intersection
-        //Infections& users_merged(bool m) { this->_users_merged = m; return *this; }
-        //bool        users_merged() const { return this->_users_merged; }
 
             /// contact mode:
         Infections& contact_mode(const contact_mode cm, double cmp) {
@@ -161,8 +159,6 @@ namespace summer {
         /// Simulate
         Infections& propagate();
 
-        Infections& simulate(int n,double quota);
-
         ///
         //void save(const std::string& filename) const;
         void save(const std::string& filename, const time_duration& interval) const;
@@ -181,7 +177,7 @@ namespace summer {
         /// \param t        time slot
         /// \param users    users
         /// \param aprob    aggregate probability
-        void   update_prob(int t, const s_users& users, double aprob);
+        void update_prob(int t, const s_users& users, double aprob);
     };
 
 }}}
