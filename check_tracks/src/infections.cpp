@@ -170,7 +170,7 @@ Infections& Infections::propagate() {
     //      2) for each users set
     //          3) apply the contact model
     //          4) compute the aggregate infection probability
-    //          5) update the infections probability
+    //          5) update the infections probability for each user
     //
 
     // 1) for each time slot
@@ -188,12 +188,12 @@ Infections& Infections::propagate() {
             s_users users;
 
             // 3) apply the contact model
-            apply_contact_model(t, users, uset);
+            apply_contact_model(t, uset);
 
             // 4) compute the aggregate infection probability
             double prob = compute_aggregate_prob(t, users);
 
-            // 5) update the infections probability
+            // 5) update the infections probability for all users
             update_prob(t, users, prob);
         }
     }
@@ -203,7 +203,7 @@ Infections& Infections::propagate() {
 }
 
 
-const s_users & Infections::apply_contact_model(int t, const s_users &uset) {
+const s_users & Infections::apply_contact_model(int t, const s_users& uset) {
     int tsday;
     switch (_cmode) {
         case contact_mode::none:
@@ -234,9 +234,9 @@ const s_users & Infections::apply_contact_model(int t, const s_users &uset) {
             return _cmode_users;
         default:
             return uset;
-        }
     }
 }
+
 
 
 double Infections::compute_aggregate_prob(int t, const s_users &users) {
