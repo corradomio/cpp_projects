@@ -88,9 +88,6 @@ namespace summer {
         int mts;                // m in 'time slots'
         int dts;                // 1 day in 'time slots'
 
-        contact_mode _cmode;    // contact mode
-        double _cmode_prob;     // contact probability
-
         // starting list of infected users
         s_users _infected;
 
@@ -99,8 +96,15 @@ namespace summer {
         //         infected = [state_0, state_1,...]
         std::unordered_map<user_t, state_t> _infections;
 
-        // if to merge user sets with not empty intersection
-        //bool _users_merged;
+        // contact modes
+        //      none
+        //      random
+        //      user
+        //      daily
+        contact_mode _cmode;        // contact mode
+        double       _cmode_prob;   // contact probability
+        int          _cmode_day;
+        s_users      _cmode_users;
 
         // random generator
         stdx::random_t rnd;
@@ -112,6 +116,7 @@ namespace summer {
             l = 0;
             m = 0;
             seed = 123;
+            _cmode_day = -1;
         }
 
         // ------------------------------------------------------------------
@@ -166,6 +171,8 @@ namespace summer {
     private:
         /// Reference to dworld
         const DiscreteWorld& dworld() const { return *dworld_p; }
+
+        const s_users& apply_contact_model(int t, const s_users& uset);
 
         /// Compute the aggregated user infected probabilities
         /// \param t        time slot

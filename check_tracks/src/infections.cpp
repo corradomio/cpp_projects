@@ -118,6 +118,7 @@ Infections& Infections::infected(const s_users& users) {
     return *this;
 }
 
+
 // --------------------------------------------------------------------------
 
 Infections& Infections::init() {
@@ -160,27 +161,81 @@ Infections& Infections::propagate() {
     for (const user_t& user : _infected)
         _infections[user].infective();
 
+    // simple counters for logging
     int n = encs.size();
     int i = 0;
+
+    //
+    //  1) for each time slot
+    //      2) for each users set
+    //          3) apply the contact model
+    //          4) compute the aggregate infection probability
+    //          5) update the infections probability
+    //
+
+    // 1) for each time slot
     for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
         int t = it->first;
         const vs_users& usets = it->second;
 
-        ++i;
-        if (i%1000 == 0)
-            std::cout << "  " << i << "/"<< n << std::endl;
+        // logging
+        if ((++i)%1000 == 0)
+            std::cout << "  " << i << "/"<< n << "\r";
 
+        // 2) for each users set
         for(auto uit = usets.cbegin(); uit != usets.cend(); ++uit) {
-            const s_users& users = *uit;
+            const s_users& uset = *uit;
+            s_users users;
 
+            // 3) apply the contact model
+            apply_contact_model(t, users, uset);
+
+            // 4) compute the aggregate infection probability
             double prob = compute_aggregate_prob(t, users);
+
+            // 5) update the infections probability
             update_prob(t, users, prob);
-            continue;
         }
     }
 
     std::cout << "Infection::end" << std::endl;
     return *this;
+}
+
+
+const s_users & Infections::apply_contact_model(int t, const s_users &uset) {
+    int tsday;
+    switch (_cmode) {
+        case contact_mode::none:
+            return uset;
+        case contact_mode::random:
+            _cmode_users.clear();
+            for(const user_t& user : uset)
+                if (rnd.next_double() <= _cmode_prob)
+                    _cmode_users.insert(user);
+            return _cmode_users;
+        case contact_mode::daily:
+            tsday = t/dts;
+            if (_cmode_day == tsday)
+                return _cmode_users;
+            _cmode_day = tsday;
+            _cmode_users.clear();
+            for(const user_t& user : uset)
+                if (rnd.next_double() <= _cmode_prob)
+                    _cmode_users.insert(user);
+            return _cmode_users;
+        case contact_mode::user:
+            if (_cmode_day == 0)
+                return _cmode_users;
+            _cmode_day = 0;
+            for(const user_t& user : uset)
+                if (rnd.next_double() <= _cmode_prob)
+                    _cmode_users.insert(user);
+            return _cmode_users;
+        default:
+            return uset;
+        }
+    }
 }
 
 
