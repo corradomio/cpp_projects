@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdx/ranges.h>
 
-int main() {
+int main7() {
 
     for(int i : stdx::range(1,5))
         std::cout << i << std::endl;
