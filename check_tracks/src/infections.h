@@ -19,6 +19,8 @@ namespace hls {
 namespace khalifa {
 namespace summer {
 
+    const int invalid = -9999;
+
     struct Infections;
 
     enum contact_mode {
@@ -42,23 +44,25 @@ namespace summer {
     class state_t {
         const Infections* inf_p;
         int infected;                   // time slot when received the infection
-        bool initial;                   // it is an 'initial infected user'
         std::map<int, double> _prob;
 
         int select(int t) const;
     public:
-        state_t(): infected(0), initial(false){ }
+        state_t(): infected(invalid){ }
 
         state_t& inf(Infections* ptr) { inf_p = ptr; return *this; }
 
-        // initial infected user
-        state_t& infective();
+        // initial infected user (prob = 1)
+        void infective(int t);
 
         // get & set & update
-        double   prob(int t) const;
-        state_t& update(int t, double u);
+        double prob(int t) const;
+        double update(int t, double u);
+        void   clear() { _prob.clear(); }
+    };
 
-        state_t& clear() { _prob.clear(); return *this; }
+    struct contact_t {
+        std::map<user_t, double> prob;
     };
 
     class Infections {
@@ -81,8 +85,7 @@ namespace summer {
         // Implementation
         //
 
-        double dratio;          // (d/D)^2   D: side
-        double betadt;          // (1-exp(-beta*delta_T))
+        double tau;             // (1-exp(-beta*delta_T))*(d/D)^2   D: side
 
         int lts;                // l in 'time slots'
         int mts;                // m in 'time slots'
@@ -95,6 +98,11 @@ namespace summer {
         // user -> infected
         //         infected = [state_0, state_1,...]
         std::unordered_map<user_t, state_t> _infections;
+
+        // contacts status for
+        //      t -> user1 -> user2 -> prob
+        std::map<int, std::unordered_map<user_t, std::unordered_map<user_t, double>>>
+            _daily_contacts;
 
         // contact modes
         //      none
@@ -159,8 +167,6 @@ namespace summer {
         /// Select the list of infected users
         Infections& infected(const s_users& users);
 
-        /// Initialize the simulator
-        Infections& init();
         /// Simulate
         Infections& propagate();
 
@@ -172,19 +178,36 @@ namespace summer {
         /// Reference to dworld
         const DiscreteWorld& dworld() const { return *dworld_p; }
 
+        // Initialize the infected users
+        void init_world();
+        void init_infected();
+        void propagate_infection();
+
+        /// Apply the contact model
         const s_users& apply_contact_model(int t, const s_users& uset);
 
         /// Compute the aggregated user infected probabilities
         /// \param t        time slot
         /// \param users    users
         /// \return         aggregate probability
-        double compute_aggregate_prob(int t, const s_users& users);
+        double compute_aggregate_prob(int t, const user_t& user, const s_users& users);
+        //double compute_aggregate_prob(int t, const s_users& users);
 
         /// Update the users infected probability
         /// \param t        time slot
         /// \param users    users
         /// \param aprob    aggregate probability
-        void update_prob(int t, const s_users& users, double aprob);
+        void update_prob(int t, const user_t& user, double aprob);
+        //void update_prob(int t, const s_users& users, double aprob);
+
+        /// Update the daily contributions
+        /// \param t        time slot
+        /// \param users    users
+        void update_daily(int t, const user_t& user, const s_users &users);
+
+        void save_info(const std::string& filename) const;
+        void save_table(const std::string& filename, const time_duration& interval) const;
+        void save_daily(const std::string& filename) const;
     };
 
 }}}

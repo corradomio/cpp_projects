@@ -74,7 +74,7 @@ namespace summer {
 
         std::string str() const {
             char buffer[128];
-            sprintf(buffer, "(%d,%d,%d)", i,j,t);
+            sprintf(buffer, "%d,%d,%d", i,j,t);
             return buffer;
         }
     };
@@ -103,7 +103,8 @@ namespace std {
 }
 
 
-typedef std::string                 user_t;     // an user
+//typedef std::string                 user_t;     // an user
+typedef int user_t;
 typedef std::unordered_set<user_t> s_users;     // set of users
 typedef std::vector<s_users>      vs_users;     // vector of sets of users
 typedef stdx::default_unordered_map<hks::coords_t, s_users>    c_users;     // coords -> set of users

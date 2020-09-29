@@ -2,15 +2,15 @@ cmake_minimum_required(VERSION 3.17)
 project(check_tracks)
 
 include_directories(
-    "./include"
     "D:/MinGW/userlibs/include"
-    ../hlsext/include
+    "../hlsext/include"
+    "./include"
 )
 
 link_directories(
-    "./lib"
     "D:/MinGW/userlibs/lib"
-#    ../hlsext/lib
+    #    ../hlsext/lib
+    "./lib"
 )
 
 set(CMAKE_CXX_STANDARD 14)

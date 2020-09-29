@@ -13,8 +13,11 @@ extern std::vector<std::tuple<int, int>> make_params(bool skip50=false);
 
 extern void create_grids();
 extern void load_grids();
-extern void save_encounters();
+extern void save_encounters(const std::vector<std::tuple<int, int>>& params);
 
-extern void simulate();
+extern void simulate(const std::vector<std::tuple<int, int>>& params);
+
+extern void create_grid_test();
+extern void simulate_test();
 
 #endif //CHECK_TRACKS_OTHER_H

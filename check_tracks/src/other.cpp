@@ -32,8 +32,7 @@ std::vector<std::tuple<int, int>> make_params(bool skip50=false) {
     std::vector<int> sides{5,10,20,50,100};
     std::vector<int> intervals{1,5,10,15,30,60};
 
-    if (!skip50)
-    params.emplace_back(5, 0);
+    if (!skip50) params.emplace_back(5, 0);
 
     for (int side : sides)
         for (int interval: intervals)
@@ -74,7 +73,7 @@ void create_grid(int side, int interval, const std::string& filename) {
                 //if (count%100000 == 0)
                 //    std::cout << "    " << count << std::endl;
 
-                std::string user = row[8];
+                user_t user = lexical_cast<user_t>(row[8]);
                 double latitude  = lexical_cast<double>(row[1]);
                 double longitude = lexical_cast<double>(row[2]);
 
@@ -112,6 +111,10 @@ void create_grids() {
 
 }
 
+void create_grid_test(){
+    create_grid(100, 60, grid_fname(100, 60));
+}
+
 void load_grids() {
 
     std::vector<std::tuple<int, int>> params = make_params();
@@ -144,9 +147,7 @@ void save_encounters(int side, int interval) {
     dworld.save_time_encounters(filename);
 }
 
-void save_encounters() {
-
-    std::vector<std::tuple<int, int>> params = make_params();
+void save_encounters(const std::vector<std::tuple<int, int>>& params) {
 
     tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
         int side = std::get<0>(p);
@@ -168,9 +169,8 @@ void save_time_encounters(int side, int interval) {
     dworld.save_time_encounters(filename);
 }
 
-void save_time_encounters() {
+void save_time_encounters(std::vector<std::tuple<int, int>>& params) {
 
-    std::vector<std::tuple<int, int>> params = make_params();
     tbb::parallel_for_each(params.cbegin(), params.cend(), [&](const std::tuple<int, int>& p) {
         int side = std::get<0>(p);
         int interval = std::get<1>(p);
@@ -189,9 +189,7 @@ void save_slot_encounters(int side, int interval) {
     dworld.save_slot_encounters(filename);
 }
 
-void save_slot_encounters() {
-
-    std::vector<std::tuple<int, int>> params = make_params();
+void save_slot_encounters(std::vector<std::tuple<int, int>>& params) {
 
     tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
         int side = std::get<0>(p);
@@ -210,7 +208,6 @@ void simulate(const DiscreteWorld& dworld, Infections& infections,
               int i, const s_users& infected) {
 
     infections.infected(infected);
-    infections.init();
     infections.propagate();
 
     int side = dworld.side();
@@ -248,25 +245,23 @@ void simulate(int side, int interval, const vs_users& vinfected) {
     }
 }
 
-void simulate() {
-    //simulate(5, 0);
-    //simulate(100, 60);
-    //return;
+void simulate(const std::vector<std::tuple<int, int>>& params) {
     double quota = 0.05;
     int nsims = 100;
 
-    DiscreteWorld dworld;
-    dworld.load(grid_fname(100, 60));
-
+    // vector of random infected users
     vs_users vinfected;
 
-    for(int i : stdx::range(nsims)) {
-        s_users infected = dworld.users(quota);
-        vinfected.push_back(infected);
+    // generated the vector of random infected users
+    {
+        DiscreteWorld dworld;
+        dworld.load(grid_fname(100, 60));
+
+        for(int i : stdx::range(nsims)) {
+            s_users infected = dworld.users(quota);
+            vinfected.push_back(infected);
+        }
     }
-
-
-    std::vector<std::tuple<int, int>> params = make_params();
 
     tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
         int side = std::get<0>(p);
@@ -274,6 +269,19 @@ void simulate() {
 
         simulate(side, interval, vinfected);
     });
+}
+
+void simulate_test(){
+    DiscreteWorld dworld;
+    dworld.load(grid_fname(100, 60));
+
+    // vector of random infected users
+    vs_users vinfected;
+
+    s_users infected = dworld.users(0.05);
+    vinfected.push_back(infected);
+
+    simulate(100, 60, vinfected);
 }
 
 // --------------------------------------------------------------------------
