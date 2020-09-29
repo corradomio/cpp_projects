@@ -446,7 +446,7 @@ void Infections::save_table(const std::string& filename, const time_duration& in
 }
 
 
-void Infections::save_daily(const std::string& filename) const {
+void Infections::save_daily(const std::string& filename, bool zeros=false) const {
     std::ofstream ofs(with_ext(filename, "_daily.csv"));
     ofs << R"("timestamp","user","other","prob")" << std::endl;
 
@@ -471,7 +471,9 @@ void Infections::save_daily(const std::string& filename) const {
                 const user_t& other = oit->first;
                 double prob = oit->second;
 
-                ofs << t << "," << user << "," << other << "," << prob << std::endl;
+                if (!zeros || prob > 0) {
+                    ofs << t << "," << user << "," << other << "," << prob << std::endl;
+                }
             }
         }
     }

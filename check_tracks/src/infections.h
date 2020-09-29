@@ -207,7 +207,7 @@ namespace summer {
 
         void save_info(const std::string& filename) const;
         void save_table(const std::string& filename, const time_duration& interval) const;
-        void save_daily(const std::string& filename) const;
+        void save_daily(const std::string& filename, bool zeros=false) const;
     };
 
 }}}
