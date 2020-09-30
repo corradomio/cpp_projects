@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 30/09/2020.
 //
 
-#ifndef HLSEXT_CONTAINERS_H
-#define HLSEXT_CONTAINERS_H
+#ifndef BOHEM_CONTAINERS_H
+#define BOHEM_CONTAINERS_H
 
 #include <algorithm>
 #include "vector"
@@ -36,7 +36,7 @@ namespace bohem {
     template<
         typename _Key,
         typename _Tp,
-        typename _Compare = less<_Key>
+        typename _Compare = std::less<_Key>
     >
     vector<_Key> keys(const unordered_map<_Key, _Tp>& map, bool sorted=false) {
         vector<_Key> kvect;
@@ -101,4 +101,4 @@ namespace bohem {
 
 }
 
-#endif //HLSEXT_CONTAINERS_H
+#endif //BOHEM_CONTAINERS_H

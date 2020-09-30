@@ -16,5 +16,6 @@ link_directories(
 add_executable(check_gc main.cpp)
 
 target_link_libraries(check_gc
-    gc-lib
+    gc
+    gccpp
 )

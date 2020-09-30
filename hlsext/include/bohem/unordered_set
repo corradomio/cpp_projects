@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 30/09/2020.
 //
 
-#ifndef HLSEXT_VECTOR_H
-#define HLSEXT_VECTOR_H
+#ifndef BOHEM_UNORDERED_SET_H
+#define BOHEM_UNORDERED_SET_H
 
 #include <unordered_set>
 #include "allocator.h"
@@ -11,11 +11,10 @@
 namespace bohem {
 
     template<typename _Value,
-        typename _Hash = std::hash<_Value>,
-        typename _Pred = std::equal_to<_Value>,
-        typename _Alloc = bohem::allocator<_Value>>
-    struct unordered_set : public std::unordered_set<_Value, _Hash, _Pred, bohem::allocator<_Value>> { };
+            typename _Hash = std::hash<_Value>,
+            typename _Pred = std::equal_to<_Value>>
+    using unordered_set = std::unordered_set<_Value, _Hash, _Pred, bohem::allocator<_Value>>;
 
 }
 
-#endif //HLSEXT_VECTOR_H
+#endif //BOHEM_UNORDERED_SET_H

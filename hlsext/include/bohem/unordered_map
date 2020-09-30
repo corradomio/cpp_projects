@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 30/09/2020.
 //
 
-#ifndef HLSEXT_VECTOR_H
-#define HLSEXT_VECTOR_H
+#ifndef BOHEM_UNORDERED_MAP_H
+#define BOHEM_UNORDERED_MAP_H
 
 #include <unordered_map>
 #include "allocator.h"
@@ -13,8 +13,8 @@ namespace bohem {
     template<typename _Key, typename _Tp,
         typename _Hash = std::hash<_Key>,
         typename _Pred = std::equal_to<_Key>>
-    struct unordered_map : public std::unordered_map<_Key, _Tp, _Hash, _Pred, bohem::allocator<std::pair<const _Key, _Tp>> > { };
+    using unordered_map = std::unordered_map<_Key, _Tp, _Hash, _Pred, bohem::allocator<std::pair<const _Key, _Tp>> >;
 
 }
 
-#endif //HLSEXT_VECTOR_H
+#endif //BOHEM_UNORDERED_MAP_H

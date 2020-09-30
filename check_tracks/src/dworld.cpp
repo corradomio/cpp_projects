@@ -7,6 +7,7 @@
 #include <stdx/random.h>
 
 #include "dworld.h"
+#include <stdx/containers.h>
 
 using namespace boost::gregorian;
 using namespace boost::posix_time;

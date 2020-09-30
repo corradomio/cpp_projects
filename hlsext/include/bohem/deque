@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 30/09/2020.
 //
 
-#ifndef HLSEXT_VECTOR_H
-#define HLSEXT_VECTOR_H
+#ifndef BOHEM_DEQUE_H
+#define BOHEM_DEQUE_H
 
 #include <deque>
 #include "allocator.h"
@@ -11,8 +11,8 @@
 namespace bohem {
 
     template<typename _Tp>
-    struct deque : public std::deque<_Tp, bohem::allocator<_Tp>> { };
+    using vector = std::vector<_Tp, bohem::allocator<_Tp>>;
 
 }
 
-#endif //HLSEXT_VECTOR_H
+#endif //BOHEM_DEQUE_H
