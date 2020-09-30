@@ -220,7 +220,9 @@ void simulate(const DiscreteWorld& dworld, Infections& infections,
         R"(%s\infections_%d_%d_%03d_3months.csv)",
         dir.c_str(), side, interval, i);
 
-    infections.save(filename, time_duration(24, 0, 0));
+    infections.save_info(filename);
+    infections.save_table(filename, time_duration(24, 0, 0));
+    infections.save_daily(filename, true);
 }
 
 

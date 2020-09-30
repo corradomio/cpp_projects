@@ -5,11 +5,11 @@
 #ifndef CHECK_TRACKS_INFECTIONS_H
 #define CHECK_TRACKS_INFECTIONS_H
 
-#include <string>
-#include <vector>
-#include <map>
-#include <list>
-#include <unordered_map>
+#include <bohem/string>
+#include <bohem/vector>
+#include <bohem/map>
+#include <bohem/list>
+#include <bohem/unordered_map>
 #include <stdx/ref_unordered_map.h>
 #include <stdx/random.h>
 #include "dworld.h"
@@ -172,8 +172,11 @@ namespace summer {
 
         ///
         //void save(const std::string& filename) const;
-        void save(const std::string& filename, const time_duration& interval) const;
+        //void save(const std::string& filename, const time_duration& interval) const;
 
+        void save_info(const std::string& filename) const;
+        void save_table(const std::string& filename, const time_duration& interval) const;
+        void save_daily(const std::string& filename, bool gtz=false) const;
     private:
         /// Reference to dworld
         const DiscreteWorld& dworld() const { return *dworld_p; }
@@ -205,9 +208,6 @@ namespace summer {
         /// \param users    users
         void update_daily(int t, const user_t& user, const s_users &users);
 
-        void save_info(const std::string& filename) const;
-        void save_table(const std::string& filename, const time_duration& interval) const;
-        void save_daily(const std::string& filename, bool zeros=false) const;
     };
 
 }}}

@@ -10,7 +10,9 @@ int main() {
     //create_grids();
     //load_grids();
 
-    std::vector<std::tuple<int, int>> params = make_params(true);
+    std::vector<std::tuple<int, int>> params;
+    //params = make_params(true);
+    params.emplace_back(5, 0);
 
     save_encounters(params);
     //save_slot_encounters();

@@ -382,17 +382,18 @@ void Infections::update_daily(int t, const user_t& user, const s_users &users) {
 //static int max(int x, int y) { return x > y ? x : y; }
 
 
-void Infections::save(const std::string& filename, const time_duration& interval) const {
-    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+//void Infections::save(const std::string& filename, const time_duration& interval) const {
+//    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+//
+//    const std::map<int, vs_users>& encs = dworld().get_time_encounters();
+//
+//    save_info(filename);
+//    save_table(filename, interval);
+//    save_daily(filename, );
+//
+//    std::cout << "Infections::done" << std::endl;
+//}
 
-    const std::map<int, vs_users>& encs = dworld().get_time_encounters();
-
-    save_info(filename);
-    save_table(filename, interval);
-    save_daily(filename);
-
-    std::cout << "Infections::done" << std::endl;
-}
 
 static std::string with_ext(const std::string& filename, const std::string& ext) {
     int pos = filename.rfind('.');
@@ -420,6 +421,8 @@ void Infections::save_info(const std::string& filename) const {
 
 
 void Infections::save_table(const std::string& filename, const time_duration& interval) const {
+    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+
     // header
     std::ofstream ofs(with_ext(filename, ".csv"));
     ofs << "\"timestamp\"";
@@ -443,10 +446,13 @@ void Infections::save_table(const std::string& filename, const time_duration& in
         ofs << std::endl;
     }
 
+    std::cout << "Infections::done" << std::endl;
 }
 
 
-void Infections::save_daily(const std::string& filename, bool zeros=false) const {
+void Infections::save_daily(const std::string& filename, bool gtz) const {
+    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+
     std::ofstream ofs(with_ext(filename, "_daily.csv"));
     ofs << R"("timestamp","user","other","prob")" << std::endl;
 
@@ -471,10 +477,12 @@ void Infections::save_daily(const std::string& filename, bool zeros=false) const
                 const user_t& other = oit->first;
                 double prob = oit->second;
 
-                if (!zeros || prob > 0) {
+                if (!gtz || prob > 0) {
                     ofs << t << "," << user << "," << other << "," << prob << std::endl;
                 }
             }
         }
     }
+
+    std::cout << "Infections::done" << std::endl;
 }
