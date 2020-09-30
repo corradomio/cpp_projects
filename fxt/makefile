@@ -34,8 +34,6 @@ FXT_CXXFLAGS += $(FXT_EXTRA_FLAGS)
 # (should better be auto-detected):
 #FXT_CXXFLAGS += -DHAVE_AMD64_POPCNT
 
-FXT_CXXFLAGS += -save-temps=obj -march=x86-64
-
 
 
 ## set CXXFLAGS only if not supplied:

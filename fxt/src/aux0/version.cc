@@ -7,7 +7,7 @@
 
 
 // Next line changed by make target "version":
-static const char *version_string = "28-March-2020";
+static const char *version_string = "24-August-2020";
 
 
 void

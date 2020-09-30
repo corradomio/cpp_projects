@@ -1,7 +1,7 @@
 #if !defined  HAVE_CENTERED_ARRAY3D_H__
 #define       HAVE_CENTERED_ARRAY3D_H__
 // This file is part of the FXT library.
-// Copyright (C) 2017, 2018, 2019 Joerg Arndt
+// Copyright (C) 2017, 2018, 2019, 2020 Joerg Arndt
 // License: GNU General Public License version 3 or later,
 // see the file COPYING.txt in the main directory.
 
@@ -12,8 +12,8 @@
 #include "fxttypes.h"
 
 
-//#define CENTERED_ARRAY2D_ASSERTS  // define to catch access beyond size
-#ifdef CENTERED_ARRAY2D_ASSERTS
+//#define CENTERED_ARRAY3D_ASSERTS  // define to catch access beyond size
+#ifdef CENTERED_ARRAY3D_ASSERTS
 #include "jjassert.h"
 #endif
 

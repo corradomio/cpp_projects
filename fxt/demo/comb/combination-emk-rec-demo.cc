@@ -119,24 +119,27 @@ main(int argc, char **argv)
 // -------------------------
 
 /*
-Timing:
+Timing:  (Intel(R) Core(TM) i7-8700K CPU @ 3.70GHz)
 
 time ./bin 32 20
 arg 1: 32 == N  [Length of words]  default=7
 arg 2: 20 == K  [Combinations (n choose k)]  default=3
-arg 3: 0 == rq  [Whether to reverse order]  default=0
+arg 3: 0 == cq  [Whether to generate complement]  default=0
+arg 4: 0 == rq  [Whether to reverse order]  default=0
 ct=225792840
-./bin 32 20  5.13s user 0.02s system 99% cpu 5.157 total
- ==> 225792840/5.13 == 44,014,198 per second
+./bin 32 20  1.08s user 0.00s system 99% cpu 1.080 total
+ ==> 225792840/1.08 == 209,067,444 per second
 
 time ./bin 32 12
 arg 1: 32 == N  [Length of words]  default=7
 arg 2: 12 == K  [Combinations (n choose k)]  default=3
-arg 3: 0 == rq  [Whether to reverse order]  default=0
+arg 3: 0 == cq  [Whether to generate complement]  default=0
+arg 4: 0 == rq  [Whether to reverse order]  default=0
 ct=225792840
-./bin 32 12  6.58s user 0.04s system 99% cpu 6.625 total
- ==> 225792840/6.58 == 34,315,021 per second
+./bin 32 12  1.36s user 0.00s system 99% cpu 1.364 total
+ ==> 225792840/1.36 == 166,024,147 per second
 */
+
 
 /// Emacs:
 /// Local Variables:

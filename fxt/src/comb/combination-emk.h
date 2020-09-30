@@ -1,7 +1,7 @@
 #if !defined  HAVE_COMBINATION_EMK_H__
 #define       HAVE_COMBINATION_EMK_H__
 // This file is part of the FXT library.
-// Copyright (C) 2010, 2012, 2014, 2019 Joerg Arndt
+// Copyright (C) 2010, 2012, 2014, 2019, 2020 Joerg Arndt
 // License: GNU General Public License version 3 or later,
 // see the file COPYING.txt in the main directory.
 
@@ -14,7 +14,7 @@ class combination_emk
 // Generation via modulo steps counting.
 {
 public:
-    ulong *x_;  // combination: k elements 0<=x[j]<k in increasing order
+    ulong *x_;  // combination: k elements 0 <= x[j] < n for 0 <= j < k in increasing order
     ulong *s_;  // aux: start of range for moves
     ulong *a_;  // aux: actual start position of moves
     ulong n_, k_;  // Combination (n choose k)
@@ -59,7 +59,7 @@ public:
             const ulong sj = s_[j];
             const ulong m = x_[j+1] - sj - 1;
 
-            if ( 0!=m )  // unless range empty
+            if ( 0 != m )  // unless range empty
             {
                 ulong u = x_[j] - sj;
 

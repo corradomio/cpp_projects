@@ -56,21 +56,22 @@ main(int argc, char **argv)
 
 
 /*
-Timing:
+Timing: (Intel(R) Core(TM) i7-8700K CPU @ 3.70GHz)
+g++ (Debian 8.3.0-19) 8.3.0
 
  time ./bin 32 20
 arg 1: 32 == n  [Combinations (n choose k)]  default=7
 arg 2: 20 == k  [k elements at a time]  default=3
  ct = 225792840
-./bin 32 20  3.72s user 0.02s system 99% cpu 3.744 total
- ==> 225792840/3.72 == 60,697,000 per second
+./bin 32 20  0.97s user 0.00s system 99% cpu 0.967 total
+ ==> 225792840/0.97 == 232,776,123 per second
 
  time ./bin 32 12
 arg 1: 32 == n  [Combinations (n choose k)]  default=7
 arg 2: 12 == k  [k elements at a time]  default=3
  ct = 225792840
-./bin 32 12  2.66s user 0.00s system 99% cpu 2.658 total
- ==> 225792840/2.66 == 84,884,526 per second
+./bin 32 12  0.77s user 0.00s system 99% cpu 0.771 total
+ ==> 225792840/0.77 == 293,237,454 per second
 
 */
 
