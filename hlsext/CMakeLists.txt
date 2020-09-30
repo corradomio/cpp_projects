@@ -30,6 +30,9 @@ set(SOURCE_FILES
     include/stdx/ref_unordered_map.h
     include/stdx/ref_unordered_set.h
     include/boostx/date_time_op.h
+    include/bohem/vector
+    include/bohem/string
+    include/bohem/containers
 )
 
 add_library(hlsext ${SOURCE_FILES})
