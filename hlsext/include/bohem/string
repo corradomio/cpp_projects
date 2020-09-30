@@ -1,0 +1,19 @@
+//
+// Created by Corrado Mio on 30/09/2020.
+//
+
+#ifndef HLSEXT_STRING_H
+#define HLSEXT_STRING_H
+
+#include <string>
+#include "allocator.h"
+
+namespace bohem {
+
+    template<typename _CharT, typename _Traits = std::char_traits<_CharT> >
+    struct basic_string : public std::basic_string<_CharT, _Traits, bohem::allocator<_CharT>> { };
+
+    typedef basic_string<char>    string;
+}
+
+#endif //HLSEXT_STRING_H
