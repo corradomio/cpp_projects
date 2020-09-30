@@ -1,15 +1,20 @@
 #include <iostream>
 #include <cereal/cereal.hpp>
-#include <gc_cpp.h>
+#include <bohem/vector>
 #include <string.h>
 
 int main() {
-    //std::cout << "Hello, World!" << std::endl;
 
-    char* p = new (GC) char[100];
-    strcpy(p, "Hello World");
+    bohem::vector<int> v;
 
-    std::cout << p << std::endl;
+    for(int i=0; i<1000000; ++i)
+        v.push_back(i);
+
+    int s = 0;
+    for(auto it = v.begin(); it != v.end(); ++it)
+        s += *it;
+
+    std::cout << s << std::endl;
 
     return 0;
 }
