@@ -170,9 +170,9 @@ void Infections::init_world() {
     // (d/D)^2
     double dratio = sq(d/D);
     // Dt: infection's prob in a single time slot
-    double DT = dworld().interval_td()/time_duration(24,0,0);
+    dt = dworld().interval_td()/time_duration(24,0,0);
     // (1-exp(-beta*DT))
-    double betadt = (1 - exp(-beta * DT));
+    double betadt = (1 - exp(-beta * dt));
 
     // factor of infection
     tau = betadt*dratio;
@@ -419,7 +419,10 @@ void Infections::save_info(const std::string& filename) const {
         << "n_users,"<< dworld().users().size() << "\n"
         << "contact_range," << contact_range() << " m\n"
         << "infection_rate," << infection_rate() << " rate/day\n"
-        << "tau,"<< tau << " min\n"
+        << "d/D," << (((double)dworld().side())/contact_range()) << "\n"
+        << "beta," << beta << "\n"
+        << "dt," << dt << "\n"
+        << "tau,"<< tau << "\n"
         << "latent_days," << latent_days() << " days\n"
         << "removed_days," << removed_days() << " days\n"
         << "n_infected," << _infected.size() << "\n"

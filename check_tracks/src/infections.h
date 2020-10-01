@@ -62,7 +62,9 @@ namespace summer {
     };
 
     struct contact_t {
-        std::map<user_t, double> prob;
+        double prob;
+        double uprob;
+        double oprob;
     };
 
     class Infections {
@@ -85,6 +87,7 @@ namespace summer {
         // Implementation
         //
 
+        double dt;
         double tau;             // (1-exp(-beta*delta_T))*(d/D)^2   D: side
 
         int lts;                // l in 'time slots'
@@ -101,7 +104,7 @@ namespace summer {
 
         // contacts status for
         //      t -> user1 -> user2 -> prob
-        std::map<int, std::unordered_map<user_t, std::unordered_map<user_t, double>>>
+        std::map<int, std::unordered_map<user_t, std::unordered_map<user_t, contact_t>>>
             _daily_contacts;
 
         // contact modes
