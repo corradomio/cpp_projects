@@ -360,18 +360,28 @@ void Infections::update_prob(int t, const user_t& user, double aprob) {
 
 void Infections::update_daily(int t, const user_t& user, const s_users &users) {
     // daily t: last time slot of the day
-    int dt = t/dts + (dts-1);
+    int dt = t/dts;
 
     for (const user_t& other : users) {
         if (other == user)
             continue;
 
+        // 'user' prob
+        double up = _infections[user].prob(t);
         // 'other' prob
         double op = _infections[other].prob(t);
 
-        // update user/other prob
-        double uop = _daily_contacts[dt][user][other];
-        _daily_contacts[dt][user][other] = 1 - (1 - uop)*(1 - tau * op);
+        // new 'user' prob
+        double np = 1 - (1 - up)*(1 - tau * op);
+
+        //if (np == 0 && (up != 0 || op != 0))
+        //    std::cout << "opps!" << std::endl;
+
+        contact_t& contact =  _daily_contacts[dt][user][other];
+
+        contact.prob = np;
+        contact.uprob = up;
+        contact.oprob = op;
     }
 }
 
@@ -403,19 +413,17 @@ static std::string with_ext(const std::string& filename, const std::string& ext)
 
 void Infections::save_info(const std::string& filename) const {
     std::ofstream ofs(with_ext(filename, "_info.txt"));
-    ofs << "# " << "\n"
-        << "# side          : "<< dworld().side() << " m\n"
-        << "# interval      : "<< dworld().interval() << " min (0 -> 5s)\n"
-        << "# n users       : "<< dworld().users().size() << "\n"
-        << "# " << "\n"
-        << "# contact_range : " << contact_range() << " m\n"
-        << "# infection_rate: " << infection_rate() << "/day\n"
-        << "# latent_days   : " << latent_days() << " days\n"
-        << "# removed_days  : " << removed_days() << " days\n"
-        << "# " << "\n"
-        << "# n_infected    : " << _infected.size() << "\n"
-        << "# infected      : " << stdx::str(_infected) << "\n"
-        << "# "
+    ofs << "name,value" << "\n"
+        << "side,"<< dworld().side() << " m\n"
+        << "interval,"<< dworld().interval() << " min\n"
+        << "n_users,"<< dworld().users().size() << "\n"
+        << "contact_range," << contact_range() << " m\n"
+        << "infection_rate," << infection_rate() << " rate/day\n"
+        << "tau,"<< tau << " min\n"
+        << "latent_days," << latent_days() << " days\n"
+        << "removed_days," << removed_days() << " days\n"
+        << "n_infected," << _infected.size() << "\n"
+        << "infected," << stdx::str(_infected) << "\n"
         << std::endl;
 }
 
@@ -454,7 +462,7 @@ void Infections::save_daily(const std::string& filename, bool gtz) const {
     std::cout << "Infections::saving in " << filename << " ..." << std::endl;
 
     std::ofstream ofs(with_ext(filename, "_daily.csv"));
-    ofs << R"("timestamp","user","other","prob")" << std::endl;
+    ofs << R"("timestamp","user","other","prob","uprob","oprob"")" << std::endl;
 
     // std::map<int, std::unordered_map<user_t, std::unordered_map<user_t, double>>> _contacts;
 
@@ -463,23 +471,26 @@ void Infections::save_daily(const std::string& filename, bool gtz) const {
         int t = tit->first;
 
         // user/other map
-        const std::unordered_map<user_t, std::unordered_map<user_t, double>>& uomap = tit->second;
+        const std::unordered_map<user_t, std::unordered_map<user_t, contact_t>>& uomap = tit->second;
 
         // user iterator
         for(auto uit = uomap.cbegin(); uit != uomap.cend(); ++uit) {
             const user_t& user = uit->first;
 
             // other map
-            const std::unordered_map<user_t, double>& omap = uit->second;
+            const std::unordered_map<user_t, contact_t>& omap = uit->second;
 
             // other iterator
             for (auto oit = omap.begin(); oit != omap.cend(); ++oit) {
                 const user_t& other = oit->first;
-                double prob = oit->second;
+                const contact_t& contact = oit->second;
 
-                if (!gtz || prob > 0) {
-                    ofs << t << "," << user << "," << other << "," << prob << std::endl;
-                }
+                ofs << t << ","
+                    << user << ","
+                    << other << ","
+                    << contact.prob  << ","
+                    << contact.uprob << ","
+                    << contact.oprob << std::endl;
             }
         }
     }
