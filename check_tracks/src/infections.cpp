@@ -419,7 +419,7 @@ void Infections::save_info(const std::string& filename) const {
         << "n_users,"<< dworld().users().size() << "\n"
         << "contact_range," << contact_range() << " m\n"
         << "infection_rate," << infection_rate() << " rate/day\n"
-        << "d/D," << (((double)dworld().side())/contact_range()) << "\n"
+        << "d/D," << (((double)contact_range())/dworld().side()) << "\n"
         << "beta," << beta << "\n"
         << "dt," << dt << "\n"
         << "tau,"<< tau << "\n"

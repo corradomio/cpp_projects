@@ -23,8 +23,6 @@ add_executable(check_tracks
     ../hlsext/include/stdx/to_string.h ../hlsext/include/stdx/format.h src/infections.h src/infections.cpp src/other.cpp src/other.h ../hlsext/include/stdx/default_unordered_map.h)
 
 target_link_libraries(check_tracks
-    gc
-    gccpp
     boost_filesystem-mt
     boost_serialization-mt
     tbb
