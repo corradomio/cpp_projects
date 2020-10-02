@@ -3,23 +3,22 @@
 //
 
 #include <iostream>
-#include "stdx/ranges.h"
+#include <stdx/ranges.h>
+#include <stdx/bag.h>
 
-int main3() {
+int main() {
 
-    printf("%d\n", sizeof(long long));
-    printf("%d\n", sizeof(long));
-    printf("%d\n", sizeof(int));
-    printf("%d\n", sizeof(size_t));
+    stdx::bag<int> b;
 
-    printf("--\n", sizeof(size_t));
-    auto  r = stdx::range(2,5);
+    for(int i : stdx::range(10))
+        b.insert(i);
 
-    //for (auto it = r.begin(); it != r.end(); ++it)
-    //    std::cout << *it << std::endl;
+    for(int i : stdx::range(15))
+        b.insert(i);
 
-    for (int i : stdx::range<int>(5))
-        std::cout << i << std::endl;
+    for (auto it=b.cbegin(); it != b.cend(); ++it)
+        std::cout << it->first << ": " << it->second << std::endl;
+
 
     return 0;
 }

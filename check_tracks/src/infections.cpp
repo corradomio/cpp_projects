@@ -14,6 +14,28 @@ using namespace boost::posix_time;
 
 
 // --------------------------------------------------------------------------
+// ustate_t
+// --------------------------------------------------------------------------
+
+ustate_t& ustate_t::update(int t, double p) {
+    if (_infected == invalid && _prob == 1.) {
+        _infected = t - p_inf->latent_days_ts();
+        _infective = t;
+        _removed = _infected + p_inf->removed_days_ts();
+    }
+    else if (_infected == invalid && p > 0.) {
+        _infected = t;
+        _infective = t + p_inf->latent_days_ts();
+        _removed = t + p_inf->removed_days_ts();
+        _prob = p;
+    }
+    else {
+        _prob = p;
+    }
+    return *this;
+}
+
+// --------------------------------------------------------------------------
 // state_t
 // --------------------------------------------------------------------------
 
@@ -372,18 +394,12 @@ void Infections::save_table(const std::string& filename, const time_duration& in
 }
 
 
-static void collect_daily(tms_users& daily_encs, const tms_users& encs, int dts) {
-    int i=0;
-    int n = encs.size();
+static void collect_daily(tmb_users& daily_encs, const tms_users& encs, int dts) {
 
     // 1) for each time slot
     for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
         int t = (it->first)/dts;
         const ms_users& musers = it->second;
-
-        // logging
-        if ((++i)%1000 == 0)
-            std::cout << "  " << i << "/"<< n << "\r";
 
         // 2) for each (user -> encounters)
         for(auto uit = musers.cbegin(); uit != musers.cend(); ++uit) {
@@ -398,10 +414,20 @@ static void collect_daily(tms_users& daily_encs, const tms_users& encs, int dts)
 void Infections::save_daily(const std::string& filename) const {
     std::cout << "Infections::saving in " << filename << " ..." << std::endl;
 
+    // initialize the user infections probability
+    std::unordered_map<user_t, ustate_t> uprobs;
+    for(const user_t& user : dworld().users())
+        uprobs[user].inf(*this);
+    for(const user_t& user : _infected)
+        uprobs[user].infected();
+
+    // ----------------------------------------------------------------------
+    // IO
+
     std::ofstream ofs(with_ext(filename, "_daily.csv"));
 
     const tms_users& encs = dworld().get_time_encounters();
-    tms_users daily_encs;
+    tmb_users daily_encs;
 
     ofs << "day,user,encounter,prob" << std::endl;
 
@@ -412,18 +438,24 @@ void Infections::save_daily(const std::string& filename) const {
     for(auto it = daily_encs.cbegin(); it != daily_encs.cend(); ++it) {
         int t = it->first;
 
-        const std::unordered_map<user_t, s_users>& users = it->second;
+        const std::unordered_map<user_t, b_users>& users = it->second;
 
         // for all users
         for(auto uit = users.cbegin(); uit != users.cend(); ++uit) {
-            int u1 = uit->first;
-            const s_users& eusers = uit->second;
+            const user_t& u1 = uit->first;
+            const b_users& eusers = uit->second;
 
             // for all encountered users
             for(auto eit = eusers.cbegin(); eit != eusers.cend(); ++eit) {
-                int u2 = *eit;
+                const user_t& u2 = eit->first;
+                int count = eit->second;
 
-                ofs << t << "," << u1 << "," << u2 << std::endl;
+                double pu1 = uprobs[u1].prob(t);
+                double pu2 = uprobs[u2].prob(t);
+                double np1 = 1 - (1 - pu1)*pow((1 - tau*pu2), count);
+                uprobs[u1].update(t, np1);
+
+                ofs << t << "," << u1 << "," << u2 << "," << np1 << std::endl;
             }
         }
     }

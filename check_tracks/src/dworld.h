@@ -28,6 +28,7 @@
 #include <stdx/containers.h>
 #include <stdx/format.h>
 #include <stdx/default_unordered_map.h>
+#include <stdx/unordered_bag.h>
 
 
 using namespace boost::posix_time;
@@ -111,6 +112,8 @@ typedef stdx::default_unordered_map<hks::coords_t, s_users>    c_users;     // c
 typedef std::unordered_map<user_t, std::vector<hks::coords_t>> u_coords;    // user -> list of coords
 typedef std::unordered_map<user_t, s_users>  ms_users;                      // user -> set of users
 typedef std::map<int, ms_users> tms_users;                                  // t -> user -> set of users
+typedef stdx::unordered_bag<user_t> b_users;                                // user -> count
+typedef std::map<int, std::unordered_map<user_t, b_users>> tmb_users;
 
 namespace hls {
 namespace khalifa {

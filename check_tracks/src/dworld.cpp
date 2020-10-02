@@ -200,14 +200,9 @@ void DiscreteWorld::save_slot_encounters(const std::string& filename) {
     std::ofstream ofs(filename);
     ofs << R"("latitude","longitude","timestamp","encounters")" << std::endl;
 
-    int count = 0;
     for (auto it=this->_cusers.cbegin(); it != _cusers.end(); it++) {
         const coords_t& c = it->first;
         const s_users& users = it->second;
-
-        ++count;
-        if (count % 1000000 == 0)
-            std::cout << "... " << count << "\r";
 
         if (users.size() > 1) {
             ofs << str(c) << ",\"" << stdx::str(users, sep) << "\"" << std::endl;

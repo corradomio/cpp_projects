@@ -10,7 +10,7 @@
 #include <map>
 #include <list>
 #include <unordered_map>
-#include <stdx/ref_unordered_map.h>
+#include <stdx/unordered_bag.h>
 #include <stdx/random.h>
 #include "dworld.h"
 
@@ -19,9 +19,41 @@ namespace hls {
 namespace khalifa {
 namespace summer {
 
+    struct Infections;
+
     const int invalid = -9999;
 
-    struct Infections;
+    struct ustate_t {
+        const Infections* p_inf;
+        double _prob;
+        int _infected;
+        int _infective;
+        int _removed;
+
+        ustate_t():_prob(0),_infected(invalid),_infective(0),_removed(0) { }
+
+        ustate_t& inf(const Infections& inf) {
+            p_inf = &inf;
+            return *this;
+        }
+
+        ustate_t& infected() {
+            _prob = 1;
+            return *this;
+        }
+
+        double prob() const { return _prob; }
+        double prob(int t) {
+            if (_infected == invalid)
+                return _prob;
+            if (t < _infective || _removed < t)
+                return 0.;
+            else
+                return _prob;
+
+        }
+        ustate_t& update(int t, double p);
+    };
 
     enum contact_mode {
         none, random, daily, user
@@ -59,7 +91,6 @@ namespace summer {
         double prob(int t) const;
         double update(int t, double u);
     };
-
 
     class Infections {
 

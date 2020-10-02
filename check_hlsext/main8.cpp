@@ -7,7 +7,7 @@
 #include <stdx/ranges.h>
 
 
-int main() {
+int main8() {
 
     std::vector<int> p1{1,2,3};
     std::vector<int> p2{4,5,6};
