@@ -27,7 +27,7 @@ std::string grid_fname(int side, int interval) {
     return fname;
 }
 
-std::vector<std::tuple<int, int>> make_params(bool skip50=false) {
+std::vector<std::tuple<int, int>> make_params(bool skip50=true) {
     std::vector<std::tuple<int, int>> params;
 
     std::vector<int> sides{5,10,20,50,100};
@@ -95,6 +95,9 @@ void create_grid(int side, int interval, const std::string& filename) {
     }
     catch(std::exception& e) {
         std::cout << e.what() << std::endl;
+    }
+    catch (...) {
+        std::cout << "opps!" << std::endl;
     }
 
 }
@@ -223,7 +226,7 @@ void simulate(const DiscreteWorld& dworld, Infections& infections,
 
     infections.save_info(filename);
     infections.save_table(filename, time_duration(24, 0, 0));
-    infections.save_daily(filename, true);
+    infections.save_daily(filename);
 }
 
 

@@ -58,14 +58,8 @@ namespace summer {
         // get & set & update
         double prob(int t) const;
         double update(int t, double u);
-        void   clear() { _prob.clear(); }
     };
 
-    struct contact_t {
-        double prob;
-        double uprob;
-        double oprob;
-    };
 
     class Infections {
 
@@ -104,8 +98,8 @@ namespace summer {
 
         // contacts status for
         //      t -> user1 -> user2 -> prob
-        std::map<int, std::unordered_map<user_t, std::unordered_map<user_t, contact_t>>>
-            _daily_contacts;
+        //std::map<int, std::unordered_map<user_t, std::vector<contact_t>>>
+        //    _daily_contacts;
 
         // contact modes
         //      none
@@ -170,16 +164,16 @@ namespace summer {
         /// Select the list of infected users
         Infections& infected(const s_users& users);
 
+        /// Initial list of infected users
+        const s_users& infected() const { return _infected; }
+
         /// Simulate
         Infections& propagate();
 
         ///
-        //void save(const std::string& filename) const;
-        //void save(const std::string& filename, const time_duration& interval) const;
-
         void save_info(const std::string& filename) const;
         void save_table(const std::string& filename, const time_duration& interval) const;
-        void save_daily(const std::string& filename, bool gtz=false) const;
+        void save_daily(const std::string& filename) const;
     private:
         /// Reference to dworld
         const DiscreteWorld& dworld() const { return *dworld_p; }
@@ -197,19 +191,12 @@ namespace summer {
         /// \param users    users
         /// \return         aggregate probability
         double compute_aggregate_prob(int t, const user_t& user, const s_users& users);
-        //double compute_aggregate_prob(int t, const s_users& users);
 
         /// Update the users infected probability
         /// \param t        time slot
         /// \param users    users
         /// \param aprob    aggregate probability
         void update_prob(int t, const user_t& user, double aprob);
-        //void update_prob(int t, const s_users& users, double aprob);
-
-        /// Update the daily contributions
-        /// \param t        time slot
-        /// \param users    users
-        void update_daily(int t, const user_t& user, const s_users &users);
 
     };
 

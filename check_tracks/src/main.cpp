@@ -7,11 +7,11 @@
 // --------------------------------------------------------------------------
 
 int main() {
-    //create_grids();
+    create_grids();
     //load_grids();
 
-    std::vector<std::tuple<int, int>> params;
-    params = make_params(true);
+    //std::vector<std::tuple<int, int>> params;
+    //params = make_params(true);
     //params.emplace_back(5, 0);
     //params.emplace_back(100, 60);
 
@@ -22,7 +22,7 @@ int main() {
     //simulate(params);
 
     //create_grid_test();
-    simulate_test();
+    //simulate_test();
 
     return 0;
 }

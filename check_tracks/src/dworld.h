@@ -109,6 +109,8 @@ typedef std::unordered_set<user_t> s_users;     // set of users
 typedef std::vector<s_users>      vs_users;     // vector of sets of users
 typedef stdx::default_unordered_map<hks::coords_t, s_users>    c_users;     // coords -> set of users
 typedef std::unordered_map<user_t, std::vector<hks::coords_t>> u_coords;    // user -> list of coords
+typedef std::unordered_map<user_t, s_users>  ms_users;                      // user -> set of users
+typedef std::map<int, ms_users> tms_users;                                  // t -> user -> set of users
 
 namespace hls {
 namespace khalifa {
@@ -140,12 +142,8 @@ namespace summer {
         /// user -> [(i,j,t), ...]
         u_coords _ucoords;
 
-        /// t -> [{user, ...}, ...]
-        std::map<int, vs_users> _encs;
-        bool _merged;
-
-        void time_encounters();
-        void merge_encounters();
+        /// t -> [user -> {user...}]
+        tms_users _encs;
 
     public:
         DiscreteWorld();
@@ -168,8 +166,8 @@ namespace summer {
         const time_duration& interval_td() const { return _interval; }
 
         ///
-        DiscreteWorld& merged(bool m) { this->_merged = m; return *this; }
-        bool           merged() const { return _merged; }
+        //DiscreteWorld& merged(bool m) { this->_merged = m; return *this; }
+        //bool           merged() const { return _merged; }
 
         //
         // Populate
@@ -187,10 +185,12 @@ namespace summer {
 
         /// set of users presents in the world
         const s_users& users() const { return _susers; }
+
+        /// select a random set of users
         s_users users(double quota) const { return users((int)(quota*_susers.size())); }
         s_users users(int n) const;
 
-        const std::map<int, vs_users>& get_time_encounters() const { return _encs; }
+        const tms_users& get_time_encounters() const { return _encs; }
 
         // ----------------------------------------------------------------------
         // Conversions
@@ -199,7 +199,7 @@ namespace summer {
         coords_t to_coords(double latitude, double longitude, const ptime& timestamp);
 
         /// convert a time slot in standard format
-        ptime to_timestamp(int t) const;
+        //ptime to_timestamp(int t) const;
 
         // ------------------------------------------------------------------
         // IO
@@ -224,14 +224,14 @@ namespace summer {
         void save(Archive & ar) const
         {
             int seconds = _interval.total_seconds();
-            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _merged, _encs);
+            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs);
         }
 
         template<class Archive>
         void load(Archive & ar)
         {
             int seconds;
-            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _merged, _encs);
+            ar(_side, _angle, seconds, _susers, _cusers, _ucoords, _encs);
             _interval = time_duration(0, 0, seconds);
         }
 

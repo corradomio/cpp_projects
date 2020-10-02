@@ -70,6 +70,14 @@ double state_t::update(int t, double u) {
 }
 
 
+//int ustate_t::select(int t) const {
+//    int n = encounters.size();
+//    if (n == 0)
+//        return invalid;
+//    else
+//        encounters[n-1].t;
+//}
+
 
 // --------------------------------------------------------------------------
 // Infections
@@ -191,46 +199,42 @@ void Infections::init_infected() {
 
     std::unordered_set<user_t> processed;
 
-    const std::map<int, vs_users> &encs = dworld().get_time_encounters();
+    const tms_users &encs = dworld().get_time_encounters();
 
-    // initialize the '_infections' data structure
+    _infections.clear();
+
+    //// initialize the '_infections' data structure
     for (const user_t& user : dworld().users())
-        _infections[user].inf(this).clear();
+        _infections[user].inf(this);
 
-    // scan the encounters to identify the timeslot when an infected user
-    // is encountered for the first time. This timeslot MINUS the lts (latent
-    // time slots) will be the 'infected' timeslot.
+    //// scan the encounters to identify the timeslot when an infected user
+    //// is encountered for the first time. This timeslot MINUS the lts (latent
+    //// time slots) will be the 'infected' timeslot.
     bool complete = false;
     for (auto it = encs.cbegin(); it != encs.cend() && !complete; ++it) {
         int t = it->first;
-        const vs_users& vsusers = it->second;
+        const ms_users& vsusers = it->second;
 
         for (auto vit = vsusers.cbegin(); vit != vsusers.end() && !complete; ++vit) {
-            const s_users& users = *vit;
-            for (auto uit = users.cbegin(); uit != users.cend() && !complete; ++uit) {
-                user_t user = *uit;
+            const user_t& user = vit->first;
 
-                // it is not an infected user
-                if (!stdx::contains(_infected, user))
-                    continue;
-                // it is an already processed user
-                if (stdx::contains(processed, user))
-                    continue;
+            // it is not an infected user
+            if (!stdx::contains(_infected, user))
+                continue;
+            // it is an already processed user
+            if (stdx::contains(processed, user))
+                continue;
 
-                // it is:
-                // - an infected user
-                // - a not already processed user
+            // it is:
+            // - an infected user
+            // - a not already processed user
 
-                // std::unordered_map<user_t, state_t> _infections
+            int inft = t - this->latent_days_ts();
+            _infections[user].infective(inft);
 
-                int inft = t - this->latent_days_ts();
-                _infections[user].infective(inft);
-                //_infections[inft][user].gprob = 1.;
-
-                // register the infected user
-                processed.insert(user);
-                complete = (_infected.size() == processed.size());
-            }
+            // register the infected user
+            processed.insert(user);
+            complete = (_infected.size() == processed.size());
         }
     }
 
@@ -238,19 +242,15 @@ void Infections::init_infected() {
     //for (const user_t& user : dworld().users())
     //    if (!stdx::contains(_infected, user))
     //        _infections[user].update(0, 0.)
+
+    //for (const user_t& user : _infected)
+    //    _infections[user].infective(0);
 }
 
 
 void Infections::propagate_infection() {
 
-    const std::map<int, vs_users>& encs = dworld().get_time_encounters();
-
-    // set the parent
-    for (const user_t& user : dworld().users())
-        _infections[user].inf(this).clear();
-     // set initial infected
-    for (const user_t& user : _infected)
-        _infections[user].infective(0);
+    const tms_users & encs = dworld().get_time_encounters();
 
     // simple counters for logging
     int n = encs.size();
@@ -267,75 +267,28 @@ void Infections::propagate_infection() {
     // 1) for each time slot
     for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
         int t = it->first;
-        const vs_users& usets = it->second;
+        const ms_users& musers = it->second;
 
         // logging
         if ((++i)%1000 == 0)
             std::cout << "  " << i << "/"<< n << "\r";
 
-        // 2) for each users set
-        for(auto uit = usets.cbegin(); uit != usets.cend(); ++uit) {
-            const s_users& uset = *uit;
+        // 2) for each user
+        for(auto uit = musers.cbegin(); uit != musers.cend(); ++uit) {
+            const user_t&  user = uit->first;
+            const s_users& uset = uit->second;
 
             // 3) apply the contact model
             s_users users = apply_contact_model(t, uset);
 
-            // 4) compute the aggregate infection probability
-            //double prob = compute_aggregate_prob(t, users);
-            //
-            // 5) update the infections probability for all users
-            //update_prob(t, users, prob);
+            // 4.0) compute the aggregate infection probability, excluding 'user'
+            double aprob = compute_aggregate_prob(t, user, users);
 
-            // for all users in the set
-            for (const user_t& user : users) {
-                // 4.0) compute the aggregate infection probability, excluding 'user'
-                double aprob = compute_aggregate_prob(t, user, users);
-
-                // 4.1) update the daily components of the user global prob
-                update_daily(t, user, users);
-
-                // 5) update the infections probability for 'user'
-                update_prob(t, user, aprob);
-            }
+            // 5) update the infections probability for 'user'
+            update_prob(t, user, aprob);
         }
     }
-
 }
-
-
-///**
-// * Compute teh aggregate probability al time slot t
-// *
-// * @param t     time slot
-// * @param users set of users to consider
-// * @return aggregate probability
-// */
-//double Infections::compute_aggregate_prob(int t, const s_users &users) {
-//    // aggregate prom
-//    double ap = 1.;
-//
-//    for (const user_t& user : users) {
-//        // user prob
-//        double up = _infections[user].prob(t);
-//
-//        if (up != 0.)
-//            ap *= (1. - tau*up);
-//    }
-//    return 1. - ap;
-//}
-
-
-///**
-// * Update the internal propability
-// * @param t
-// * @param users
-// * @param aprob
-// */
-//void Infections::update_prob(int t, const s_users &users, double aprob) {
-//    for (const user_t& user : users) {
-//        _infections[user].update(t, aprob);
-//    }
-//}
 
 
 double Infections::compute_aggregate_prob(int t, const user_t& user, const s_users &users) {
@@ -358,51 +311,10 @@ void Infections::update_prob(int t, const user_t& user, double aprob) {
     _infections[user].update(t, aprob);
 }
 
-void Infections::update_daily(int t, const user_t& user, const s_users &users) {
-    // daily t: last time slot of the day
-    int dt = t/dts;
-
-    for (const user_t& other : users) {
-        if (other == user)
-            continue;
-
-        // 'user' prob
-        double up = _infections[user].prob(t);
-        // 'other' prob
-        double op = _infections[other].prob(t);
-
-        // new 'user' prob
-        double np = 1 - (1 - up)*(1 - tau * op);
-
-        //if (np == 0 && (up != 0 || op != 0))
-        //    std::cout << "opps!" << std::endl;
-
-        contact_t& contact =  _daily_contacts[dt][user][other];
-
-        contact.prob = np;
-        contact.uprob = up;
-        contact.oprob = op;
-    }
-}
 
 // --------------------------------------------------------------------------
 // IO
 //
-
-//static int max(int x, int y) { return x > y ? x : y; }
-
-
-//void Infections::save(const std::string& filename, const time_duration& interval) const {
-//    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
-//
-//    const std::map<int, vs_users>& encs = dworld().get_time_encounters();
-//
-//    save_info(filename);
-//    save_table(filename, interval);
-//    save_daily(filename, );
-//
-//    std::cout << "Infections::done" << std::endl;
-//}
 
 
 static std::string with_ext(const std::string& filename, const std::string& ext) {
@@ -412,22 +324,21 @@ static std::string with_ext(const std::string& filename, const std::string& ext)
 
 
 void Infections::save_info(const std::string& filename) const {
-    std::ofstream ofs(with_ext(filename, "_info.txt"));
-    ofs << "name,value" << "\n"
-        << "side,"<< dworld().side() << " m\n"
-        << "interval,"<< dworld().interval() << " min\n"
-        << "n_users,"<< dworld().users().size() << "\n"
-        << "contact_range," << contact_range() << " m\n"
-        << "infection_rate," << infection_rate() << " rate/day\n"
-        << "d/D," << (((double)contact_range())/dworld().side()) << "\n"
-        << "beta," << beta << "\n"
-        << "dt," << dt << "\n"
-        << "tau,"<< tau << "\n"
-        << "latent_days," << latent_days() << " days\n"
-        << "removed_days," << removed_days() << " days\n"
-        << "n_infected," << _infected.size() << "\n"
-        << "infected," << stdx::str(_infected) << "\n"
-        << std::endl;
+    std::ofstream ofs(with_ext(filename, "_info.csv"));
+    ofs << "name,value" << std::endl
+        << "side,"<< dworld().side() << " m" << std::endl
+        << "interval,"<< dworld().interval() << " min" << std::endl
+        << "n_users,"<< dworld().users().size() << std::endl
+        << "contact_range," << contact_range() << " m" << std::endl
+        << "infection_rate," << infection_rate() << " rate/day" << std::endl
+        << "d/D," << (((double)contact_range())/dworld().side())  << std::endl
+        << "beta," << beta  << std::endl
+        << "dt," << dt  << std::endl
+        << "tau,"<< tau  << std::endl
+        << "latent_days," << latent_days() << " days" << std::endl
+        << "removed_days," << removed_days() << " days" << std::endl
+        << "n_infected," << _infected.size()  << std::endl
+        << "infected," << stdx::str(_infected) << std::endl;
 }
 
 
@@ -461,39 +372,58 @@ void Infections::save_table(const std::string& filename, const time_duration& in
 }
 
 
-void Infections::save_daily(const std::string& filename, bool gtz) const {
+static void collect_daily(tms_users& daily_encs, const tms_users& encs, int dts) {
+    int i=0;
+    int n = encs.size();
+
+    // 1) for each time slot
+    for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
+        int t = (it->first)/dts;
+        const ms_users& musers = it->second;
+
+        // logging
+        if ((++i)%1000 == 0)
+            std::cout << "  " << i << "/"<< n << "\r";
+
+        // 2) for each (user -> encounters)
+        for(auto uit = musers.cbegin(); uit != musers.cend(); ++uit) {
+            const user_t& user = uit->first;
+            const s_users& users = uit->second;
+
+            daily_encs[t][user].insert(users.cbegin(), users.cend());
+        }
+    }
+}
+
+void Infections::save_daily(const std::string& filename) const {
     std::cout << "Infections::saving in " << filename << " ..." << std::endl;
 
     std::ofstream ofs(with_ext(filename, "_daily.csv"));
-    ofs << R"("timestamp","user","other","prob","uprob","oprob"")" << std::endl;
 
-    // std::map<int, std::unordered_map<user_t, std::unordered_map<user_t, double>>> _contacts;
+    const tms_users& encs = dworld().get_time_encounters();
+    tms_users daily_encs;
 
-    // t iterator
-    for (auto tit = _daily_contacts.cbegin(); tit != _daily_contacts.cend(); ++tit) {
-        int t = tit->first;
+    ofs << "day,user,encounter,prob" << std::endl;
 
-        // user/other map
-        const std::unordered_map<user_t, std::unordered_map<user_t, contact_t>>& uomap = tit->second;
+    // collect encounters
+    collect_daily(daily_encs, encs, dts);
 
-        // user iterator
-        for(auto uit = uomap.cbegin(); uit != uomap.cend(); ++uit) {
-            const user_t& user = uit->first;
+    // for all timestamps
+    for(auto it = daily_encs.cbegin(); it != daily_encs.cend(); ++it) {
+        int t = it->first;
 
-            // other map
-            const std::unordered_map<user_t, contact_t>& omap = uit->second;
+        const std::unordered_map<user_t, s_users>& users = it->second;
 
-            // other iterator
-            for (auto oit = omap.begin(); oit != omap.cend(); ++oit) {
-                const user_t& other = oit->first;
-                const contact_t& contact = oit->second;
+        // for all users
+        for(auto uit = users.cbegin(); uit != users.cend(); ++uit) {
+            int u1 = uit->first;
+            const s_users& eusers = uit->second;
 
-                ofs << t << ","
-                    << user << ","
-                    << other << ","
-                    << contact.prob  << ","
-                    << contact.uprob << ","
-                    << contact.oprob << std::endl;
+            // for all encountered users
+            for(auto eit = eusers.cbegin(); eit != eusers.cend(); ++eit) {
+                int u2 = *eit;
+
+                ofs << t << "," << u1 << "," << u2 << std::endl;
             }
         }
     }
