@@ -2,35 +2,36 @@
 // Created by Corrado Mio on 18/09/2020.
 //
 
-#ifndef HLSEXT_REF_MAP_H
-#define HLSEXT_REF_MAP_H
+#ifndef HLSEXT_UNORDERED_MAP_H
+#define HLSEXT_UNORDERED_MAP_H
 
 #include <memory>
-#include <map>
+#include <unordered_map>
 
 namespace ref {
 
     template<
         typename _Key,
         typename _Tp,
-        typename _Compare = std::less<_Key>,
+        typename _Hash = std::hash<_Key>,
+        typename _Pred = std::equal_to<_Key>,
         typename _Alloc = std::allocator<std::pair<const _Key, _Tp> >
     >
-    struct map {
-        typedef std::map<_Key, _Tp, _Compare, _Alloc> collection;
-        typedef std::shared_ptr<std::map<_Key, _Tp, _Compare, _Alloc>> pointer;
+    struct unordered_map {
+        typedef std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc> collection;
+        typedef std::shared_ptr<std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>> pointer;
 
-        pointer ptr;
+        std::shared_ptr<std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>> ptr;
 
         // Constructor
 
-        map() { ptr = pointer(new collection()); }
-        map(const map& m): ptr(m.ptr) { }
-        ~map() { ptr = nullptr; }
+        unordered_map():ptr(new collection) { }
+        unordered_map(const unordered_map& m): ptr(m.ptr) { }
+        ~unordered_map() { ptr = nullptr; }
 
         // Member functions
 
-        map& operator =(const map& that) {
+        unordered_map& operator =(const unordered_map& that) {
             ptr = that.ptr;
             return *this;
         }
@@ -72,4 +73,4 @@ namespace ref {
 
 }
 
-#endif //HLSEXT_REF_MAP_H
+#endif //HLSEXT_UNORDERED_MAP_H

@@ -9,8 +9,7 @@
 #include <typeinfo>
 #include <assert.h>
 
-namespace hls {}
-namespace mem {
+namespace ref {
 
     template<typename T>
     class ref_ptr {
@@ -130,7 +129,7 @@ namespace mem {
     //    return t;
     //}
 
-}}
+}
 
 
 #endif //REFCOUNT_HPP

@@ -2,34 +2,34 @@
 // Created by Corrado Mio on 18/09/2020.
 //
 
-#ifndef HLSEXT_REF_SET_H
-#define HLSEXT_REF_SET_H
+#ifndef HLSEXT_UNORDERED_SET_H
+#define HLSEXT_UNORDERED_SET_H
 
 #include <memory>
-#include <set>
+#include <unordered_set>
 
 namespace ref {
 
-    template<
-        typename _Key,
-        typename _Compare = std::less<_Key>,
-        typename _Alloc = std::allocator<_Key>
+    template<typename _Value,
+        typename _Hash = std::hash<_Value>,
+        typename _Pred = std::equal_to<_Value>,
+        typename _Alloc = std::allocator<_Value>
     >
-    struct set {
-        typedef std::set<_Key, _Compare, _Alloc> collection;
-        typedef std::shared_ptr<std::set<_Key, _Compare, _Alloc>> pointer;
+    struct unordered_set {
+        typedef std::unordered_set<_Value, _Hash, _Pred, _Alloc> collection;
+        typedef std::shared_ptr<std::unordered_set<_Value, _Hash, _Pred, _Alloc>> pointer;
 
-        std::shared_ptr<std::set<_Key, _Compare, _Alloc>> ptr;
+        pointer ptr;
 
         // Constructor
 
-        set() { ptr = std::shared_ptr<std::set<_Key, _Compare, _Alloc>>(new std::set<_Key, _Compare, _Alloc>()); }
-        set(const set& v): ptr(v.ptr) { }
-        ~set() { ptr = nullptr; }
+        unordered_set() { ptr = pointer(new collection()); }
+        unordered_set(const unordered_set& v): ptr(v.ptr) { }
+        ~unordered_set() { ptr = nullptr; }
 
         // Member functions
 
-        set& operator=(const set& v) {
+        unordered_set& operator=(const unordered_set& v) {
             ptr = v.ptr;
             return *this;
         }
@@ -54,14 +54,14 @@ namespace ref {
         // Modifiers
 
         void clear() { (*ptr).clear(); }
-        void insert(const _Key& v) { (*ptr).insert(v); }
-        void  erase(const _Key& v) { (*ptr).erase(v); }
+        void insert(const _Value& v) { (*ptr).insert(v); }
+        void  erase(const _Value& v) { (*ptr).erase(v); }
 
         // Pointers
 
-        std::shared_ptr<std::set<_Key, _Compare, _Alloc>> get() const { return  ptr; }
-        std::set<_Key, _Compare, _Alloc>&                 ref() const { return *ptr; }
+        pointer     get() const { return  ptr; }
+        collection& ref() const { return *ptr; }
     };
 }
 
-#endif //HLSEXT_REF_SET_H
+#endif //HLSEXT_UNORDERED_SET_H
