@@ -274,10 +274,6 @@ void Infections::propagate_infection() {
 
     const tms_users & encs = dworld().get_time_encounters();
 
-    // simple counters for logging
-    int n = encs.size();
-    int i = 0;
-
     //
     //  1) for each time slot
     //      2) for each users set
@@ -290,10 +286,6 @@ void Infections::propagate_infection() {
     for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
         int t = it->first;
         const ms_users& musers = it->second;
-
-        // logging
-        if ((++i)%1000 == 0)
-            std::cout << "  " << i << "/"<< n << "\r";
 
         // 2) for each user
         for(auto uit = musers.cbegin(); uit != musers.cend(); ++uit) {

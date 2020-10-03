@@ -1,6 +1,7 @@
+cmake-build-debug
+cmake.build
 .idea
 .git
-cmake-build-debug
 *.exe
 *.o
 *.dll
