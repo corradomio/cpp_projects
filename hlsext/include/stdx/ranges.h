@@ -20,21 +20,23 @@ namespace stdx {
             //const range_t& r;
             mutable T value;
         public:
-            iter_t(const range_t& rng, const T& v): /*r(rng),*/ value(v) { }
-            bool operator !=(const iter_t& it) { return value != it.value; }
-            bool operator  <(const iter_t& it) { return value  < it.value; }
+            typedef iter_t self_type;
+            typedef T value_type;
+            typedef T& reference;
+            typedef T* pointer;
+            typedef std::forward_iterator_tag iterator_category;
+            typedef int difference_type;
 
-            iter_t& operator ++() {
-                value += 1;
-                return *this;
-            }
+        public:
+            iter_t(const self_type& rng, const T& v): value(v) { }
+            iter_t(const stdx::range_t<int>& rng, const int& n): value(rng._begin+n) { }
+            bool operator !=(const self_type& it) const { return value != it.value; }
+            bool operator  <(const self_type& it) const { return value  < it.value; }
 
-            iter_t& operator ++(int) {
-                value += 1;
-                return *this;
-            }
+            self_type operator ++() { self_type it = *this; value += 1; return it; }
+            self_type operator ++(int) { value += 1; return *this; }
 
-            T operator*() const { return value; }
+            value_type operator*() const { return value; }
         };
 
         friend class range_t::iter_t;
@@ -43,8 +45,10 @@ namespace stdx {
         typedef const iter_t const_iterator;
 
         range_t(const T& begin, const T& end): _begin(begin),_end(end) { }
-        const_iterator begin() const { return iter_t(*this, _begin); }
-        const_iterator   end() const { return iter_t(*this, _end); }
+        const_iterator  begin() const { return iter_t(*this, _begin); }
+        const_iterator    end() const { return iter_t(*this, _end); }
+        const_iterator cbegin() const { return iter_t(*this, _begin); }
+        const_iterator   cend() const { return iter_t(*this, _end); }
     };
 
     template<typename T> range_t<T> range(T end) { return range_t<T>(0, end); }

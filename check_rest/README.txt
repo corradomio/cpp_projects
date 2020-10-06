@@ -11,6 +11,10 @@ Serverd   (SERVER)
     https://github.com/meltwater/served
 
 
+Restc-cpp (CLIENT)
+    https://github.com/jgaa/restc-cpp
+    https://github.com/cpp-netlib/cpp-netlib
+
 Microsoft SDK
     https://github.com/microsoft/cpprestsdk
 
@@ -23,7 +27,6 @@ Micro Service
 ngrest (inusabile/inutile)
     https://github.com/loentar/ngrest
 
+
 https://github.com/matt-42/lithium
-https://github.com/jgaa/restc-cpp
-https://github.com/cpp-netlib/cpp-netlib
 https://github.com/titi38/libnavajo
