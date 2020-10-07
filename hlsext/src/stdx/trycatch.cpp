@@ -5,9 +5,9 @@
  * Created on April 24, 2013, 10:48 AM
  */
 
-#include "../../../include/hls/lang/trycatch.hpp"
+#include "stdx/trycatch.h"
 
-using namespace hls::lang;
+using namespace stdx;
 
 // --------------------------------------------------------------------------
 // try_t

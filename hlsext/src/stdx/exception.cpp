@@ -4,10 +4,10 @@
 #include <memory>
 #include <cxxabi.h>
 #include <cassert>
-#include "../../../include/hls/lang/exception.hpp"
+#include "stdx/exception.h"
 
 
-using namespace hls::lang;
+using namespace stdx;
 
 
 // --------------------------------------------------------------------------
@@ -62,7 +62,7 @@ block_t& block_t::operator =(const block_t& b)
 // demangle
 // --------------------------------------------------------------------------
 
-std::string hls::lang::demangle(char const* name) {
+std::string stdx::demangle(char const* name) {
 
     int status = -4; // some arbitrary value to eliminate the compiler warning
 

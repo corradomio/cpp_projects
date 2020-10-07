@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
-#include "../lang/exception.hpp"
+#include "stdx/exception.h"
 #include "alloc.hpp"
 
 namespace hls {

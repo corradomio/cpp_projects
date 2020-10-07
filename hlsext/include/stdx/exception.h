@@ -10,8 +10,8 @@
 /*
  * Exception trowing:
  *
- *      throw hls::lang::exception_t(<message>)
- *      throw hls::lang::exception_t(<message>).from_here()
+ *      throw stdx::exception_t(<message>)
+ *      throw stdx::exception_t(<message>).from_here()
  *
  * Note: 'from_here()' is a MACRO converted in:
  *
@@ -26,8 +26,7 @@
  *
  */
 
-namespace hls {
-namespace lang {
+namespace stdx {
 
     // ----------------------------------------------------------------------
     // block_t
@@ -110,15 +109,15 @@ namespace lang {
         exception_t& setcs(const char *fi, int l, const char *fu);
     };
 
-}};
+};
 
 
 #define  from_here()    setcs(__FILE__,__LINE__,__FUNCTION__)
 
-#define _block          { hls::lang::block_t binfo(__FILE__,__LINE__,__FUNCTION__);
+#define _block          { stdx::block_t binfo(__FILE__,__LINE__,__FUNCTION__);
 #define _block_end      }
 #define _end_block      _block_end
 
-#define _block_         hls::lang::block_t(__FILE__,__LINE__,__FUNCTION__);
+#define _block_         stdx:block_t(__FILE__,__LINE__,__FUNCTION__);
 
 #endif // HLS_LANG_EXCEPTION_HPP

@@ -6,12 +6,12 @@
 #define HLS_MEMORY_ARENA_HPP
 
 #include <stddef.h>
-#include "../lang/exception.hpp"
+#include "stdx/exception.h"
 
 namespace hls {
 namespace memory {
 
-    class page_overflow : public hls::lang::exception_t {
+    class page_overflow : public stdx::exception_t {
     public:
         page_overflow() { }
         page_overflow(const page_overflow& e) { }

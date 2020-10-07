@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "../../../include/hls/lang/exception.hpp"
+#include "stdx/exception.h"
 
 extern void appmain(const std::vector<std::string>& apps);
 
@@ -14,7 +14,7 @@ int main(int argc, char** argv, char**env) {
 
         appmain(args);
     }
-    catch(hls::lang::exception_t& e) {
+    catch(stdx::exception_t& e) {
 //        std::cerr << "Catched exception: " << e.what() << std::endl;
         e.printstack();
         return 1;

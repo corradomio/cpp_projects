@@ -10,7 +10,7 @@
 
 #include <string>
 #include <vector>
-#include "exception.hpp"
+#include "exception.h"
 
 /**
  * Supported syntax:
@@ -57,8 +57,7 @@
  *      le parentesi non sono strettamente necessarie!
  */
 
-namespace hls {
-namespace lang {
+namespace stdx {
 
     // ----------------------------------------------------------------------
     // try_t
@@ -82,10 +81,10 @@ namespace lang {
         bool is_finally() const { return _is_finally; }
     };
 
-}};
+};
 
 
-#define _try        { hls::lang::try_t tinfo(__FILE__,__LINE__,__FUNCTION__); try {
+#define _try        { stdx::try_t tinfo(__FILE__,__LINE__,__FUNCTION__); try {
 #define _try_end    } catch(...) { }}
 #define _end_try     _try_end
 
