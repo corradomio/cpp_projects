@@ -1,0 +1,8 @@
+//
+// Created by Corrado Mio on 10/10/2020.
+//
+
+#ifndef HLSEXT_PROPERTIES_UTILS_H
+#define HLSEXT_PROPERTIES_UTILS_H
+
+#endif //HLSEXT_PROPERTIES_UTILS_H
