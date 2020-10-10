@@ -44,44 +44,55 @@ namespace util {
     };
 
 
-    /**
-     * Classe simile a "Properties" di Java, utile per
-     */
     class properties {
     public:
         properties();
         virtual ~properties();
 
         /**
-         * Gets the property value from a given key.
-         *
-         * This method throws a PropertyNotFoundException when a given key does not
-         * exist.
+         * Check if the property is present
          */
-        std::string at(const std::string& key) const;
+        bool contains(const std::string& name) const;
 
         /**
-         * Gets the property value from a given key. Use a default value if not found.
+         * Gets the property value from a given name.
+         *
+         * This method throws a PropertyNotFoundException when a given name does not
+         * exist.
          */
-        std::string at(const std::string& key, const std::string& defaultValue) const;
+        std::string get(const std::string& name) const;
+
+        // stl collections
+        std::string at(const std::string& name) const { return get(name); }
+        std::string operator[] (const std::string& name) const { return get(name); }
+
+        /**
+         * Gets the property value from a given name. Use a default value if not found.
+         */
+        std::string get(const std::string& name, const std::string& defaultValue) const;
+
+        // -- specialized
+        bool get(const std::string& name, bool defaultValue) const;
+        long get(const std::string& name, long defaultValue) const;
+        double get(const std::string& name, double defaultValue) const;
 
         /**
          * Gets the list of property names.
          */
-        const std::vector<std::string>& propertyNames() const;
+        const std::vector<std::string>& names() const;
 
         /**
          * Adds a new property. If the property already exists, it'll overwrite
          * the old one.
          */
-        void insert(const std::string& key, const std::string& value);
+        void insert(const std::string& name, const std::string& value);
 
         /**
-         * Removes the property from a given key.
+         * Removes the property from a given name.
          *
          * If the property doesn't exist a PropertyNotFoundException will be thrown.
          */
-        void erase(const std::string& key);
+        void erase(const std::string& name);
     private:
         // to preserve the order
         std::vector<std::string> _names;

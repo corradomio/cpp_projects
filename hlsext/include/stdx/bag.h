@@ -22,7 +22,7 @@ namespace stdx {
         typedef std::pair<const _Key, _Tp>   value_type;
         typedef _Compare    key_compare;
         typedef _Alloc		allocator_type;
-        typedef std::map<_Tp, _Tp, _Compare, _Alloc> parent_type;
+        typedef std::map<_Key, _Tp, _Compare, _Alloc> parent_type;
     public:
         bag():parent_type() { }
         bag(const bag& b): parent_type(b){ }

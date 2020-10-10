@@ -26,7 +26,7 @@ set(SOURCE_FILES
     include/ref/unordered_set.h
     include/stdx/bag.h
     include/stdx/containers.h
-    include/hls/util/parameters.h
+    include/hls/util/properties.h
 
     src/hls/app/main.cpp
     src/stdx/exception.cpp
@@ -35,7 +35,9 @@ set(SOURCE_FILES
     src/hls/memory/global.cpp
     src/hls/memory/arena.cpp
     src/hls/memory/buffer.cpp
-    src/hls/util/parameters.cpp
+    src/hls/util/properties_utils.h
+    src/hls/util/properties.cpp
+    src/hls/util/properties_utils.cpp
 )
 
 add_library(hlsext ${SOURCE_FILES})

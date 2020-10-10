@@ -16,11 +16,16 @@ add_executable(check_hlsext
     main2.cpp
     main3.cpp
     main4.cpp
+    main5.cpp
+    main6.cpp
+    main7.cpp
+    main8.cpp
+    main9.cpp
     ../hlsext/include/stdx/random.h
     ../hlsext/include/stdx/cmath.h
     ../hlsext/include/stdx/containers.h
     ../hlsext/include/stdx/ranges.h
-    main5.cpp main6.cpp ../hlsext/include/stdx/params.h main7.cpp main8.cpp)
+)
 
 target_link_libraries(check_hlsext
     hlsext

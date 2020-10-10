@@ -6,7 +6,7 @@
 #include <stdx/ranges.h>
 #include <stdx/bag.h>
 
-int main() {
+int main3() {
 
     stdx::bag<int> b;
 
