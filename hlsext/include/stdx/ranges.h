@@ -29,7 +29,7 @@ namespace stdx {
 
         public:
             iter_t(const self_type& rng, const T& v): value(v) { }
-            iter_t(const stdx::range_t<int>& rng, const int& n): value(rng._begin+n) { }
+            iter_t(const stdx::range_t<T>& rng, const T& n): value(rng._begin+n) { }
             bool operator !=(const self_type& it) const { return value != it.value; }
             bool operator  <(const self_type& it) const { return value  < it.value; }
 

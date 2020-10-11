@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.17)
 project(check_tracks)
 
 include_directories(
-    "D:/MinGW/userlibs/include"
+    "D:/MinGW/libs/include"
     "../hlsext/include"
     "./include"
 )
 
 link_directories(
-    "D:/MinGW/userlibs/lib"
+    "D:/MinGW/libs/lib"
     #    ../hlsext/lib
     "./lib"
 )
@@ -16,11 +16,17 @@ link_directories(
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(check_tracks
+    ../hlsext/include/stdx/to_string.h
+    ../hlsext/include/stdx/format.h
+    ../hlsext/include/stdx/default_unordered_map.h
     include/csvstream.h
     src/dworld.h
     src/main.cpp
     src/dworld.cpp
-    ../hlsext/include/stdx/to_string.h ../hlsext/include/stdx/format.h src/infections.h src/infections.cpp src/other.cpp src/other.h ../hlsext/include/stdx/default_unordered_map.h)
+    src/infections.h
+    src/infections.cpp
+    src/other.cpp src/other.h
+)
 
 target_link_libraries(check_tracks
     boost_filesystem-mt
