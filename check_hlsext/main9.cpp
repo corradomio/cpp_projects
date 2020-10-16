@@ -3,13 +3,13 @@
 //
 
 #include <iostream>
-#include <hls/util/properties.h>
+#include <stdx/properties.h>
 
 
 int main() {
-    hls::util::properties props = hls::util::properties::read("D:\\Projects.github\\cpp_projects\\check_hlsext\\args.properties");
+    stdx::properties props("D:\\Projects.github\\cpp_projects\\check_hlsext\\args.properties");
 
-    for(const std::string k : props.names())
+    for(const std::string& k : props.names())
         std::cout << k << ":" << props.get(k) << std::endl;
 
 }

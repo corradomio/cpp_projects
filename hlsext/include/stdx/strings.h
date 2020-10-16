@@ -5,4 +5,14 @@
 #ifndef HLSEXT_STRINGS_H
 #define HLSEXT_STRINGS_H
 
+#include <vector>
+#include <string>
+#include <algorithm>
+
+namespace stdx {
+
+    std::vector<std::string> split(const std::string& str, const std::string& delim);
+
+}
+
 #endif //HLSEXT_STRINGS_H

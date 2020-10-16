@@ -25,12 +25,21 @@ namespace summer {
 
     struct ustate_t {
         const Infections* p_inf;
-        double _prob;
-        int _infected;
-        int _infective;
-        int _removed;
 
-        ustate_t():_prob(0),_infected(invalid),_infective(0),_removed(0) { }
+        double _prob[3];    // [0]: unconscious, tested, infected
+        double _life[3];    // [0]:
+        int _infected;      // timestamp when infected
+        int _infective;     // infected + latent_days
+        int _removed;       // infected + removed_days
+        int _tested;        // timestamp when tested
+
+        ustate_t():
+            _prob{0.,0.,0.},
+            _life{1.,0.,0.},
+            _infected(invalid),
+            _infective(invalid),
+            _removed(invalid),
+            _tested(invalid){ }
 
         ustate_t& inf(const Infections& inf) {
             p_inf = &inf;
@@ -38,21 +47,25 @@ namespace summer {
         }
 
         ustate_t& infected() {
-            _prob = 1;
+            _prob[0] = 1.;
             return *this;
         }
 
-        double prob() const { return _prob; }
+        double prob() const { return _prob[0]; }
         double prob(int t) {
             if (_infected == invalid)
-                return _prob;
+                return _prob[0];
             if (t < _infective || _removed < t)
                 return 0.;
             else
-                return _prob;
+                return _prob[0];
 
         }
         ustate_t& update(int t, double p);
+
+        ustate_t& tested(int t, double p);
+
+        ustate_t& infected(int t, double p);
     };
 
     enum contact_mode {
@@ -100,12 +113,14 @@ namespace summer {
         // Parameters
         //
 
-        int d;          // contact range (in meters)
-        double beta;    // rate of infection (infections/day)
-        int l;          // latent days before to became infectious.
+        int d;          // contact_range (in meters)
+        double beta;    // infection_rate (infections/day)
+        int l;          // latent_days; n of days before to became infectious.
                         // 0 -> immediately
-        int m;          // n of days after the first contact to became NOT infectious.
+        int m;          // removed_days: n of days after the first contact to became NOT infectious.
                         // 0 -> forever
+        double t;       // test probability [0,1]
+        double p;       // positive probability [0,1]
         long seed;      // random seed;
 
         //
@@ -151,6 +166,8 @@ namespace summer {
             beta = 0.001;
             l = 0;
             m = 0;
+            t = 0.01;
+            p = 0.85;
             seed = 123;
             _cmode_day = -1;
         }
@@ -174,9 +191,14 @@ namespace summer {
         /// n days after infection to became removed
         Infections& removed_days(int rd) { this->m = rd; return *this; }
         int         removed_days() const { return this->m; }
-        /// if to merge sets with a not empty intersection
+        /// test probability
+        Infections& test_prob(double tp) { this->t = tp; return *this; }
+        double      test_prob() const { return this->t; }
+        /// positive probability. It depends on the current
+        Infections& positive_prob(double pp) { this->p = pp; return *this; }
+        double      positive_prob() const { return this->p; }
 
-            /// contact mode:
+        /// contact mode:
         Infections& contact_mode(const contact_mode cm, double cmp) {
             this->_cmode = cm;
             this->_cmode_prob = cmp;
@@ -201,10 +223,12 @@ namespace summer {
         /// Simulate
         Infections& propagate();
 
+        enum file_format { CSV, XML };;
+
         ///
         void save_info(const std::string& filename) const;
         void save_table(const std::string& filename, const time_duration& interval) const;
-        void save_daily(const std::string& filename) const;
+        void save_daily(const std::string& filename, file_format format) const;
     private:
         /// Reference to dworld
         const DiscreteWorld& dworld() const { return *dworld_p; }
@@ -229,6 +253,8 @@ namespace summer {
         /// \param aprob    aggregate probability
         void update_prob(int t, const user_t& user, double aprob);
 
+        void save_daily_csv(const std::string& filename) const;
+        void save_daily_xml(const std::string& filename) const;
     };
 
 }}}

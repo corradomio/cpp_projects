@@ -98,7 +98,24 @@ namespace stdx {
             return ::atof(get(name).c_str());
     }
 
-    // ---------------------------------------
+    int properties::get(const std::string& name, const std::vector<std::string>& enums) const {
+        std::string value = get(name);
+        for(int i=0; i<enums.size(); ++i)
+            if (enums[i] == value)
+                return i;
+        return 0;
+    }
+
+    int properties::get(const std::string &name, const std::initializer_list<std::string>& init) const {
+        std::vector<std::string> enums(init);
+        std::string value = get(name);
+        for(int i=0; i<enums.size(); ++i)
+            if (enums[i] == value)
+                return i;
+        return 0;
+    }
+
+    // ----------------------------------------------------------------------
 
     std::vector<long> properties::get_longs(const std::string &name, const std::string &sep) const {
         std::string vlist = get(name, std::string(""));
@@ -122,7 +139,7 @@ namespace stdx {
         return values;
     }
 
-    // ---------------------------------------
+    // ----------------------------------------------------------------------
 
     void properties::read(properties& props, const std::string& file) {
 

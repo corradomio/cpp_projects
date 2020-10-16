@@ -18,22 +18,38 @@ using namespace boost::posix_time;
 // --------------------------------------------------------------------------
 
 ustate_t& ustate_t::update(int t, double p) {
-    if (_infected == invalid && _prob == 1.) {
-        _infected = t - p_inf->latent_days_ts();
+    if (_infected == invalid && _prob[0] == 1.) {
+        _infected  = t - p_inf->latent_days_ts();
         _infective = t;
-        _removed = _infected + p_inf->removed_days_ts();
+        _removed   = _infected + p_inf->removed_days_ts();
     }
     else if (_infected == invalid && p > 0.) {
         _infected = t;
         _infective = t + p_inf->latent_days_ts();
-        _removed = t + p_inf->removed_days_ts();
-        _prob = p;
+        _removed   = _infected + p_inf->removed_days_ts();
+        _prob[0] = p;
     }
     else {
-        _prob = p;
+        _prob[0] = p;
     }
     return *this;
 }
+
+ustate_t& ustate_t::tested(int t, double p) {
+    _tested = t;
+    _life[0] = 1 - p;
+    _life[1] = p;
+    return *this;
+}
+
+ustate_t& ustate_t::infected(int t, double p) {
+    _tested = t;
+    _life[0] = 1 - p;
+    _life[1] = p;
+    return *this;
+}
+
+
 
 // --------------------------------------------------------------------------
 // state_t
@@ -403,7 +419,14 @@ static void collect_daily(tmb_users& daily_encs, const tms_users& encs, int dts)
     }
 }
 
-void Infections::save_daily(const std::string& filename) const {
+void Infections::save_daily(const std::string& filename, file_format format) const {
+    if (format == file_format::CSV)
+        save_daily_csv(filename);
+    else
+        save_daily_xml(filename);
+}
+
+void Infections::save_daily_csv(const std::string& filename) const {
     std::cout << "Infections::saving in " << filename << " ..." << std::endl;
 
     // initialize the user infections probability
@@ -452,5 +475,69 @@ void Infections::save_daily(const std::string& filename) const {
         }
     }
 
+    std::cout << "Infections::done" << std::endl;
+}
+
+
+void Infections::save_daily_xml(const std::string& filename) const {
+    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+
+    // initialize the user infections probability
+    std::unordered_map<user_t, ustate_t> uprobs;
+    for(const user_t& user : dworld().users())
+        uprobs[user].inf(*this);
+    for(const user_t& user : _infected)
+        uprobs[user].infected();
+
+    // ----------------------------------------------------------------------
+    // IO
+
+    std::ofstream ofs(with_ext(filename, "_daily.xml"));
+
+    const tms_users& encs = dworld().get_time_encounters();
+    tmb_users daily_encs;
+
+    //ofs << "day,user,encounter,prob" << std::endl;
+    ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
+    ofs << "<infections>\n";
+
+    // collect encounters
+    collect_daily(daily_encs, encs, dts);
+
+    // for all timestamps
+    for(auto it = daily_encs.cbegin(); it != daily_encs.cend(); ++it) {
+        int t = it->first;
+
+        ofs << "<infection day=\"" << t << "\">\n";
+
+        const std::unordered_map<user_t, b_users>& users = it->second;
+
+        // for all users
+        for(auto uit = users.cbegin(); uit != users.cend(); ++uit) {
+            const user_t& u1 = uit->first;
+            const b_users& eusers = uit->second;
+
+            ofs << "  <user id=\"" << u1 << "\">\n";
+
+            // for all encountered users
+            for(auto eit = eusers.cbegin(); eit != eusers.cend(); ++eit) {
+                const user_t& u2 = eit->first;
+                int count = eit->second;
+
+                double pu1 = uprobs[u1].prob(t);
+                double pu2 = uprobs[u2].prob(t);
+                double np1 = 1 - (1 - pu1)*pow((1 - tau*pu2), count);
+                uprobs[u1].update(t, np1);
+
+                ofs << "    <other id=\"" << u2 << "\"  prob=\"" << np1 << "\" />\n";
+            }
+
+            ofs << "  </user>\n";
+        }
+
+        ofs << "</infection>\n";
+    }
+
+    ofs << "</infections>\n";
     std::cout << "Infections::done" << std::endl;
 }

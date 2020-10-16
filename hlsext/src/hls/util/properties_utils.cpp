@@ -72,5 +72,4 @@ namespace util {
         return trimmedStr == "";
     }
 
-
 }}
