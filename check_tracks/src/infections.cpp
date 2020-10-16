@@ -17,8 +17,8 @@ using namespace boost::posix_time;
 // ustate_t
 // --------------------------------------------------------------------------
 
-ustate_t& ustate_t::update(int t, double p) {
-    if (_infected == invalid && _prob[0] == 1.) {
+double ustate_t::update(int t, double p) {
+    if (_infected == invalid && _prob == 1.) {
         _infected  = t - p_inf->latent_days_ts();
         _infective = t;
         _removed   = _infected + p_inf->removed_days_ts();
@@ -27,12 +27,12 @@ ustate_t& ustate_t::update(int t, double p) {
         _infected = t;
         _infective = t + p_inf->latent_days_ts();
         _removed   = _infected + p_inf->removed_days_ts();
-        _prob[0] = p;
+        _prob = p;
     }
     else {
-        _prob[0] = p;
+        _prob = 1 - (1 - _prob)*(1 - p);
     }
-    return *this;
+    return _prob;
 }
 
 ustate_t& ustate_t::tested(int t, double p) {
@@ -229,6 +229,8 @@ void Infections::init_world() {
     lts = l*dts;
     // m in time slots
     mts = m*dts;
+    // r in timeslots
+    rts = r*dts;
 }
 
 
@@ -465,10 +467,8 @@ void Infections::save_daily_csv(const std::string& filename) const {
                 const user_t& u2 = eit->first;
                 int count = eit->second;
 
-                double pu1 = uprobs[u1].prob(t);
                 double pu2 = uprobs[u2].prob(t);
-                double np1 = 1 - (1 - pu1)*pow((1 - tau*pu2), count);
-                uprobs[u1].update(t, np1);
+                double np1 = uprobs[u1].update(t, pow((1 - tau*pu2), count));
 
                 ofs << t << "," << u1 << "," << u2 << "," << np1 << std::endl;
             }
@@ -524,10 +524,8 @@ void Infections::save_daily_xml(const std::string& filename) const {
                 const user_t& u2 = eit->first;
                 int count = eit->second;
 
-                double pu1 = uprobs[u1].prob(t);
                 double pu2 = uprobs[u2].prob(t);
-                double np1 = 1 - (1 - pu1)*pow((1 - tau*pu2), count);
-                uprobs[u1].update(t, np1);
+                double np1 = uprobs[u1].update(t, pow((1 - tau*pu2), count));
 
                 ofs << "    <other id=\"" << u2 << "\"  prob=\"" << np1 << "\" />\n";
             }

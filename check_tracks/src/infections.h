@@ -19,14 +19,116 @@ namespace hls {
 namespace khalifa {
 namespace summer {
 
-    struct Infections;
+    // ----------------------------------------------------------------------
+    // prob_t<N>
+    // ----------------------------------------------------------------------
+
+    template <size_t N>
+    struct prob_t {
+        double prob[N];
+
+        explicit prob_t(): prob_t(0,0,0) { };
+        explicit prob_t(double p0): prob_t(p0,0,0) { }
+        explicit prob_t(double p0, double p1): prob_t(p0,p1,0) { }
+        explicit prob_t(double p0, double p1, double p2) {
+            for(size_t i=0; i<N; ++i)
+                prob[i] = 0.;
+            prob[0] = p0;
+            prob[1] = p1;
+            prob[2] = p2;
+        }
+        prob_t(const prob_t& p) {
+            for(size_t i=0; i<N; ++i)
+                prob[i] = p.prob[i];
+        }
+
+        prob_t& operator =(const prob_t& p) {
+            for(size_t i=0; i<N; ++i)
+                prob[i] = p.prob[i];
+            return *this;
+        }
+
+        prob_t operator *(const prob_t& p) {
+            prob_t r;
+            for(size_t i=0; i<N; ++i)
+                r.prob[i] = prob[i]*p.prob[i];
+            return r;
+        }
+        prob_t operator *(double s) {
+            prob_t r;
+            for(size_t i=0; i<N; ++i)
+                r.prob[i] = prob[i]*s;
+            return r;
+        }
+        prob_t operator /(double s) {
+            prob_t r;
+            for(size_t i=0; i<N; ++i)
+                r.prob[i] = prob[i]/s;
+            return r;
+        }
+
+        prob_t& operator *=(const prob_t& p) {
+            for(size_t i=0; i<N; ++i)
+                prob[i] *= p.prob[i];
+            return *this;
+        }
+
+        prob_t& operator *=(double s) {
+            for(size_t i=0; i<N; ++i)
+                prob[i] *= s;
+            return *this;
+        }
+
+        prob_t& operator /=(double s) {
+            for(size_t i=0; i<N; ++i)
+                prob[i] /= s;
+            return *this;
+        }
+
+        double operator[](size_t i) const {
+            return prob[i];
+        }
+
+        double& operator[](size_t i) {
+            return prob[i];
+        }
+    };
+
+    template<size_t N>
+    prob_t<N> operator *(double s, const prob_t<N>& p) {
+        prob_t<N> r;
+        for(size_t i=0; i<N; ++i)
+            r.prob[i] = p.prob[i]*s;
+        return r;
+    }
+
+    template<size_t N>
+    prob_t<N> operator -(double s, const prob_t<N>& p) {
+        prob_t<N> r;
+        for(size_t i=0; i<N; ++i)
+            r.prob[i] = s - p.prob[i];
+        return r;
+    }
+
+}}}
+
+
+namespace hls {
+namespace khalifa {
+namespace summer {
 
     const int invalid = -9999;
+
+    // ----------------------------------------------------------------------
+    // ustate_t
+    // ----------------------------------------------------------------------
+
+    struct Infections;
 
     struct ustate_t {
         const Infections* p_inf;
 
-        double _prob[3];    // [0]: unconscious, tested, infected
+        double _prob;       // [0]: unconscious, tested, infected
         double _life[3];    // [0]:
         int _infected;      // timestamp when infected
         int _infective;     // infected + latent_days
@@ -34,7 +136,7 @@ namespace summer {
         int _tested;        // timestamp when tested
 
         ustate_t():
-            _prob{0.,0.,0.},
+            _prob(0),
             _life{1.,0.,0.},
             _infected(invalid),
             _infective(invalid),
@@ -47,21 +149,21 @@ namespace summer {
         }
 
         ustate_t& infected() {
-            _prob[0] = 1.;
+            _prob = 1.;
             return *this;
         }
 
-        double prob() const { return _prob[0]; }
+        double prob() const { return _prob; }
         double prob(int t) {
             if (_infected == invalid)
-                return _prob[0];
+                return _prob;
             if (t < _infective || _removed < t)
                 return 0.;
             else
-                return _prob[0];
+                return _prob;
 
         }
-        ustate_t& update(int t, double p);
+        double update(int t, double p);
 
         ustate_t& tested(int t, double p);
 
@@ -115,24 +217,26 @@ namespace summer {
 
         int d;          // contact_range (in meters)
         double beta;    // infection_rate (infections/day)
-        int l;          // latent_days; n of days before to became infectious.
+        int l;          // latent_days: n of days before to became infectious.
                         // 0 -> immediately
         int m;          // removed_days: n of days after the first contact to became NOT infectious.
                         // 0 -> forever
         double t;       // test probability [0,1]
         double p;       // positive probability [0,1]
+        int r;          // result_days: n of days to wait for the result
         long seed;      // random seed;
 
         //
         // Implementation
         //
 
-        double dt;
-        double tau;             // (1-exp(-beta*delta_T))*(d/D)^2   D: side
+        double dt;      // time slot in days
+        double tau;     // (1-exp(-beta*delta_T))*(d/D)^2   D: side
 
-        int lts;                // l in 'time slots'
-        int mts;                // m in 'time slots'
-        int dts;                // 1 day in 'time slots'
+        int lts;        // l in 'time slots'
+        int mts;        // m in 'time slots'
+        int rts;        // r in 'time slots'
+        int dts;        // 1 day in 'time slots'
 
         // starting list of infected users
         s_users _infected;
@@ -168,6 +272,7 @@ namespace summer {
             m = 0;
             t = 0.01;
             p = 0.85;
+            r = 2;
             seed = 123;
             _cmode_day = -1;
         }
@@ -197,6 +302,9 @@ namespace summer {
         /// positive probability. It depends on the current
         Infections& positive_prob(double pp) { this->p = pp; return *this; }
         double      positive_prob() const { return this->p; }
+        /// n of days to wait for the result after the test
+        Infections& result_days(int rd) { this->r = rd; return *this; }
+        int         result_days() const { return this->r; }
 
         /// contact mode:
         Infections& contact_mode(const contact_mode cm, double cmp) {
@@ -204,11 +312,6 @@ namespace summer {
             this->_cmode_prob = cmp;
             return *this;
         }
-
-        /// latent days in time slots (available AFTER 'init()')
-        int latent_days_ts()  const { return lts; }
-        /// removed days in time slots (available AFTER 'init()')
-        int removed_days_ts() const { return mts; }
 
         /// Quota [0,1] of infected users
         Infections& infected(double quota);
@@ -220,8 +323,16 @@ namespace summer {
         /// Initial list of infected users
         const s_users& infected() const { return _infected; }
 
+        // ------------------------------------------------------------------
+        // Propagate
+        // ------------------------------------------------------------------
+
         /// Simulate
         Infections& propagate();
+
+        // ------------------------------------------------------------------
+        // Save results
+        // ------------------------------------------------------------------
 
         enum file_format { CSV, XML };;
 
@@ -229,7 +340,18 @@ namespace summer {
         void save_info(const std::string& filename) const;
         void save_table(const std::string& filename, const time_duration& interval) const;
         void save_daily(const std::string& filename, file_format format) const;
+
+    public:
+
+        /// latent days in time slots (available AFTER 'init()')
+        int latent_days_ts()  const { return lts; }
+        /// removed days in time slots (available AFTER 'init()')
+        int removed_days_ts() const { return mts; }
+        /// result days in time slots (available AFTER 'init()')
+        int result_days_ts() const { return rts; }
+
     private:
+
         /// Reference to dworld
         const DiscreteWorld& dworld() const { return *dworld_p; }
 
