@@ -4,16 +4,21 @@
 
 #include <fstream>
 #include <algorithm>
-#include "hls/util/properties.h"
-#include "properties_utils.h"
+#include "stdx/properties.h"
+#include "stdx/strings.h"
+#include "../hls/util/properties_utils.h"
 
 
-namespace hls{
-namespace util {
+namespace stdx {
 
 
     properties::properties() {
     }
+
+    properties::properties(const std::string& file) {
+        read(*this, file);
+    }
+
 
     properties::~properties() {
         _names.clear();
@@ -72,6 +77,13 @@ namespace util {
             return defaultValue;
     }
 
+    int properties::get(const std::string &name, int defaultValue) const {
+        if (!contains(name))
+            return defaultValue;
+        else
+            return ::atoi(get(name).c_str());
+    }
+
     long properties::get(const std::string &name, long defaultValue) const {
         if (!contains(name))
             return defaultValue;
@@ -88,9 +100,31 @@ namespace util {
 
     // ---------------------------------------
 
+    std::vector<long> properties::get_longs(const std::string &name, const std::string &sep) const {
+        std::string vlist = get(name, std::string(""));
+        std::vector<std::string> parts = stdx::split(vlist, sep);
+        std::vector<long> values;
+        for(const std::string& v : parts) {
+            long value = ::atol(v.c_str());
+            values.push_back(value);
+        }
+        return values;
+    }
 
-    properties properties::read(const std::string& file) {
-        properties properties;
+    std::vector<int> properties::get_ints(const std::string &name, const std::string &sep) const {
+        std::string vlist = get(name, std::string(""));
+        std::vector<std::string> parts = stdx::split(vlist, sep);
+        std::vector<int> values;
+        for(const std::string& v : parts) {
+            int value = ::atoi(v.c_str());
+            values.push_back(value);
+        }
+        return values;
+    }
+
+    // ---------------------------------------
+
+    void properties::read(properties& props, const std::string& file) {
 
         std::ifstream is;
         is.open(file.c_str());
@@ -102,11 +136,11 @@ namespace util {
             size_t linenr = 0;
             std::string line;
             while (getline(is, line)) {
-                if (is_empty_line(line) || is_comment(line)) {
+                if (hls::util::is_empty_line(line) || hls::util::is_comment(line)) {
                     // ignore it
-                } else if (is_property(line)) {
-                    std::pair<std::string, std::string> prop = parse_property(line);
-                    properties.insert(prop.first, prop.second);
+                } else if (hls::util::is_property(line)) {
+                    std::pair<std::string, std::string> prop = hls::util::parse_property(line);
+                    props.insert(prop.first, prop.second);
                 } else {
                     throw properties_exception("PropertiesParser::Read(" + file + "): Invalid line " + std::to_string(linenr) + ": " + line);
                 }
@@ -118,8 +152,6 @@ namespace util {
             is.close();
             throw;
         }
-
-        return properties;
     }
 
     void properties::write(const std::string& file, const properties& props) {
@@ -142,4 +174,4 @@ namespace util {
         }
     }
 
-}}
+}

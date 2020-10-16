@@ -9,8 +9,7 @@
 #include <vector>
 #include <map>
 
-namespace hls {
-namespace util {
+namespace stdx {
 
     class properties_exception : public std::exception {
     public:
@@ -47,6 +46,7 @@ namespace util {
     class properties {
     public:
         properties();
+        explicit properties(const std::string& file);
         virtual ~properties();
 
         /**
@@ -61,20 +61,20 @@ namespace util {
          * exist.
          */
         std::string get(const std::string& name) const;
+        std::string get(const std::string& name, const std::string& defaultValue) const;
 
         // stl collections
         std::string at(const std::string& name) const { return get(name); }
         std::string operator[] (const std::string& name) const { return get(name); }
 
-        /**
-         * Gets the property value from a given name. Use a default value if not found.
-         */
-        std::string get(const std::string& name, const std::string& defaultValue) const;
-
         // -- specialized
         bool get(const std::string& name, bool defaultValue) const;
+        int get(const std::string& name, int defaultValue) const;
         long get(const std::string& name, long defaultValue) const;
         double get(const std::string& name, double defaultValue) const;
+
+        std::vector<long> get_longs(const std::string& name, const std::string& sep=",") const;
+        std::vector<int> get_ints(const std::string& name, const std::string& sep=",") const;
 
         /**
          * Gets the list of property names.
@@ -103,7 +103,7 @@ namespace util {
         /**
          * Reads a properties file and returns a Properties object.
          */
-        static properties read(const std::string& file);
+        static void read(properties& props, const std::string& file);
 
         /**
          * Writes Properties object to a file.
@@ -111,6 +111,6 @@ namespace util {
         static void write(const std::string& file, const properties& props);
     };
 
-}}
+}
 
 #endif //HLSEXT_PROPERTIES_H
