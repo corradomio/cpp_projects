@@ -31,20 +31,22 @@ namespace summer {
         explicit prob_t(double p0): prob_t(p0,0,0) { }
         explicit prob_t(double p0, double p1): prob_t(p0,p1,0) { }
         explicit prob_t(double p0, double p1, double p2) {
-            for(size_t i=0; i<N; ++i)
+            for(size_t i=3; i<N; ++i)
                 prob[i] = 0.;
             prob[0] = p0;
             prob[1] = p1;
             prob[2] = p2;
         }
         prob_t(const prob_t& p) {
-            for(size_t i=0; i<N; ++i)
-                prob[i] = p.prob[i];
+            //for(size_t i=0; i<N; ++i)
+            //    prob[i] = p.prob[i];
+            prob = p.prob;
         }
 
         prob_t& operator =(const prob_t& p) {
-            for(size_t i=0; i<N; ++i)
-                prob[i] = p.prob[i];
+            //for(size_t i=0; i<N; ++i)
+            //    prob[i] = p.prob[i];
+            prob = p.prob;
             return *this;
         }
 
@@ -52,6 +54,12 @@ namespace summer {
             prob_t r;
             for(size_t i=0; i<N; ++i)
                 r.prob[i] = prob[i]*p.prob[i];
+            return r;
+        }
+        prob_t operator *(int s) {
+            prob_t r;
+            for(size_t i=0; i<N; ++i)
+                r.prob[i] = 1 - std::pow(1 - prob[i], s);
             return r;
         }
         prob_t operator *(double s) {
@@ -66,22 +74,36 @@ namespace summer {
                 r.prob[i] = prob[i]/s;
             return r;
         }
+        prob_t operator +(const prob_t& p) {
+            prob_t r;
+            for(size_t i=0; i<N; ++i)
+                r.prob[i] = 1 - (1 - prob[i])*(1 - p.prob[i]);
+            return r;
+        }
 
         prob_t& operator *=(const prob_t& p) {
             for(size_t i=0; i<N; ++i)
                 prob[i] *= p.prob[i];
             return *this;
         }
-
         prob_t& operator *=(double s) {
             for(size_t i=0; i<N; ++i)
                 prob[i] *= s;
             return *this;
         }
-
+        prob_t& operator *=(int s) {
+            for(size_t i=0; i<N; ++i)
+                prob[i] = 1 - std::pow(1 - prob[i], s);
+            return *this;
+        }
         prob_t& operator /=(double s) {
             for(size_t i=0; i<N; ++i)
                 prob[i] /= s;
+            return *this;
+        }
+        prob_t& operator +=(const prob_t& p) {
+            for(size_t i=0; i<N; ++i)
+                prob[i] = 1 - (1 - prob[i])*(1 - p.prob[i]);
             return *this;
         }
 
@@ -99,6 +121,13 @@ namespace summer {
         prob_t<N> r;
         for(size_t i=0; i<N; ++i)
             r.prob[i] = p.prob[i]*s;
+        return r;
+    }
+    template<size_t N>
+    prob_t<N> operator *(int s, const prob_t<N>& p) {
+        prob_t<N> r;
+        for(size_t i=0; i<N; ++i)
+            r.prob[i] = 1 - std::pow(1 - p.prob[i], s);
         return r;
     }
 

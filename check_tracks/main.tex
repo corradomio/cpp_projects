@@ -1,0 +1,194 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+% \usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage[a4paper, margin=0.75in]{geometry}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\newcommand{\expr}[1]{\left(#1\right)}
+
+\title{Project Summer}
+\author{corrado.mio }
+\date{October 2020}
+
+\begin{document}
+
+\setlength{\parindent}{0em}
+\maketitle
+
+\section{Introduction}
+
+We suppose to have:
+
+\begin{itemize}
+    \item a \textit{discretized world} where
+        \begin{itemize}
+            \item $D$ (in meters) is the length of the squared cell used to discretize the 2D space
+            \item $\Delta{t}$ (fraction of a day) is the length of a \textit{time-slot} used to discretize the time. We suppose that a day is subdivided in a integer number of time-slots 
+        \end{itemize}
+    
+    \item a contagious disease having
+        \begin{itemize}
+            \item $\beta$, the \textit{infectivity} of the disease, {\bf per unit time} $\Delta{t}$
+            \item $d$, the \textit{range} of infectivity, in meters
+            \item $L$ days where the disease is \textit{latent}: an  \textit{infected} agent is \textbf{not} \textit{infectious} for the first $L$ days
+            \item $R > L$ days of disease life. After $R$ days, the agent is no longer infectious and not \textit{susceptible} ((s)he can no longer be infected). An infected agent is infectious in the last $R-L$ days from infection
+        \end{itemize}
+    
+    \item $n$ agents. Each agent $i$:
+        \begin{itemize}
+            \item belongs to a \textit{category} $a \in A$
+            \item has a \textit{probability to be infected} equals to $p_i$
+        \end{itemize}
+    
+    \item at the begin of the simulation some agents are \textit{infected} \textbf{and} \textit{infectious}. It is possible to specify the \textit{quota} ($[0,1]$), the \textit{number} or the exact list of infected agents. An infected agent has $p_i=1$, the other agents have $p_i=0$
+    
+    \item every day, each agent of category $a$ has probability $t_a$ to be tested. If the probability depends on the day $d$, this probability will be $t^d_a$. If the probability is the same every day for all agent's categories, it will be $t$
+    
+    \item after the test, the response is available the next day and it returns always the correct response
+    
+    \item each agent can be in the following states:
+        \begin{itemize}
+            \item \textit{susceptible}: can be infected
+            \item \textit{infected} but not \textit{infectious}, from the first day of  the infection and for $L$ days
+            \item \textit{infected} and \textit{infectious}, after $L$ days from the infection and for $R-L$ days
+            \item \textit{removed}, after $R$ days or because it is in quarantine. After this status, the agent became not susceptible: it can not be infected another time.
+        \end{itemize}
+\end{itemize}
+
+\section{Discretized world}
+
+When an agent \textit{encounters} another agent, this means that both are in same \textit{discretized box} (same cell in the same time-slot). The probability of a agent to be infected from the other one depends on the distance between them and the length of the encounter. This \textit{factor} ($\tau$) is a constant and it depends only on the discretization parameters and disease's infectivity:
+
+\begin{equation}
+     \tau = \expr{1 - e^{-\beta{}\Delta{t}}}\expr{\frac{d}{D}}^2
+\end{equation}
+
+\section{Encounters}
+
+When an agent $i$ is in a discretized box, it can encounter 0 or more other agents $j$. For each agent in the box, we can evaluate the probability to be infected from other agents, considering its current probability to be infected and the probability to be infected from the other ones. The new probability will be the agent's probability to be infected in the next encounter. If $t$ is the current time-slot, we can evaluate the probability for $t+1$ as follow:
+
+\begin{equation}\label{eq:nextprob}
+     p_{i}^{t+1} = 1 - \expr{1 - p_i^t} \prod_{j}\expr{1 - \tau{}\cdot{p_j^t}}
+\end{equation}
+
+
+Note that:
+\begin{itemize}
+    \item if there are no other agents, the probability $p_i$ doesn't change ($\prod_{j \in \emptyset{}}x_j = 1$)
+    \item if an agent $j$ is not infected ($p_j^t=0$), it has not effects on $i$ ($(1 - \tau{}\cdot{0}) = 1$)
+    \item if $i$ is already infected ($p_i^t=1$), it remains infected ($(1 - p_i^t)=0$)
+    \item the probability of an agent $j$ to infect $i$ depends on $\tau$, the distance between the two agents and the time of the encounter
+\end{itemize}
+
+\section{Latency period}
+
+In the latency period (from the first day of the infection and for $L$ days) an agent is \textit{infected} but \textbf{not} \textit{infectious}. To include this condition we can use an extra parameter $l_{d_0}^{d_t}$ in the following way:
+
+\begin{equation}\label{eq:nextprob1}
+     p_{i}^{t+1} = 1 - \expr{1 - p_i^t} \prod_{j}\expr{1 - \tau{}\cdot{p_j^t}\cdot{l_{d_0}^{d_t}}}
+\end{equation}
+
+where $d_0$ is the day of the infection, $d_t$ is the day containing the time-slot $t$, and $l_{d_0}^d$ is defines as
+
+\begin{equation}\label{eq:nextprob}
+     l_{d_0}^d = \begin{cases}
+            L \leq d-d_0 \leq R     &\quad{} 1 \\
+            \text{otherwise} &\quad{} 0
+        \end{cases}
+\end{equation}
+
+An alternative definition could be:
+
+\begin{equation}\label{eq:nextprob}
+     l_{d_0}^d = \begin{cases}
+            d-d_0 < L               &\quad{} \frac{d-d_0}{L} \\
+            L \leq d-d_0 \leq R     &\quad{} 1 \\
+            \text{otherwise}        &\quad{} 0
+        \end{cases}
+\end{equation}
+
+in this case, the infectivity of the agent increase during the latent period, to became maximum after $L$ days.
+
+
+
+\section{Tested and retired}
+
+Every day $d$, an agent of category $a\in A$ has probability $t_a^d$ to be tested. Obviously, if the agent is not infected or retired, the test's response is \textit{false} (\textbf{not} infected). If it is infected, the probability that the response is \textit{true} is 
+
+\begin{equation}
+     t^d_a\cdot{p_i^{t_d}}    
+\end{equation}
+
+
+where $t_d$ is the time-slot at the end of the day.
+
+We can say that the agent will be \textit{retired} the next day with probability:
+
+\begin{equation}
+     r^{d+1}_i = t^d_a\cdot{p_i^{t_d}}
+\end{equation}
+
+Every day $d$, an agent is retired from the system with probability:
+
+\begin{equation}
+     R_i^{d+1} = 1 - \prod_{k=1}^{d}(1-r^k_i)
+\end{equation}
+
+or, obviously, it remains in the system with probability
+
+\begin{equation}
+     A_i^{d+1} = 1 - R_i^{d+1} = \prod_{k=1}^{d}(1-r^k_i)
+\end{equation}
+
+where $k=1$ is the first day of the simulation.
+
+We can observe that, an agent:
+\begin{itemize}
+    \item if it is not infected, $r^k_i = 0$
+    \item if it is retired, $r^k_i = 1$, $R_i^{d+1} = 1$ and $A_i^{d+1} = 0$
+    \item the probability to be retired has effect only in the interval $[d_1, d_R]$ where $d_1$ is the day after the day of the infection, and $d_R$ is the last day of the disease
+\end{itemize}
+
+
+\section{The day after}
+
+Now we have two information. For each agent $i$
+
+\begin{itemize}
+    \item the probability to be infected at the end of day $p_i^{t_d}$
+    \item the probability to be retired the next day $R_i^{d+1}$ or, alternatively, the probability to remain in the system $A_i^{d+1}$
+\end{itemize}
+
+and we have to evaluate the probability to be infectious at the begin of the next day $\hat{p}_i^{t_{d+1}}$
+
+\begin{equation}
+     \hat{p}_i^{t_{d+1}} = A_i^{d+1}\cdot{p_i^{t_d}} = \expr{1 - R_i^{d+1}}\cdot{p_i^{t_d}}
+\end{equation}
+
+The problem here is how to include this information in \ref{eq:nextprob}.
+
+The first possibility is to keep this information separated. In this case, \ref{eq:nextprob} can be updated as:
+
+\begin{equation}
+     p_{i}^{t+1} = 1 - \expr{1 - p_i^t} \prod_{j}\expr{1 - \tau{}\cdot{p_j^t}\cdot{A_i^{d_t}}}
+\end{equation}
+
+where $d_t$ is the day containing the time-slot $t$.
+
+The second possibility is to include the probability $r^{d}_i$ day per day. At the end of each day, the probability of each agent is updated as:
+
+\begin{equation}
+     p_i^{t_{d+1}} = p_i^{t_d}\expr{1 - r^{d+1}_i}
+\end{equation}
+
+and $p_i^{t_{d+1}}$ will be the probability to use at the begin of next day.
+
+
+\section{Conclusions}
+
+From the simulator's point of view, to include the probability to be removed day by day is the more simple solution.
+
+\end{document}
