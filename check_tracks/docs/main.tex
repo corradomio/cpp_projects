@@ -10,7 +10,7 @@
 \newcommand{\expr}[1]{\left(#1\right)}
 
 \title{Project Summer}
-\author{corrado.mio }
+\author{corrado.mio, gabriele.gianini}
 \date{October 2020}
 
 \begin{document}
@@ -68,7 +68,7 @@ When an agent \textit{encounters} another agent, this means that both are in sam
 
 \section{Encounters}
 
-When an agent $i$ is in a discretized box, it can encounter 0 or more other agents $j$. For each agent in the box, we can evaluate the probability to be infected from other agents, considering its current probability to be infected and the probability to be infected from the other ones. The new probability will be the agent's probability to be infected in the next encounter. If $t$ is the current time-slot, we can evaluate the probability for $t+1$ as follow:
+When an agent $i$ is in a discretized box, it can encounter $0$ or more agents $j$. For each agent in the box, we can evaluate the probability to be infected from other agents, considering its current probability to be infected and the probability to be infected from the other ones. The new probability will be the agent's probability to be infected in the next encounter. If $t$ is the current time-slot, we can evaluate the probability for $t+1$ as follow:
 
 \begin{equation}\label{eq:nextprob}
      p_{i}^{t+1} = 1 - \expr{1 - p_i^t} \prod_{j}\expr{1 - \tau{}\cdot{p_j^t}}
@@ -85,16 +85,16 @@ Note that:
 
 \section{Latency period}
 
-In the latency period (from the first day of the infection and for $L$ days) an agent is \textit{infected} but \textbf{not} \textit{infectious}. To include this condition we can use an extra parameter $l_{d_0}^{d_t}$ in the following way:
+In the latency period (from the first day of the infection and for $L$ days) an agent is \textit{infected} but \textbf{not} \textit{infectious}. To include this condition we can use an extra parameter $l(d_0, d_t)$
 
-\begin{equation}\label{eq:nextprob1}
-     p_{i}^{t+1} = 1 - \expr{1 - p_i^t} \prod_{j}\expr{1 - \tau{}\cdot{p_j^t}\cdot{l_{d_0}^{d_t}}}
+\begin{equation}
+     p_{i}^{t+1} = 1 - \expr{1 - p_i^t} \prod_{j}\expr{1 - \tau{}\cdot{p_j^t}\cdot{l(d_0, d_t)}}
 \end{equation}
 
-where $d_0$ is the day of the infection, $d_t$ is the day containing the time-slot $t$, and $l_{d_0}^d$ is defines as
+where $d_0$ is the day of the infection, $d_t$ is the day containing the time-slot $t$, and $l(d_0, d)$ is defines as
 
-\begin{equation}\label{eq:nextprob}
-     l_{d_0}^d = \begin{cases}
+\begin{equation}
+     l(d_0, d) = \begin{cases}
             L \leq d-d_0 \leq R     &\quad{} 1 \\
             \text{otherwise} &\quad{} 0
         \end{cases}
@@ -102,36 +102,35 @@ where $d_0$ is the day of the infection, $d_t$ is the day containing the time-sl
 
 An alternative definition could be:
 
-\begin{equation}\label{eq:nextprob}
-     l_{d_0}^d = \begin{cases}
+\begin{equation}
+     l(d_0, d) = \begin{cases}
             d-d_0 < L               &\quad{} \frac{d-d_0}{L} \\
             L \leq d-d_0 \leq R     &\quad{} 1 \\
             \text{otherwise}        &\quad{} 0
         \end{cases}
 \end{equation}
 
-in this case, the infectivity of the agent increase during the latent period, to became maximum after $L$ days.
+in this case, the infectivity of the agent increase during the latent period, to became maximum after $L$ days. 
 
 
+\section{Tested and removed}
 
-\section{Tested and retired}
-
-Every day $d$, an agent of category $a\in A$ has probability $t_a^d$ to be tested. Obviously, if the agent is not infected or retired, the test's response is \textit{false} (\textbf{not} infected). If it is infected, the probability that the response is \textit{true} is 
+Every day $d$, an agent of category $a\in A$ has probability $t_a^d$ to be \textit{tested}. Obviously, if the agent is not infected or removed, the test's response is \textit{false} (\textbf{not} infected). If it is infected with probability $p_i^{t_d}$, the probability that the response is \textit{true} is 
 
 \begin{equation}
      t^d_a\cdot{p_i^{t_d}}    
 \end{equation}
 
 
-where $t_d$ is the time-slot at the end of the day.
+where $t_d$ is the last time-slot of the day $d$.
 
-We can say that the agent will be \textit{retired} the next day with probability:
+We can say that the agent will be \textit{removed} the next day with probability:
 
 \begin{equation}
      r^{d+1}_i = t^d_a\cdot{p_i^{t_d}}
 \end{equation}
 
-Every day $d$, an agent is retired from the system with probability:
+Every day $d$, an agent is removed from the system with probability:
 
 \begin{equation}
      R_i^{d+1} = 1 - \prod_{k=1}^{d}(1-r^k_i)
@@ -148,8 +147,8 @@ where $k=1$ is the first day of the simulation.
 We can observe that, an agent:
 \begin{itemize}
     \item if it is not infected, $r^k_i = 0$
-    \item if it is retired, $r^k_i = 1$, $R_i^{d+1} = 1$ and $A_i^{d+1} = 0$
-    \item the probability to be retired has effect only in the interval $[d_1, d_R]$ where $d_1$ is the day after the day of the infection, and $d_R$ is the last day of the disease
+    \item if it is removed, $r^k_i = 1$, $R_i^{d+1} = 1$ and $A_i^{d+1} = 0$
+    \item the probability to be removed has effect only in the interval $[d_1, d_R]$ where $d_1$ is the day after the day of the infection, and $d_R$ is the last day of the disease
 \end{itemize}
 
 
@@ -159,7 +158,7 @@ Now we have two information. For each agent $i$
 
 \begin{itemize}
     \item the probability to be infected at the end of day $p_i^{t_d}$
-    \item the probability to be retired the next day $R_i^{d+1}$ or, alternatively, the probability to remain in the system $A_i^{d+1}$
+    \item the probability to be removed the next day $R_i^{d+1}$ or, alternatively, the probability to remain in the system $A_i^{d+1}$
 \end{itemize}
 
 and we have to evaluate the probability to be infectious at the begin of the next day $\hat{p}_i^{t_{d+1}}$
@@ -189,6 +188,6 @@ and $p_i^{t_{d+1}}$ will be the probability to use at the begin of next day.
 
 \section{Conclusions}
 
-From the simulator's point of view, to include the probability to be removed day by day is the more simple solution.
+From the simulator's point of view, to include the probability to be removed day by day is the simplest solution.
 
 \end{document}
