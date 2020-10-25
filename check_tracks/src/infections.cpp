@@ -35,21 +35,6 @@ double ustate_t::update(int t, double p) {
     return _prob;
 }
 
-ustate_t& ustate_t::tested(int t, double p) {
-    _tested = t;
-    _life[0] = 1 - p;
-    _life[1] = p;
-    return *this;
-}
-
-ustate_t& ustate_t::infected(int t, double p) {
-    _tested = t;
-    _life[0] = 1 - p;
-    _life[1] = p;
-    return *this;
-}
-
-
 
 // --------------------------------------------------------------------------
 // state_t
@@ -229,8 +214,6 @@ void Infections::init_world() {
     lts = l*dts;
     // m in time slots
     mts = m*dts;
-    // r in timeslots
-    rts = r*dts;
 }
 
 

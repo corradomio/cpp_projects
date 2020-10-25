@@ -19,133 +19,6 @@ namespace hls {
 namespace khalifa {
 namespace summer {
 
-    // ----------------------------------------------------------------------
-    // prob_t<N>
-    // ----------------------------------------------------------------------
-
-    template <size_t N>
-    struct prob_t {
-        double prob[N];
-
-        explicit prob_t(): prob_t(0,0,0) { };
-        explicit prob_t(double p0): prob_t(p0,0,0) { }
-        explicit prob_t(double p0, double p1): prob_t(p0,p1,0) { }
-        explicit prob_t(double p0, double p1, double p2) {
-            for(size_t i=3; i<N; ++i)
-                prob[i] = 0.;
-            prob[0] = p0;
-            prob[1] = p1;
-            prob[2] = p2;
-        }
-        prob_t(const prob_t& p) {
-            //for(size_t i=0; i<N; ++i)
-            //    prob[i] = p.prob[i];
-            prob = p.prob;
-        }
-
-        prob_t& operator =(const prob_t& p) {
-            //for(size_t i=0; i<N; ++i)
-            //    prob[i] = p.prob[i];
-            prob = p.prob;
-            return *this;
-        }
-
-        prob_t operator *(const prob_t& p) {
-            prob_t r;
-            for(size_t i=0; i<N; ++i)
-                r.prob[i] = prob[i]*p.prob[i];
-            return r;
-        }
-        prob_t operator *(int s) {
-            prob_t r;
-            for(size_t i=0; i<N; ++i)
-                r.prob[i] = 1 - std::pow(1 - prob[i], s);
-            return r;
-        }
-        prob_t operator *(double s) {
-            prob_t r;
-            for(size_t i=0; i<N; ++i)
-                r.prob[i] = prob[i]*s;
-            return r;
-        }
-        prob_t operator /(double s) {
-            prob_t r;
-            for(size_t i=0; i<N; ++i)
-                r.prob[i] = prob[i]/s;
-            return r;
-        }
-        prob_t operator +(const prob_t& p) {
-            prob_t r;
-            for(size_t i=0; i<N; ++i)
-                r.prob[i] = 1 - (1 - prob[i])*(1 - p.prob[i]);
-            return r;
-        }
-
-        prob_t& operator *=(const prob_t& p) {
-            for(size_t i=0; i<N; ++i)
-                prob[i] *= p.prob[i];
-            return *this;
-        }
-        prob_t& operator *=(double s) {
-            for(size_t i=0; i<N; ++i)
-                prob[i] *= s;
-            return *this;
-        }
-        prob_t& operator *=(int s) {
-            for(size_t i=0; i<N; ++i)
-                prob[i] = 1 - std::pow(1 - prob[i], s);
-            return *this;
-        }
-        prob_t& operator /=(double s) {
-            for(size_t i=0; i<N; ++i)
-                prob[i] /= s;
-            return *this;
-        }
-        prob_t& operator +=(const prob_t& p) {
-            for(size_t i=0; i<N; ++i)
-                prob[i] = 1 - (1 - prob[i])*(1 - p.prob[i]);
-            return *this;
-        }
-
-        double operator[](size_t i) const {
-            return prob[i];
-        }
-
-        double& operator[](size_t i) {
-            return prob[i];
-        }
-    };
-
-    template<size_t N>
-    prob_t<N> operator *(double s, const prob_t<N>& p) {
-        prob_t<N> r;
-        for(size_t i=0; i<N; ++i)
-            r.prob[i] = p.prob[i]*s;
-        return r;
-    }
-    template<size_t N>
-    prob_t<N> operator *(int s, const prob_t<N>& p) {
-        prob_t<N> r;
-        for(size_t i=0; i<N; ++i)
-            r.prob[i] = 1 - std::pow(1 - p.prob[i], s);
-        return r;
-    }
-
-    template<size_t N>
-    prob_t<N> operator -(double s, const prob_t<N>& p) {
-        prob_t<N> r;
-        for(size_t i=0; i<N; ++i)
-            r.prob[i] = s - p.prob[i];
-        return r;
-    }
-
-}}}
-
-
-namespace hls {
-namespace khalifa {
-namespace summer {
-
     const int invalid = -9999;
 
     // ----------------------------------------------------------------------
@@ -158,19 +31,16 @@ namespace summer {
         const Infections* p_inf;
 
         double _prob;       // [0]: unconscious, tested, infected
-        double _life[3];    // [0]:
         int _infected;      // timestamp when infected
-        int _infective;     // infected + latent_days
-        int _removed;       // infected + removed_days
-        int _tested;        // timestamp when tested
+        int _infective;     // timestamp when infected
+        int _removed;       // timestamp when infected
 
         ustate_t():
             _prob(0),
-            _life{1.,0.,0.},
             _infected(invalid),
             _infective(invalid),
-            _removed(invalid),
-            _tested(invalid){ }
+            _removed(invalid)
+            { }
 
         ustate_t& inf(const Infections& inf) {
             p_inf = &inf;
@@ -193,10 +63,6 @@ namespace summer {
 
         }
         double update(int t, double p);
-
-        ustate_t& tested(int t, double p);
-
-        ustate_t& infected(int t, double p);
     };
 
     enum contact_mode {
@@ -251,8 +117,6 @@ namespace summer {
         int m;          // removed_days: n of days after the first contact to became NOT infectious.
                         // 0 -> forever
         double t;       // test probability [0,1]
-        double p;       // positive probability [0,1]
-        int r;          // result_days: n of days to wait for the result
         long seed;      // random seed;
 
         //
@@ -264,7 +128,6 @@ namespace summer {
 
         int lts;        // l in 'time slots'
         int mts;        // m in 'time slots'
-        int rts;        // r in 'time slots'
         int dts;        // 1 day in 'time slots'
 
         // starting list of infected users
@@ -300,8 +163,6 @@ namespace summer {
             l = 0;
             m = 0;
             t = 0.01;
-            p = 0.85;
-            r = 2;
             seed = 123;
             _cmode_day = -1;
         }
@@ -328,12 +189,6 @@ namespace summer {
         /// test probability
         Infections& test_prob(double tp) { this->t = tp; return *this; }
         double      test_prob() const { return this->t; }
-        /// positive probability. It depends on the current
-        Infections& positive_prob(double pp) { this->p = pp; return *this; }
-        double      positive_prob() const { return this->p; }
-        /// n of days to wait for the result after the test
-        Infections& result_days(int rd) { this->r = rd; return *this; }
-        int         result_days() const { return this->r; }
 
         /// contact mode:
         Infections& contact_mode(const contact_mode cm, double cmp) {
@@ -376,8 +231,6 @@ namespace summer {
         int latent_days_ts()  const { return lts; }
         /// removed days in time slots (available AFTER 'init()')
         int removed_days_ts() const { return mts; }
-        /// result days in time slots (available AFTER 'init()')
-        int result_days_ts() const { return rts; }
 
     private:
 

@@ -260,7 +260,6 @@ void simulate(const stdx::properties& props, int side, int interval, const vs_us
         .latent_days(props.get("latent_days", 5))
         .removed_days(props.get("removed_days", 15))
         .test_prob(props.get("test_prob", 0.01))
-        .positive_prob(props.get("positive_prob", 0.85))
         .contact_mode(
             static_cast<contact_mode>(props.get("contact_mode", {"none", "random", "daily", "user"})),
             props.get("contact_prob", 1.0))
