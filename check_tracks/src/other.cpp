@@ -9,6 +9,7 @@
 #include "infections.h"
 #include <stdx/ranges.h>
 #include <stdx/properties.h>
+#include <stdx/to_string.h>
 
 using namespace boost::filesystem;
 using namespace boost;
@@ -19,8 +20,6 @@ using namespace hls::khalifa::summer;
 // Parameters
 // --------------------------------------------------------------------------
 
-//const std::string& DATASET = R"(D:\Dropbox\2_Khalifa\Progetto Summer\Dataset_3months)";
-
 std::string grid_fname(const std::string& worlds_dir, int side, int interval) {
     std::string fname = stdx::format(
     R"(%s\tracksgrid_%d_%d_3months.bin)",
@@ -28,20 +27,6 @@ std::string grid_fname(const std::string& worlds_dir, int side, int interval) {
         side, interval);
     return fname;
 }
-
-//std::vector<std::tuple<int, int>> make_params() {
-//    std::vector<std::tuple<int, int>> params;
-//
-//    std::vector<int> sides{5,10,20,50,100};
-//    std::vector<int> intervals{1,5,10,15,30,60};
-//
-//    for (int side : sides)
-//        for (int interval: intervals)
-//            params.emplace_back(side, interval);
-//
-//    return params;
-//}
-
 
 std::vector<std::tuple<int, int>> make_params(const stdx::properties& props) {
     std::vector<std::tuple<int, int>> params;
@@ -57,191 +42,40 @@ std::vector<std::tuple<int, int>> make_params(const stdx::properties& props) {
 }
 
 // --------------------------------------------------------------------------
-// Generic functions
-// --------------------------------------------------------------------------
-
-//void create_grid(int side, int interval, const std::string& filename) {
-//
-//    std::cout << "create_grid(" << side << "," << interval << ") ..." << std::endl;
-//
-//    DiscreteWorld dworld(side, interval);
-//
-//    try {
-//        int count = 0;
-//
-//        path p(DATASET);
-//
-//        // 0,  1          2           3    4          5                  6      7      8           9
-//        // "","latitude","longitude","V3","altitude","date.Long.format","date","time","person.id","track.id"
-//
-//        for (directory_entry &de : directory_iterator(p)) {
-//            if (de.path().extension() != ".csv")
-//                continue;
-//
-//            csvstream csvin(de.path().string());
-//
-//            std::vector<std::string> row;
-//
-//            while  (csvin >> row) {
-//                count += 1;
-//
-//                //if (count%100000 == 0)
-//                //    std::cout << "    " << count << std::endl;
-//
-//                user_t user = lexical_cast<user_t>(row[8]);
-//                double latitude  = lexical_cast<double>(row[1]);
-//                double longitude = lexical_cast<double>(row[2]);
-//
-//                date date = from_string(row[6]);
-//                time_duration duration = duration_from_string(row[7]);
-//                ptime timestamp(date, duration);
-//
-//                dworld.add(user, latitude, longitude, timestamp);
-//            }
-//        }
-//        dworld.done();
-//        std::cout << "    " << count << std::endl;
-//
-//        std::cout << "save in(" << filename << ")" << std::endl;
-//        dworld.save(filename);
-//        dworld.dump();
-//        std::cout << std::endl;
-//    }
-//    catch(std::exception& e) {
-//        std::cout << e.what() << std::endl;
-//    }
-//    catch (...) {
-//        std::cout << "opps!" << std::endl;
-//    }
-//
-//}
-
-//void create_grids() {
-//
-//    std::vector<std::tuple<int, int>> params = make_params();
-//
-//    tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int,int>& p) {
-//        int side = std::get<0>(p);
-//        int interval = std::get<1>(p);
-//
-//        create_grid(side, interval, grid_fname(side, interval));
-//    });
-//
-//}
-
-//void create_grid_test(){
-//    create_grid(100, 60, grid_fname(100, 60));
-//}
-
-//void load_grids(const std::vector<std::tuple<int, int>>& params) {
-//
-//    //std::vector<std::tuple<int, int>> params = make_params();
-//
-//    tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int,int>& p) {
-//        int side = std::get<0>(p);
-//        int interval = std::get<1>(p);
-//
-//        DiscreteWorld dworld;
-//        dworld.load(grid_fname(side, interval));
-//        dworld.dump();
-//    });
-//
-//}
-
-// --------------------------------------------------------------------------
-// IO
-// --------------------------------------------------------------------------
-
-//void save_encounters(int side, int interval) {
-//    std::string filename;
-//    DiscreteWorld dworld;
-//
-//    dworld.load(grid_fname(side, interval));
-//
-//    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\by_slot_%d_%d_3months.csv)", side, interval);
-//    dworld.save_slot_encounters(filename);
-//
-//    filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\by_time_%d_%d_3months.csv)", side, interval);
-//    dworld.save_time_encounters(filename);
-//}
-
-//void save_encounters(const std::vector<std::tuple<int, int>>& params) {
-//
-//    tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
-//        int side = std::get<0>(p);
-//        int interval = std::get<1>(p);
-//
-//        save_encounters(side, interval);
-//    });
-//}
-
-// --------------------------------------------------------------------------
-// Suspended
-// --------------------------------------------------------------------------
-
-//void save_time_encounters(int side, int interval) {
-//    DiscreteWorld dworld;
-//    dworld.load(grid_fname(side, interval));
-//
-//    std::string filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_time\encounters_%d_%d_3months.csv)", side, interval);
-//    dworld.save_time_encounters(filename);
-//}
-
-//void save_time_encounters(std::vector<std::tuple<int, int>>& params) {
-//
-//    tbb::parallel_for_each(params.cbegin(), params.cend(), [&](const std::tuple<int, int>& p) {
-//        int side = std::get<0>(p);
-//        int interval = std::get<1>(p);
-//
-//        save_time_encounters(side, interval);
-//    });
-//}
-
-// --------------------------------------------------------------------------
-
-//void save_slot_encounters(int side, int interval) {
-//    DiscreteWorld dworld;
-//    dworld.load(grid_fname(side, interval));
-//
-//    std::string filename = stdx::format(R"(D:\Projects.github\cpp_projects\check_tracks\encounters\by_slot\encounters_%d_%d_3months.csv)", side, interval);
-//    dworld.save_slot_encounters(filename);
-//}
-
-//void save_slot_encounters(std::vector<std::tuple<int, int>>& params) {
-//
-//    tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
-//        int side = std::get<0>(p);
-//        int interval = std::get<1>(p);
-//
-//        save_slot_encounters(side, interval);
-//    });
-//}
-
-// --------------------------------------------------------------------------
 // Simulate
 // --------------------------------------------------------------------------
 
 void simulate(const stdx::properties& props,
-    const DiscreteWorld& dworld, Infections& infections,
-    int i, const s_users& infected) {
+              const DiscreteWorld& dworld, Infections& infections,
+              const s_users& infected, int i) {
 
+    // initialize the infected users
     infections.infected(infected);
+
+    // propagate the infections
     infections.propagate();
+}
+
+
+void save_results(const stdx::properties& props,
+                  const DiscreteWorld& dworld,
+                  const Infections& infections,
+                  int i) {
 
     int side = dworld.side();
     int interval = dworld.interval();
 
     std::string dir = stdx::format(R"(%s\%d_%d)",
-        props.get("infections.dir").c_str(),
-        side, interval);
+                                   props.get("infections.dir").c_str(),
+                                   side, interval);
     create_directory(path(dir));
 
     std::string filename = stdx::format(
         R"(%s\infections_%d_%d_%03d_3months.csv)",
         dir.c_str(), side, interval, i);
 
-    //infections.save_info(filename);
-    //infections.save_table(filename, time_duration(24, 0, 0));
+    infections.save_info(filename);
+    infections.save_table(filename, time_duration(24, 0, 0));
     infections.save_daily(filename, Infections::file_format::XML);
 }
 
@@ -266,14 +100,17 @@ void simulate(const stdx::properties& props, int side, int interval, const vs_us
         .dworld(dworld);
 
     for (int i : stdx::range(vinfected.size())) {
-        // quota of users infected at the start of simulation
-        simulate(props, dworld, infections, i, vinfected[i]);
+        simulate(props, dworld, infections, vinfected[i], i);
+        save_results(props, dworld, infections, i);
     }
 }
 
 void simulate(const stdx::properties& props) {
+    DiscreteWorld dworld;
+    dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
+
     double quota = props.get("quota", 0.05);
-    int nsims = props.get("nsims", 100);
+    int nsims = props.get("nsims", 1);
 
     std::vector<std::tuple<int, int>> params = make_params(props);
 
@@ -282,21 +119,38 @@ void simulate(const stdx::properties& props) {
 
     // generated the vector of random infected users
     {
-        DiscreteWorld dworld;
-        dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
+        //DiscreteWorld dworld;
+        //dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
 
         for(int i : stdx::range(nsims)) {
             s_users infected = dworld.users(quota);
+
+            std::cout << (i+1) << " infected: "<< stdx::str(infected) << std::endl;
+
             vinfected.push_back(infected);
         }
     }
 
-    tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
-        int side = std::get<0>(p);
-        int interval = std::get<1>(p);
+    if (params.size() < 4) {
+        std::cout << "Sequential simulations ..." << std::endl;
 
-        simulate(props, side, interval, vinfected);
-    });
+        for(std::tuple<int, int> p : params) {
+            int side = std::get<0>(p);
+            int interval = std::get<1>(p);
+
+            simulate(props, side, interval, vinfected);
+        }
+    }
+    else {
+        std::cout << "Parallel simulations ..." << std::endl;
+
+        tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
+            int side = std::get<0>(p);
+            int interval = std::get<1>(p);
+
+            simulate(props, side, interval, vinfected);
+        });
+    }
 }
 
 // --------------------------------------------------------------------------

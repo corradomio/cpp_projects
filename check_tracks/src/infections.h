@@ -27,43 +27,27 @@ namespace summer {
 
     struct Infections;
 
-    struct ustate_t {
-        const Infections* p_inf;
+    struct enc_t {
+        double u1_after, u1_before, u2_prob;
 
-        double _prob;       // [0]: unconscious, tested, infected
-        int _infected;      // timestamp when infected
-        int _infective;     // timestamp when infected
-        int _removed;       // timestamp when infected
+        enc_t(): u1_after(0), u1_before(0), u2_prob(0){ }
 
-        ustate_t():
-            _prob(0),
-            _infected(invalid),
-            _infective(invalid),
-            _removed(invalid)
-            { }
-
-        ustate_t& inf(const Infections& inf) {
-            p_inf = &inf;
+        enc_t(double u1a, double u1b, double u2p):
+            u1_after(u1a), u1_before(u1b), u2_prob(u2p) {}
+        enc_t(const enc_t& e):
+            u1_after(e.u1_after), u1_before(e.u1_before), u2_prob(e.u2_prob) {}
+        enc_t& operator =(const enc_t& e) {
+            u1_after = e.u1_after;
+            u1_before = e.u1_before;
+            u2_prob = e.u2_prob;
             return *this;
         }
-
-        ustate_t& infected() {
-            _prob = 1.;
-            return *this;
-        }
-
-        double prob() const { return _prob; }
-        double prob(int t) {
-            if (_infected == invalid)
-                return _prob;
-            if (t < _infective || _removed < t)
-                return 0.;
-            else
-                return _prob;
-
-        }
-        double update(int t, double p);
     };
+
+    // day -> user1 -> user2 -> {
+    typedef std::map<int, std::unordered_map<user_t, std::unordered_map<user_t, std::vector<enc_t>>>> daily_encs_t;
+    typedef std::unordered_map<user_t, std::unordered_map<user_t, std::vector<enc_t>>> users_encs_t;
+    typedef std::unordered_map<user_t, std::vector<enc_t>> user_encs_t;
 
     enum contact_mode {
         none, random, daily, user
@@ -84,23 +68,33 @@ namespace summer {
      * This number can be negative but this is not a problem.
      */
     class state_t {
-        const Infections* inf_p;
-        int infected;                   // time slot when received the infection
+        //const Infections* inf_p;
+        int _infected;                   // time slot when received the infection
         std::map<int, double> _prob;
 
         int select(int t) const;
     public:
-        state_t(): infected(invalid){ }
+        state_t(): _infected(invalid){ }
 
-        state_t& inf(Infections* ptr) { inf_p = ptr; return *this; }
+        //state_t& inf(Infections* ptr) { inf_p = ptr; return *this; }
 
         // initial infected user (prob = 1)
-        void infective(int t);
+        void infective(int t, int latent_ts);
+        void not_infected(int t);
+
+        int infected() const { return _infected; }
 
         // get & set & update
         double prob(int t) const;
+
+        // update the probability with another probability u
         double update(int t, double u);
+
+        // update the probability as: p' = p*(1-s*p)
+        double daily(int t, double s);
     };
+
+    typedef std::unordered_map<user_t, state_t> user_state_t;
 
     class Infections {
 
@@ -135,13 +129,12 @@ namespace summer {
 
         // infection status for each user
         // user -> infected
-        //         infected = [state_0, state_1,...]
-        std::unordered_map<user_t, state_t> _infections;
+        //         infected = [state_t0, state_t1,...]
+        user_state_t _infections;
 
-        // contacts status for
-        //      t -> user1 -> user2 -> prob
-        //std::map<int, std::unordered_map<user_t, std::vector<contact_t>>>
-        //    _daily_contacts;
+        // daily infections
+        // day -> u1 -> u2 -> [u1_after, u1_before, u2_prob]
+        daily_encs_t _daily_infections;
 
         // contact modes
         //      none
@@ -157,15 +150,7 @@ namespace summer {
         stdx::random_t rnd;
 
     public:
-        Infections() {
-            d = 2;
-            beta = 0.001;
-            l = 0;
-            m = 0;
-            t = 0.01;
-            seed = 123;
-            _cmode_day = -1;
-        }
+        Infections();
 
         // ------------------------------------------------------------------
         // Properties
@@ -231,15 +216,19 @@ namespace summer {
         int latent_days_ts()  const { return lts; }
         /// removed days in time slots (available AFTER 'init()')
         int removed_days_ts() const { return mts; }
+        /// one dai in time slots (available AFTER 'init()')
+        int one_day_ts() const { return dts; }
 
     private:
 
         /// Reference to dworld
         const DiscreteWorld& dworld() const { return *dworld_p; }
 
-        // Initialize the infected users
+        /// Initialize the infected users
         void init_world();
         void init_infected();
+
+        /// propagate the infection
         void propagate_infection();
 
         /// Apply the contact model
@@ -249,13 +238,19 @@ namespace summer {
         /// \param t        time slot
         /// \param users    users
         /// \return         aggregate probability
-        double compute_aggregate_prob(int t, const user_t& user, const s_users& users);
+        //double compute_aggregate_prob(int t, const user_t& user, const s_users& users);
 
         /// Update the users infected probability
         /// \param t        time slot
         /// \param users    users
         /// \param aprob    aggregate probability
-        void update_prob(int t, const user_t& user, double aprob);
+        double update_prob(int t, const user_t& user, double aprob);
+
+        /// Latent factor
+        double latent(int t0, int t) const;
+
+        /// Update the user probability based on daily test prob
+        void daily_prob(int t, const user_t& user, double tprob);
 
         void save_daily_csv(const std::string& filename) const;
         void save_daily_xml(const std::string& filename) const;

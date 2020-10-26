@@ -191,8 +191,10 @@ namespace summer {
 
         /// select a random set of users
         s_users users(double quota) const { return users((int)(quota*_susers.size())); }
+        /// select a random set of users
         s_users users(int n) const;
 
+        /// encounters: t->user->{user,...}
         const tms_users& get_time_encounters() const { return _encs; }
 
         // ----------------------------------------------------------------------
@@ -200,9 +202,6 @@ namespace summer {
 
         /// convert a discrete world coordinate in standard format
         coords_t to_coords(double latitude, double longitude, const ptime& timestamp);
-
-        /// convert a time slot in standard format
-        //ptime to_timestamp(int t) const;
 
         // ------------------------------------------------------------------
         // IO
