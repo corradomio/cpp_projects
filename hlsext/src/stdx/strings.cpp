@@ -9,8 +9,9 @@ std::vector<std::string> stdx::split(const std::string& str, const std::string& 
     size_t start = 0;
     size_t end = str.find(delim, start);
     while (end != std::string::npos) {
-        parts.push_back(str.substr(start, end));
+        parts.push_back(str.substr(start, end-start));
         start = end + delim.length();
+        end = str.find(delim, start);
     }
     if (start < str.length())
         parts.push_back(str.substr(start));

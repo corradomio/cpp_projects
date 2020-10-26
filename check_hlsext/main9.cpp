@@ -12,4 +12,5 @@ int main() {
     for(const std::string& k : props.names())
         std::cout << k << ":" << props.get(k) << std::endl;
 
+    props.get_ints("pm");
 }

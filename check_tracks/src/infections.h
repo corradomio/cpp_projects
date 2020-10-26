@@ -68,9 +68,10 @@ namespace summer {
      * This number can be negative but this is not a problem.
      */
     class state_t {
-        //const Infections* inf_p;
         int _infected;                   // time slot when received the infection
-        std::map<int, double> _prob;
+        //std::map<int, double> _prob;
+        int _updated;                   // timeslot last update
+        double _prob;
 
         int select(int t) const;
     public:

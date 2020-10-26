@@ -19,72 +19,74 @@ using namespace boost::posix_time;
 
 void state_t::infective(int t, int latent_ts) {
     _infected = t - latent_ts;
-    _prob[_infected] = 1.;
+    //_prob[_infected] = 1.;
+    _prob = 1.;
 }
 
 
 void state_t::not_infected(int t) {
-    _prob[t] = 0.;
+    //_prob[t] = 0.;
     _infected = invalid;
+    _prob = 0.;
 }
 
 
 int state_t::select(int t) const {
-    int p = -1;
-    for (auto it = _prob.cbegin(); it != _prob.cend(); ++it) {
-        if (it->first > t)
-            break;
-        else
-            p = it->first;
-    }
-    return p;
+    //int p = -1;
+    //for (auto it = _prob.cbegin(); it != _prob.cend(); ++it) {
+    //    if (it->first > t)
+    //        break;
+    //    else
+    //        p = it->first;
+    //}
+    //return p;
+    return _updated;
 }
 
 
 double state_t::prob(int t) const {
-    int s = select(t);
-    double p = (s == -1) ? 0. : _prob.at(s);
-
-    if (p == 0.)
-        return 0.;
-
-    //int lts = inf_p->latent_days_ts();
-    //int rts = inf_p->removed_days_ts();
+    //int s = select(t);
+    //double p = (s == -1) ? 0. : _prob.at(s);
     //
-    //if (rts > 0 && (t-_infected) >= rts)
+    //if (p == 0.)
     //    return 0.;
-    //if (lts > 0 && (t-_infected) < lts)
-    //    return 0.;
-
-    return p;
+    //
+    //return p;
+    return _prob;
 }
 
 
 double state_t::update(int t, double u) {
-    int s = select(t);
-    double p = (s == -1) ? 0. : _prob.at(s);
-    p = 1. - (1. - p)*(1. - u);
+    //int s = select(t);
+    //double p = (s == -1) ? 0. : _prob.at(s);
+    //p = 1. - (1. - p)*(1. - u);
+    //
+    //if (p == 0)
+    //    return p;
+    //
+    //_prob[t] = p;
+    //
+    //if (_infected == invalid)
+    //    _infected = t;
+    //return p;
 
-    if (p == 0)
-        return p;
-
-    _prob[t] = p;
-
-    if (_infected == invalid)
-        _infected = t;
-
-    return p;
+    _updated = t;
+    _prob = 1. - (1. - _prob)*(1. - u);
+    return _prob;
 }
 
 
 double state_t::daily(int t, double r) {
-    int s = select(t);
-    double p = (s == -1) ? 0. : _prob.at(s);
-
-    if (p != 0.) //DEBUG
-        _prob[t] = p*(1. - r*p);
-
-    return _prob[t];
+    //int s = select(t);
+    //double p = (s == -1) ? 0. : _prob.at(s);
+    //
+    //if (p != 0.) //DEBUG
+    //    _prob[t] = p*(1. - r*p);
+    //
+    //return _prob[t];
+    _updated = t;
+    _prob = _prob*(1 - r*_prob);
+    return _prob;
 }
 
 

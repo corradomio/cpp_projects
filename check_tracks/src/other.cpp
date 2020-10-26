@@ -106,8 +106,6 @@ void simulate(const stdx::properties& props, int side, int interval, const vs_us
 }
 
 void simulate(const stdx::properties& props) {
-    DiscreteWorld dworld;
-    dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
 
     double quota = props.get("quota", 0.05);
     int nsims = props.get("nsims", 1);
@@ -118,9 +116,11 @@ void simulate(const stdx::properties& props) {
     vs_users vinfected;
 
     // generated the vector of random infected users
+    //DiscreteWorld dworld;
+    //dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
     {
-        //DiscreteWorld dworld;
-        //dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
+        DiscreteWorld dworld;
+        dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
 
         for(int i : stdx::range(nsims)) {
             s_users infected = dworld.users(quota);
