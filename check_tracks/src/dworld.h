@@ -104,16 +104,14 @@ namespace std {
 }
 
 
-//typedef std::string                 user_t;     // an user
 typedef int user_t;
-typedef std::unordered_set<user_t> s_users;     // set of users
-typedef std::vector<s_users>      vs_users;     // vector of sets of users
+typedef std::unordered_set<user_t> s_users;                                 // set of users
+typedef std::vector<s_users>      vs_users;                                 // vector of sets of users
 typedef stdx::default_unordered_map<hks::coords_t, s_users>    c_users;     // coords -> set of users
 typedef std::unordered_map<user_t, std::vector<hks::coords_t>> u_coords;    // user -> list of coords
 typedef std::unordered_map<user_t, s_users>  ms_users;                      // user -> set of users
 typedef std::map<int, ms_users> tms_users;                                  // t -> user -> set of users
 typedef stdx::unordered_bag<user_t> b_users;                                // user -> count
-typedef std::map<int, std::unordered_map<user_t, b_users>> tmb_users;
 
 namespace hls {
 namespace khalifa {

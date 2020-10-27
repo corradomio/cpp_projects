@@ -28,26 +28,34 @@ namespace summer {
     struct Infections;
 
     struct enc_t {
+        user_t u1;
+        user_t u2;
         double u1_after, u1_before, u2_prob;
 
-        enc_t(): u1_after(0), u1_before(0), u2_prob(0){ }
+        enc_t(){ }
 
-        enc_t(double u1a, double u1b, double u2p):
-            u1_after(u1a), u1_before(u1b), u2_prob(u2p) {}
-        enc_t(const enc_t& e):
-            u1_after(e.u1_after), u1_before(e.u1_before), u2_prob(e.u2_prob) {}
-        enc_t& operator =(const enc_t& e) {
-            u1_after = e.u1_after;
-            u1_before = e.u1_before;
-            u2_prob = e.u2_prob;
-            return *this;
-        }
+        enc_t(const user_t& u1, const user_t& u2, double u1a, double u1b, double u2p)
+            :u1(u1), u2(u2), u1_after(u1a), u1_before(u1b), u2_prob(u2p)
+        { }
+
+        //void set(double u1a, double u1b, double u2p) {
+        //    if (count == 0) {
+        //        u1_after = u1a;
+        //        u1_before = u1b;
+        //        u2_prob = u2p;
+        //        count = 1;
+        //    }
+        //    else {
+        //        u1_after = u1a;
+        //        count += 1;
+        //    }
+        //}
     };
 
     // day -> user1 -> user2 -> {
-    typedef std::map<int, std::unordered_map<user_t, std::unordered_map<user_t, std::vector<enc_t>>>> daily_encs_t;
-    typedef std::unordered_map<user_t, std::unordered_map<user_t, std::vector<enc_t>>> users_encs_t;
-    typedef std::unordered_map<user_t, std::vector<enc_t>> user_encs_t;
+    typedef std::map<int, std::unordered_map<user_t, std::vector<enc_t>>> daily_encs_t;
+    typedef std::unordered_map<user_t, std::vector<enc_t>> users_encs_t;
+    typedef std::vector<enc_t> user_encs_t;
 
     enum contact_mode {
         none, random, daily, user
@@ -68,31 +76,30 @@ namespace summer {
      * This number can be negative but this is not a problem.
      */
     class state_t {
-        int _infected;                   // time slot when received the infection
-        //std::map<int, double> _prob;
-        int _updated;                   // timeslot last update
+        int _lts;       // latent time slots
+        int _rts;       // removed time slots
+        int _infected;  // time slot when received the infection
         double _prob;
-
-        int select(int t) const;
     public:
-        state_t(): _infected(invalid){ }
+        state_t(){ }
 
-        //state_t& inf(Infections* ptr) { inf_p = ptr; return *this; }
+        void set(int lts, int rts);
 
         // initial infected user (prob = 1)
-        void infective(int t, int latent_ts);
+        void infective(int t);
         void not_infected(int t);
 
         int infected() const { return _infected; }
 
         // get & set & update
         double prob(int t) const;
+        double prob() const { return _prob; }
 
-        // update the probability with another probability u
+        // update the probability as p' = 1 - (1-p)(1-u)
         double update(int t, double u);
 
-        // update the probability as: p' = p*(1-s*p)
-        double daily(int t, double s);
+        // update the probability as: p' = p*(1-r*p)
+        double daily(int t, double r);
     };
 
     typedef std::unordered_map<user_t, state_t> user_state_t;
@@ -122,7 +129,7 @@ namespace summer {
         double tau;     // (1-exp(-beta*delta_T))*(d/D)^2   D: side
 
         int lts;        // l in 'time slots'
-        int mts;        // m in 'time slots'
+        int rts;        // m in 'time slots'
         int dts;        // 1 day in 'time slots'
 
         // starting list of infected users
@@ -149,6 +156,9 @@ namespace summer {
 
         // random generator
         stdx::random_t rnd;
+
+        // if to dump only infections
+        bool _only_infections;
 
     public:
         Infections();
@@ -204,6 +214,11 @@ namespace summer {
         // Save results
         // ------------------------------------------------------------------
 
+        Infections& only_infections(bool enable=true) {
+            _only_infections = enable;
+            return *this;
+        }
+
         enum file_format { CSV, XML };;
 
         ///
@@ -216,7 +231,7 @@ namespace summer {
         /// latent days in time slots (available AFTER 'init()')
         int latent_days_ts()  const { return lts; }
         /// removed days in time slots (available AFTER 'init()')
-        int removed_days_ts() const { return mts; }
+        int removed_days_ts() const { return rts; }
         /// one dai in time slots (available AFTER 'init()')
         int one_day_ts() const { return dts; }
 
@@ -226,7 +241,7 @@ namespace summer {
         const DiscreteWorld& dworld() const { return *dworld_p; }
 
         /// Initialize the infected users
-        void init_world();
+        void init_simulation();
         void init_infected();
 
         /// propagate the infection

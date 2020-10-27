@@ -16,6 +16,7 @@ using namespace boost;
 using namespace hls::khalifa::summer;
 
 
+
 // --------------------------------------------------------------------------
 // Parameters
 // --------------------------------------------------------------------------
@@ -94,6 +95,7 @@ void simulate(const stdx::properties& props, int side, int interval, const vs_us
         .latent_days(props.get("latent_days", 5))
         .removed_days(props.get("removed_days", 15))
         .test_prob(props.get("test_prob", 0.01))
+        .only_infections(props.get("only_infections", true))
         .contact_mode(
             static_cast<contact_mode>(props.get("contact_mode", {"none", "random", "daily", "user"})),
             props.get("contact_prob", 1.0))
@@ -116,11 +118,11 @@ void simulate(const stdx::properties& props) {
     vs_users vinfected;
 
     // generated the vector of random infected users
-    //DiscreteWorld dworld;
-    //dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
+    DiscreteWorld dworld;
+    dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
     {
-        DiscreteWorld dworld;
-        dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
+        //DiscreteWorld dworld;
+        //dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
 
         for(int i : stdx::range(nsims)) {
             s_users infected = dworld.users(quota);
@@ -149,6 +151,61 @@ void simulate(const stdx::properties& props) {
             int interval = std::get<1>(p);
 
             simulate(props, side, interval, vinfected);
+        });
+    }
+}
+
+
+// --------------------------------------------------------------------------
+// world
+// --------------------------------------------------------------------------
+
+void world(const stdx::properties& props, int side, int interval) {
+    std::string data_dir = props.get("worlds.dir");
+    std::string dir = props.get("encounters.dir");
+    std::string by_slots = stdx::format(R"(%s/by_slots)", dir.c_str());
+    std::string by_time  = stdx::format(R"(%s/by_time)", dir.c_str());
+
+    DiscreteWorld dworld;
+    dworld.load(grid_fname(data_dir, side, interval));
+
+    std::string slot_encs = stdx::format(R"(%s/by_slot_%d_%d_3months.csv)",
+                                         by_slots.c_str(), side, interval);
+    dworld.save_slot_encounters(slot_encs);
+
+    std::string time_encs = stdx::format(R"(%s/by_time_%d_%d_3months.csv)",
+                                         by_time.c_str(), side, interval);
+    dworld.save_time_encounters(time_encs);
+}
+
+void world(const stdx::properties& props) {
+    std::string dir = props.get("encounters.dir");
+    std::string by_slots = stdx::format(R"(%s/by_slots)", dir.c_str());
+    std::string by_time  = stdx::format(R"(%s/by_time)", dir.c_str());
+    create_directory(path(dir));
+    create_directory(path(by_slots));
+    create_directory(path(by_time));
+
+    std::vector<std::tuple<int, int>> params = make_params(props);
+
+    if (params.size() < 4) {
+        std::cout << "Sequential ..." << std::endl;
+
+        for(std::tuple<int, int> p : params) {
+            int side = std::get<0>(p);
+            int interval = std::get<1>(p);
+
+            world(props, side, interval);
+        }
+    }
+    else {
+        std::cout << "Parallel ..." << std::endl;
+
+        tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
+            int side = std::get<0>(p);
+            int interval = std::get<1>(p);
+
+            world(props, side, interval);
         });
     }
 }

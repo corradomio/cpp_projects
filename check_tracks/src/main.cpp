@@ -9,6 +9,7 @@ int main(int argc, char** argv) {
     cxxopts::Options options("tracks", "Bayesian COVID analyzer");
     options.add_options()
         ("h,help", "this help")
+        ("w,world","dump world encounters")
         ("c,config", "configuration file (default 'tracks.properties')",
             cxxopts::value<std::string>()->default_value("tracks.properties"))
     ;
@@ -23,7 +24,10 @@ int main(int argc, char** argv) {
     std::string config_file = opts["config"].as<std::string>();
     stdx::properties props(config_file);
 
-    simulate(props);
+    if (opts.count("world"))
+        world(props);
+    else
+        simulate(props);
 
     return 0;
 }
