@@ -19,13 +19,18 @@ namespace hls {
 namespace khalifa {
 namespace summer {
 
-    const int invalid = -9999;
+    // one years back, in seconds: 1*365*24*60*60
+    const int invalid = -31536000;
 
     // ----------------------------------------------------------------------
-    // ustate_t
+    // enc_t
     // ----------------------------------------------------------------------
 
     struct Infections;
+
+    // ----------------------------------------------------------------------
+    // enc_t
+    // ----------------------------------------------------------------------
 
     struct enc_t {
         user_t u1;
@@ -52,57 +57,129 @@ namespace summer {
         //}
     };
 
-    // day -> user1 -> user2 -> {
-    typedef std::map<int, std::unordered_map<user_t, std::vector<enc_t>>> daily_encs_t;
-    typedef std::unordered_map<user_t, std::vector<enc_t>> users_encs_t;
-    typedef std::vector<enc_t> user_encs_t;
+    //              [(u2, u1a, u1b, u2p), ...]
+    typedef std::vector<enc_t> uencs_t;
+    //        u1 -> [(u2, u1a, u1b, u2p), ...]
+    typedef std::unordered_map<user_t, uencs_t> users_encs_t;
+    // day -> u1 -> [(u2, u1a, u1b, u2p), ...]
+    typedef std::map<int, users_encs_t> daily_encs_t;
+
 
     enum contact_mode {
         none, random, daily, user
     };
 
-    /**
-     * Infection state of each user.
-     * 'infected' is used to mark the time slot for the first infection
-     *
-     * It is necessary to use a special trick for the users marked as 'infected'
-     * because, at the begin, the corrected 'infected' timeslot is unknown.
-     * The trick consists in to update 'infected' the FIRST time that the
-     * infection probability is updated. In this case, the correct infected timeslot
-     * is
-     *
-     *      t - latent_days_ts
-     *
-     * This number can be negative but this is not a problem.
-     */
-    class state_t {
-        int _lts;       // latent time slots
-        int _rts;       // removed time slots
-        int _infected;  // time slot when received the infection
-        double _prob;
-    public:
-        state_t(){ }
+    // ----------------------------------------------------------------------
 
-        void set(int lts, int rts);
-
-        // initial infected user (prob = 1)
-        void infective(int t);
-        void not_infected(int t);
-
-        int infected() const { return _infected; }
-
-        // get & set & update
-        double prob(int t) const;
-        double prob() const { return _prob; }
-
-        // update the probability as p' = 1 - (1-p)(1-u)
-        double update(int t, double u);
-
-        // update the probability as: p' = p*(1-r*p)
-        double daily(int t, double r);
+    struct bluetooth_t {
+        double efficency;     // communication efficiency
     };
 
-    typedef std::unordered_map<user_t, state_t> user_state_t;
+    // ----------------------------------------------------------------------
+
+    /**
+     * Information of  the disease
+     */
+    struct disease_t {
+        double dt;          // delta_T
+        double tau;         // (1-exp(-beta*delta_T))*(d/D)^2   D: side
+        int latent;         // number of time slots for an agent infected but not infectious
+        int asymptomatic;   // number of time slots of asymptomatic disease
+        int removed;        // number of time slots of the disease life;
+
+        double infective(int t0, int t);
+        double symptomatic(int t0, int t);
+    };
+
+    // ----------------------------------------------------------------------
+
+    /**
+     * time probability pair:  t -> prob
+     */
+    struct tprob_t {
+        int t;
+        double prob;
+        tprob_t(int t, double p): t(t), prob(p) { }
+    };
+
+    /**
+     * probability history: [t1->prob, ...]
+     */
+    struct prob_hist_t {
+        std::vector<tprob_t> hist;
+        int infected;
+
+        prob_hist_t() {
+            infected = invalid;
+            hist.emplace_back(invalid, 0.);
+        }
+
+        /// time slot when it got infected
+        int when_infected() const {
+            return infected;
+        }
+
+        /// user infection probability
+        double get() const {
+            size_t n = hist.size();
+            return hist[n-1].prob;
+        }
+
+        /// user infectious probability
+        double get(int t) const;
+
+        /// set the infection probability
+        void set(int t, double p);
+
+        /// p' = 1 - (1 - p)*(1 - u)
+        double update(int t, double u);
+
+        /// p' = p*(1 - p*u)
+        double scale(int t, double u);
+    };
+
+    /**
+     * user infected history
+     */
+    struct history_t {
+        user_t user;                    // user
+        const disease_t* disease_p;     // disease information
+        prob_hist_t tested;             // probability to be tested
+        prob_hist_t infected;           // probability to be infected
+
+        /// initialize the data structure
+        void set(const user_t& u, const disease_t& d, double test_prob) {
+            user = u;
+            disease_p = &d;
+            tested.set(0, test_prob);
+        }
+
+        /// initially not infected
+        void not_infected(int t) {
+            infected.set(t, 0.);
+        }
+
+        /// initially infected & infective
+        void infective(int t) {
+            infected.set(t - disease_p->latent, 1.);
+        }
+
+        /// user infected probability
+        double prob() const {
+            return infected.get();
+        }
+
+        /// user infectious probability
+        double prob(int t) const;
+
+        /// disease symptoms
+        double symptomatic(int t) const;
+    };
+
+    /// users history map:  user -> history
+    typedef std::unordered_map<user_t, history_t> user_hist_t;
+
+    // ----------------------------------------------------------------------
 
     class Infections {
 
@@ -114,31 +191,29 @@ namespace summer {
 
         int d;          // contact_range (in meters)
         double beta;    // infection_rate (infections/day)
+
         int l;          // latent_days: n of days before to became infectious.
-                        // 0 -> immediately
-        int m;          // removed_days: n of days after the first contact to became NOT infectious.
-                        // 0 -> forever
-        double t;       // test probability [0,1]
+        int r;          // removed_days: n of days after the first contact to became NOT infectious.
+        int s;          // symptoms_days: n of days before to have symptoms
+
+        double sp;      // symptoms probability
+        double tp;      // disease test probability
         long seed;      // random seed;
 
         //
         // Implementation
         //
 
-        double dt;      // time slot in days
-        double tau;     // (1-exp(-beta*delta_T))*(d/D)^2   D: side
+        disease_t _disease;  // disease information
 
-        int lts;        // l in 'time slots'
-        int rts;        // m in 'time slots'
-        int dts;        // 1 day in 'time slots'
+        int dts;        // days in time slots
 
         // starting list of infected users
         s_users _infected;
 
         // infection status for each user
-        // user -> infected
-        //         infected = [state_t0, state_t1,...]
-        user_state_t _infections;
+        // user -> history
+        user_hist_t _infections;
 
         // daily infections
         // day -> u1 -> u2 -> [u1_after, u1_before, u2_prob]
@@ -176,15 +251,23 @@ namespace summer {
         /// infection rate per day
         Infections& infection_rate(double ir) { this->beta = ir; return *this; }
         double      infection_rate() const { return this->beta; }
+
         /// n days after infection to became infective
         Infections& latent_days(int ld) { this->l = ld; return *this; }
         int         latent_days() const { return this->l; }
         /// n days after infection to became removed
-        Infections& removed_days(int rd) { this->m = rd; return *this; }
-        int         removed_days() const { return this->m; }
+        Infections& removed_days(int rd) { this->r = rd; return *this; }
+        int         removed_days() const { return this->r; }
+        /// n days after infection to have symptoms
+        Infections& symptoms_days(int sd) { this->s = sd; return *this; }
+        int         symptoms_days() const { return this->s; }
+
         /// test probability
-        Infections& test_prob(double tp) { this->t = tp; return *this; }
-        double      test_prob() const { return this->t; }
+        Infections& test_prob(double tp) { this->tp = tp; return *this; }
+        double      test_prob() const { return this->tp; }
+        /// symptomatic probability
+        Infections& symptomatic_prob(double sp) { this->sp = sp; return *this; }
+        double      symptomatic_prob() const { return this->sp; }
 
         /// contact mode:
         Infections& contact_mode(const contact_mode cm, double cmp) {
@@ -214,47 +297,45 @@ namespace summer {
         // Save results
         // ------------------------------------------------------------------
 
+        /// saved file formats
+        enum file_format { CSV, XML };;
+
+        /// save simulation infos
+        void save_info(const std::string& filename) const;
+        /// save infection status day per day
+        void save_table(const std::string& filename, const time_duration& interval) const;
+
+        /// if to save only the infections
         Infections& only_infections(bool enable=true) {
             _only_infections = enable;
             return *this;
         }
 
-        enum file_format { CSV, XML };;
-
-        ///
-        void save_info(const std::string& filename) const;
-        void save_table(const std::string& filename, const time_duration& interval) const;
+        /// save the encounters & infection probability, day per day
         void save_daily(const std::string& filename, file_format format) const;
 
     public:
 
-        /// latent days in time slots (available AFTER 'init()')
-        int latent_days_ts()  const { return lts; }
-        /// removed days in time slots (available AFTER 'init()')
-        int removed_days_ts() const { return rts; }
-        /// one dai in time slots (available AFTER 'init()')
-        int one_day_ts() const { return dts; }
+        /// disease information (available AFTER 'init()')
+        const disease_t& disease() const { return _disease; }
 
     private:
 
-        /// Reference to dworld
+        /// reference to dworld
         const DiscreteWorld& dworld() const { return *dworld_p; }
 
-        /// Initialize the infected users
+        /// initialize the infected users
         void init_simulation();
         void init_infected();
 
         /// propagate the infection
         void propagate_infection();
 
-        /// Apply the contact model
+        /// apply the contact model
         const s_users& apply_contact_model(int t, const s_users& uset);
 
-        /// Compute the aggregated user infected probabilities
-        /// \param t        time slot
-        /// \param users    users
-        /// \return         aggregate probability
-        //double compute_aggregate_prob(int t, const user_t& user, const s_users& users);
+        void update_for_encounter(int t, const user_t& u1, const user_t& u2);
+        void update_for_newday(int t, const user_t& u1);
 
         /// Update the users infected probability
         /// \param t        time slot
@@ -262,11 +343,14 @@ namespace summer {
         /// \param aprob    aggregate probability
         double update_prob(int t, const user_t& user, double aprob);
 
-        /// Latent factor
-        double latent(int t0, int t) const;
+        /// Update the user probability based on daily test prob
+        void encounter_prob(int t, const user_t& u1, const user_t& u2);
 
         /// Update the user probability based on daily test prob
-        void daily_prob(int t, const user_t& user, double tprob);
+        void daily_prob(int t, const user_t& user);
+
+        /// Latent factor
+        double latent(int t0, int t) const;
 
         void save_daily_csv(const std::string& filename) const;
         void save_daily_xml(const std::string& filename) const;

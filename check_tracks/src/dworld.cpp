@@ -100,12 +100,17 @@ void DiscreteWorld::done() {
 s_users DiscreteWorld::users(int s) const {
     stdx::random_t rnd;
     int n = _susers.size();
+
+    if (s >= n)
+        return _susers;
+
     s_users selected;
     std::vector<user_t> vusers(_susers.begin(), _susers.end());
 
     while (selected.size() != s) {
         selected.insert(vusers[rnd.next_int(n)]);
     }
+
     return selected;
 }
 

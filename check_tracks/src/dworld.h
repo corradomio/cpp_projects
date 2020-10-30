@@ -133,17 +133,19 @@ namespace summer {
         /// side in degrees
         double _angle;
 
-        /// {user, ...}
+        /// set of users {user, ...}
         s_users _susers;
 
-        /// content of each cell
-        /// (i,j,t) -> {user, ...}
+        /// content of each cell: (i,j,t) -> {user, ...}
         c_users _cusers;
 
-        /// user -> [(i,j,t), ...]
+        /// cells visited by each user: user -> [(i,j,t), ...]
         u_coords _ucoords;
 
-        /// t -> [user -> {user...}]
+        /// time slot encounters:  t -> [u1 -> {u2...}]
+        ///     for eacn time slot
+        ///     for each user
+        ///         set of encountered other users
         tms_users _encs;
 
     public:
@@ -166,15 +168,11 @@ namespace summer {
         /// length of the time interval in 'boost::posix_time::time_duration'
         const time_duration& interval_td() const { return _interval; }
 
-        ///
-        //DiscreteWorld& merged(bool m) { this->_merged = m; return *this; }
-        //bool           merged() const { return _merged; }
-
         //
         // Populate
         //
 
-        /// populate the discrete world
+        /// populate the discrete world: add the user in the cell
         void add(const user_t& user, double latitude, double longitude, const ptime& timestamp);
 
         /// finalize the data structure
@@ -188,7 +186,7 @@ namespace summer {
         const s_users& users() const { return _susers; }
 
         /// select a random set of users
-        s_users users(double quota) const { return users((int)(quota*_susers.size())); }
+        s_users users(double quota) const { return users((int)lround(quota*_susers.size())); }
         /// select a random set of users
         s_users users(int n) const;
 

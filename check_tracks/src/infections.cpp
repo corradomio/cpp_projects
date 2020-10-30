@@ -14,59 +14,99 @@ using namespace boost::posix_time;
 
 
 // --------------------------------------------------------------------------
-// state_t
+// disease_t
 // --------------------------------------------------------------------------
 
-void state_t::set(int lts, int rts) {
-    _infected = invalid;
-    _prob = 0;
-    _lts = lts;
-    _rts = rts;
-}
-
-
-void state_t::infective(int t) {
-    _infected = t - _lts;
-    _prob = 1.;
-}
-
-
-void state_t::not_infected(int t) {
-    _infected = invalid;
-    _prob = 0.;
-}
-
-
-double state_t::prob(int t) const {
-    // not infected
-    if (_infected == invalid)
+double disease_t::infective(int t0, int t) {
+    if (t0 == invalid)
         return 0.;
-    // latent period
-    if (t < _infected + _lts)
+
+    int dt = t - t0;
+    return latent < dt && dt <= removed;
+}
+
+
+double disease_t::symptomatic(int t0, int t) {
+    if (t0 == invalid)
         return 0.;
-    // infective period
-    if (t <= _infected + _rts)
-        return _prob;
-    // removed
+
+    int dt = t - t0;
+    return asymptomatic < dt && dt <= removed;
+}
+
+// --------------------------------------------------------------------------
+// prob_hist_t
+// --------------------------------------------------------------------------
+
+double prob_hist_t::get(int t) const {
+    size_t l = 0;
+    size_t u = hist.size()-1;
+    size_t m;
+    while((u-l) > 1) {
+        m = (u-l)/2;
+        if (t < hist[m].t)
+            u = m - 1;
+        else if (t > hist[m].t)
+            l = m + 1;
+        else
+            break;
+    }
+    return hist[m].prob;
+}
+
+
+void prob_hist_t::set(int t, double p)  {
+    tprob_t& entry = hist[hist.size()-1];
+    if (t == entry.t)
+        entry.prob = p;
+    else if (p != entry.prob)
+        hist.emplace_back(t, p);
+    if (p > 0 && infected == invalid)
+        infected = t;
+}
+
+
+double prob_hist_t::update(int t, double u) {
+    double p = get();
+    p = 1 - (1 - p)*(1 - u);
+    set(t, p);
+    return p;
+}
+
+
+double prob_hist_t::scale(int t, double u) {
+    double p = get();
+    p = p*(1 - p*u);
+    set(t, p);
+    return p;
+}
+
+
+
+// --------------------------------------------------------------------------
+// history_t
+// --------------------------------------------------------------------------
+
+double history_t::prob(int t) const {
+    int when = infected.when_infected();
+    if (when == invalid)
+        return 0.;
+    if (t < when+disease_p->latent)
+        return 0;
+    if (t > when+disease_p->removed)
+        return 0;
     else
+        return infected.get(t);
+}
+
+double history_t::symptomatic(int t) const {
+    int when = infected.when_infected();
+    if (when == invalid)
         return 0.;
-}
-
-
-double state_t::update(int t, double u) {
-    if(u != 0.)
-        _prob = 1. - (1. - _prob)*(1. - u);
-
-    if (_prob != 0 && _infected == invalid)
-        _infected = t;
-    return _prob;
-}
-
-
-double state_t::daily(int t, double r) {
-    if (_prob != 0.)
-        _prob = _prob*(1 - r*_prob);
-    return _prob;
+    if (t < when+disease_p->asymptomatic)
+        return 0;
+    else
+        return infected.get(t);
 }
 
 
@@ -78,42 +118,51 @@ Infections::Infections() {
     d = 2;
     beta = 0.001;
     l = 0;
-    m = 0;
-    t = 0.01;
+    r = 0;
+    s = 0;
+    tp = 0.01;
+    sp = 0.20;
     seed = 123;
     _cmode_day = none;
     _only_infections = true;
 }
 
+
+// --------------------------------------------------------------------------
+// Infected users
+// --------------------------------------------------------------------------
+
 /// Quota [0,1] of infected users
 Infections& Infections::infected(double quota) {
-    int n = int(quota*dworld().users().size());
-    return infected(n);
+    //int n = lround(quota*dworld().users().size());
+    //return infected(n);
+    return infected(dworld().users(quota));
 }
 
 
 /// Number of infected users
 Infections& Infections::infected(int n) {
-    const s_users& susers = dworld().users();
-    int nUsers = susers.size();
-
-    // all users are infected
-    if (n >= nUsers)
-        return infected(susers);
-
-    // set[use] -> array[user]
-    std::vector<user_t> users(susers.begin(), susers.end());
-
-    // selected infected users
-    std::unordered_set<user_t> selected;
-
-    // loop until |selected| == n
-    while(n != selected.size()) {
-        const user_t& user = users[rnd.next_int(nUsers)];
-        selected.insert(user);
-    }
-
-    return infected(selected);
+    //const s_users& susers = dworld().users();
+    //int nusers = susers.size();
+    //
+    // // all users are infected
+    //if (n >= nusers)
+    //    return infected(susers);
+    //
+    // // convert set[user] -> array[user]
+    //std::vector<user_t> vusers(susers.begin(), susers.end());
+    //
+    // // selected infected users
+    //std::unordered_set<user_t> selected;
+    //
+    // // loop until |selected| == n
+    //while(n != selected.size()) {
+    //    const user_t& user = vusers[rnd.next_int(nusers)];
+    //    selected.insert(user);
+    //}
+    //
+    //return infected(selected);
+    return infected(dworld().users(n));
 }
 
 
@@ -127,43 +176,8 @@ Infections& Infections::infected(const s_users& users) {
 
 
 // --------------------------------------------------------------------------
-// Propagate infection
+// Propagate
 // --------------------------------------------------------------------------
-
-const s_users & Infections::apply_contact_model(int t, const s_users& uset) {
-    int tsday;
-    switch (_cmode) {
-        case contact_mode::none:
-            return uset;
-        case contact_mode::random:
-            _cmode_users.clear();
-            for(const user_t& user : uset)
-                if (rnd.next_double() <= _cmode_prob)
-                    _cmode_users.insert(user);
-            return _cmode_users;
-        case contact_mode::daily:
-            tsday = t/dts;
-            if (_cmode_day == tsday)
-                return _cmode_users;
-            _cmode_day = tsday;
-            _cmode_users.clear();
-            for(const user_t& user : uset)
-                if (rnd.next_double() <= _cmode_prob)
-                    _cmode_users.insert(user);
-            return _cmode_users;
-        case contact_mode::user:
-            if (_cmode_day == 0)
-                return _cmode_users;
-            _cmode_day = 0;
-            for(const user_t& user : uset)
-                if (rnd.next_double() <= _cmode_prob)
-                    _cmode_users.insert(user);
-            return _cmode_users;
-        default:
-            return uset;
-    }
-}
-
 
 Infections& Infections::propagate() {
     std::cout << "Infection::propagate ..." << std::endl;
@@ -177,17 +191,26 @@ Infections& Infections::propagate() {
     return *this;
 }
 
+
+// --------------------------------------------------------------------------
+// Propagate::initialize
+// --------------------------------------------------------------------------
+
 /**
  * Initialize the simulation parameters
  */
 void Infections::init_simulation() {
     std::cout << "Infection::init_simulation" << std::endl;
 
+    // day in time slots
+    dts = int(time_duration(24, 0, 0)/dworld().interval_td());
+
     // cell side
     double D = dworld().side();
 
-    // dt: infection's prob in a single time slot
-    dt = dworld().interval_td()/time_duration(24,0,0);
+    // dt: time slot in fraction of day
+    // used because beta is specified in term of day
+    double dt = dworld().interval_td()/time_duration(24,0,0);
 
     // (d/D)^2
     double dratio = sq(d/D);
@@ -195,14 +218,12 @@ void Infections::init_simulation() {
     double betadt = (1 - exp(-beta*dt));
 
     // factor of infection tau=(1-exp(-beta*dt))*(d/D)^2
-    tau = betadt*dratio;
+    _disease.tau = betadt*dratio;
+    _disease.dt = dt;
 
-    // one day in time slots
-    dts = int(time_duration(24, 0, 0)/dworld().interval_td());
-    // l in time slots
-    lts = l*dts;
-    // m in time slots
-    rts = m * dts;
+    _disease.latent = l*dts;        // latent in time slots
+    _disease.asymptomatic = s*dts;  // asymptomatic in time slots
+    _disease.removed = r*dts;       // removed in time slots
 }
 
 
@@ -216,7 +237,7 @@ void Infections::init_infected() {
 
     // initialize the '_infections' data structure
     for (const user_t& user : dworld().users())
-        _infections[user].set(lts, rts);
+        _infections[user].set(user, _disease, test_prob());
 
     // scan the encounters to identify the timeslot when an infected user
     // is encountered for the first time. This timeslot MINUS the lts (latent
@@ -254,7 +275,48 @@ void Infections::init_infected() {
 }
 
 
+// --------------------------------------------------------------------------
+// Propagate::propagate_infection
+// --------------------------------------------------------------------------
+
+const s_users & Infections::apply_contact_model(int t, const s_users& uset) {
+    int tsday;
+    switch (_cmode) {
+        case contact_mode::none:
+            return uset;
+        case contact_mode::random:
+            _cmode_users.clear();
+            for(const user_t& user : uset)
+                if (rnd.next_double() <= _cmode_prob)
+                    _cmode_users.insert(user);
+            return _cmode_users;
+        case contact_mode::daily:
+            tsday = t/dts;
+            if (_cmode_day == tsday)
+                return _cmode_users;
+            _cmode_day = tsday;
+            _cmode_users.clear();
+            for(const user_t& user : uset)
+                if (rnd.next_double() <= _cmode_prob)
+                    _cmode_users.insert(user);
+            return _cmode_users;
+        case contact_mode::user:
+            if (_cmode_day == 0)
+                return _cmode_users;
+            _cmode_day = 0;
+            for(const user_t& user : uset)
+                if (rnd.next_double() <= _cmode_prob)
+                    _cmode_users.insert(user);
+            return _cmode_users;
+        default:
+            return uset;
+    }
+}
+
+
 void Infections::propagate_infection() {
+
+    double tau = _disease.tau;
 
     // t -> user -> {user,...}
     const tms_users & encs = dworld().get_time_encounters();
@@ -270,7 +332,7 @@ void Infections::propagate_infection() {
     // previous day
     int pd = 0;
 
-    // 1) for each time slot
+    // 1) for each time slot 't'
     for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
         int t = it->first;
         int d = t/dts;
@@ -278,14 +340,14 @@ void Infections::propagate_infection() {
         // if it is the new day, update the prob based on the test prob
         if (pd != d) {
             for(const user_t& user : dworld().users())
-                daily_prob(t, user, test_prob());
+                update_for_newday(t, user);
             pd = d;
         }
 
         // user -> {user,...}
         const ms_users& musers = it->second;
 
-        // 2) for each user
+        // 2) for each user 'u1'
         for(auto uit = musers.cbegin(); uit != musers.cend(); ++uit) {
             const user_t&  u1 = uit->first;
             const s_users& uset = uit->second;
@@ -293,66 +355,53 @@ void Infections::propagate_infection() {
             // 3) apply the contact model
             s_users users = apply_contact_model(t, uset);
 
-            // 4.1) for each encounter
+            // 4.1) for each encounter 'u2'
             for(auto eit = uset.cbegin(); eit != uset.cend(); ++eit) {
                 const user_t& u2 = *eit;
 
-                if (u1 == u2) continue;
-
-                double u1_before = _infections[u1].prob();
-                double u2_prob   = _infections[u2].prob(t);
-                //double u1_after  = update_prob(t, u1, tau*u2_prob*latent(_infections[u2].infected(), t));
-                double u1_after  = update_prob(t, u1, tau*u2_prob);
-
-                if (u1_before == 0 && u2_prob == 0 && u1_after != 0)
-                    std::cout << "opps" << std::endl;
-
-                if ((!_only_infections) || (u1_after != u1_before) || (u2_prob != 0.))
-                    _daily_infections[d][u1].emplace_back(u1, u2, u1_after, u1_before, u2_prob);
+                update_for_encounter(t, u1, u2);
             }
-
-            // 4.2) compute the aggregate infection probability, excluding 'user'
-            //double aprob = compute_aggregate_prob(t, u1, users);
-            //
-            // 5) update the infections probability for 'user'
-            //update_prob(t, u1, aprob);
         }
     }
 }
 
+void Infections::update_for_encounter(int t, const user_t& u1, const user_t& u2){
+    if (u1 == u2) return;
 
-//double Infections::compute_aggregate_prob(int t, const user_t& user, const s_users &users) {
-//    // aggregate prom
-//    double ap = 1.;
-//
-//    for (const user_t& other : users) {
-//        if (other == user)
-//            continue;
-//
-//        // 'other' prob
-//        double op = _infections[other].prob(t);
-//        if (op != 0.)   // DEBUG
-//            ap *= (1. - tau * op * latent(_infections[other].infected(), t));
-//    }
-//    return 1. - ap;
-//}
+    double tau = _disease.tau;
 
-double Infections::update_prob(int t, const user_t& user, double aprob) {
-    return _infections[user].update(t, aprob);
+    // u1 infection probability BEFORE the encounter
+    double u1_before = _infections[u1].prob();
+    // u2 infectious probability
+    double u2_prob   = _infections[u2].prob(t);
+
+    // probability to be infected
+    double p = tau*u2_prob;
+
+    // u1 infection probability AFTER the encounter
+    double u1_after  = _infections[u1].infected.update(t, p);
+
+    // save the encounter
+    if (((!_only_infections) || (u1_after != u1_before) || (u2_prob != 0.)) && false)
+        _daily_infections[d][u1].emplace_back(u1, u2, u1_after, u1_before, u2_prob);
 }
 
-void Infections::daily_prob(int t, const user_t& user, double aprob) {
-    _infections[user].daily(t, aprob);
-}
+void Infections::update_for_newday(int t, const user_t &u1) {
+    // user infection probability
+    double up = _infections[u1].prob();
 
-double Infections::latent(int t0, int t) const {
-    if (t0 == invalid || t < t0)
-        return 0.;
-    int dt = t - t0;
-    if (lts <= dt && dt <= rts)
-        return 1.;
-    else
-        return 0.;
+    // user probability to be symptomatic
+    double sp = _infections[user].symptomatic(t);
+
+    // probability to have symptoms
+    double p = symptomatic_prob()*up*sp;
+
+    // update the probability to be testes
+    _infections[user].tested.update(t, p);
+
+    // decrease the infection probability for the test probability
+    double tp = _infections[user].tested.get(t);
+    _infections[user].infected.scale(t, tp);
 }
 
 
@@ -377,8 +426,8 @@ void Infections::save_info(const std::string& filename) const {
         << "infection_rate," << infection_rate() << /*" rate/day" <<*/ std::endl
         << "cr_over_s," << (((double)contact_range())/dworld().side())  << std::endl
         << "beta," << beta  << std::endl
-        << "dt," << dt  << std::endl
-        << "tau,"<< tau  << std::endl
+        << "dt," << _disease.dt  << std::endl
+        << "tau,"<< _disease.tau  << std::endl
         << "latent_days," << latent_days() << /*" days" <<*/ std::endl
         << "removed_days," << removed_days() << /*" days" <<*/ std::endl
         << "n_infected," << _infected.size()  << std::endl
@@ -462,7 +511,7 @@ void Infections::save_daily_csv(const std::string& filename) const {
         // for all users
         for(auto uit = uencs.cbegin(); uit != uencs.cend(); ++uit) {
             const user_t& u1 = uit->first;
-            const user_encs_t& u1encs = uit->second;
+            const uencs_t& u1encs = uit->second;
 
             int i = 0;
             for (auto u1enc : u1encs) {
@@ -501,7 +550,7 @@ void Infections::save_daily_xml(const std::string& filename) const {
         // for all users
         for(auto uit = uencs.cbegin(); uit != uencs.cend(); ++uit) {
             const user_t& u1 = uit->first;
-            const user_encs_t& u1encs = uit->second;
+            const uencs_t& u1encs = uit->second;
 
             ofs << "  <u1 id=\"" << u1 << "\">" << std::endl;
 
@@ -510,7 +559,7 @@ void Infections::save_daily_xml(const std::string& filename) const {
                 ofs << "    <u2 id=\"" << u1enc.u2 << "\" "
                     << "u1a=\""  << u1enc.u1_after  << "\" "
                     << "u1b=\"" << u1enc.u1_before << "\" "
-                    << "u2p\""   << u1enc.u2_prob   << "\" "
+                    << "u2p=\""   << u1enc.u2_prob   << "\" "
                     << "/>"
                     << std::endl;
             }
