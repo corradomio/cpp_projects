@@ -77,6 +77,7 @@ namespace stdx {
 
         std::vector<long> get_longs(const std::string& name, const std::string& sep=",") const;
         std::vector<int> get_ints(const std::string& name, const std::string& sep=",") const;
+        std::vector<double> get_doubles(const std::string& name, const std::string& sep=",") const;
 
         /**
          * Gets the list of property names.

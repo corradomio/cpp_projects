@@ -39,19 +39,11 @@ double disease_t::symptomatic(int t0, int t) {
 // --------------------------------------------------------------------------
 
 double prob_hist_t::get(int t) const {
-    size_t l = 0;
-    size_t u = hist.size()-1;
-    size_t m;
-    while((u-l) > 1) {
-        m = (u-l)/2;
-        if (t < hist[m].t)
-            u = m - 1;
-        else if (t > hist[m].t)
-            l = m + 1;
-        else
-            break;
-    }
-    return hist[m].prob;
+    size_t n = hist.size();
+    for (size_t i=n-1; i>0; --i)
+        if (hist[i].t <= t)
+            return hist[i].prob;
+    return hist[0].prob;
 }
 
 
@@ -68,17 +60,17 @@ void prob_hist_t::set(int t, double p)  {
 
 double prob_hist_t::update(int t, double u) {
     double p = get();
-    p = 1 - (1 - p)*(1 - u);
-    set(t, p);
-    return p;
+    double q = 1 - (1 - p)*(1 - u);
+    set(t, q);
+    return q;
 }
 
 
 double prob_hist_t::scale(int t, double u) {
     double p = get();
-    p = p*(1 - p*u);
-    set(t, p);
-    return p;
+    double q = p*(1 - p*u);
+    set(t, q);
+    return q;
 }
 
 
@@ -117,14 +109,20 @@ double history_t::symptomatic(int t) const {
 Infections::Infections() {
     d = 2;
     beta = 0.001;
+    a = 0;
     l = 0;
     r = 0;
-    s = 0;
     tp = 0.01;
     sp = 0.20;
-    seed = 123;
-    _cmode_day = none;
+    ce = 1.0;
+    tau = 1.0;
+
+    _disease.latent = 0;
+    _disease.asymptomatic = 0;
+    _disease.removed = -invalid;
+
     _only_infections = true;
+    seed = 123;
 }
 
 
@@ -212,17 +210,17 @@ void Infections::init_simulation() {
     // used because beta is specified in term of day
     double dt = dworld().interval_td()/time_duration(24,0,0);
 
-    // (d/D)^2
-    double dratio = sq(d/D);
     // (1-exp(-beta*dt))
     double betadt = (1 - exp(-beta*dt));
+    // (d/D)^2
+    double dratio = sq(d/D);
 
     // factor of infection tau=(1-exp(-beta*dt))*(d/D)^2
-    _disease.tau = betadt*dratio;
-    _disease.dt = dt;
+    tau = betadt*dratio;
 
+    // disease information
+    _disease.asymptomatic = a*dts;  // asymptomatic in time slots
     _disease.latent = l*dts;        // latent in time slots
-    _disease.asymptomatic = s*dts;  // asymptomatic in time slots
     _disease.removed = r*dts;       // removed in time slots
 }
 
@@ -275,50 +273,9 @@ void Infections::init_infected() {
 }
 
 
-// --------------------------------------------------------------------------
-// Propagate::propagate_infection
-// --------------------------------------------------------------------------
-
-const s_users & Infections::apply_contact_model(int t, const s_users& uset) {
-    int tsday;
-    switch (_cmode) {
-        case contact_mode::none:
-            return uset;
-        case contact_mode::random:
-            _cmode_users.clear();
-            for(const user_t& user : uset)
-                if (rnd.next_double() <= _cmode_prob)
-                    _cmode_users.insert(user);
-            return _cmode_users;
-        case contact_mode::daily:
-            tsday = t/dts;
-            if (_cmode_day == tsday)
-                return _cmode_users;
-            _cmode_day = tsday;
-            _cmode_users.clear();
-            for(const user_t& user : uset)
-                if (rnd.next_double() <= _cmode_prob)
-                    _cmode_users.insert(user);
-            return _cmode_users;
-        case contact_mode::user:
-            if (_cmode_day == 0)
-                return _cmode_users;
-            _cmode_day = 0;
-            for(const user_t& user : uset)
-                if (rnd.next_double() <= _cmode_prob)
-                    _cmode_users.insert(user);
-            return _cmode_users;
-        default:
-            return uset;
-    }
-}
-
-
 void Infections::propagate_infection() {
 
-    double tau = _disease.tau;
-
-    // t -> user -> {user,...}
+    // t -> u1 -> {u21,...}
     const tms_users & encs = dworld().get_time_encounters();
 
     //
@@ -339,8 +296,8 @@ void Infections::propagate_infection() {
 
         // if it is the new day, update the prob based on the test prob
         if (pd != d) {
-            for(const user_t& user : dworld().users())
-                update_for_newday(t, user);
+            for(const user_t& u1 : dworld().users())
+                update_for_newday(t, u1);
             pd = d;
         }
 
@@ -352,9 +309,6 @@ void Infections::propagate_infection() {
             const user_t&  u1 = uit->first;
             const s_users& uset = uit->second;
 
-            // 3) apply the contact model
-            s_users users = apply_contact_model(t, uset);
-
             // 4.1) for each encounter 'u2'
             for(auto eit = uset.cbegin(); eit != uset.cend(); ++eit) {
                 const user_t& u2 = *eit;
@@ -365,43 +319,44 @@ void Infections::propagate_infection() {
     }
 }
 
-void Infections::update_for_encounter(int t, const user_t& u1, const user_t& u2){
+void Infections::update_for_encounter(int t, const user_t& u1, const user_t& u2) {
     if (u1 == u2) return;
 
-    double tau = _disease.tau;
+    // user probability to be infected (NOT used: for debug)
+    double u1p = _infections[u1].infected.get();
 
-    // u1 infection probability BEFORE the encounter
-    double u1_before = _infections[u1].prob();
-    // u2 infectious probability
-    double u2_prob   = _infections[u2].prob(t);
+    // u2 infectious probability (with latency)
+    double u2p   = _infections[u2].prob(t);
 
     // probability to be infected
-    double p = tau*u2_prob;
+    double p = tau*ce*u2p;
 
-    // u1 infection probability AFTER the encounter
-    double u1_after  = _infections[u1].infected.update(t, p);
-
-    // save the encounter
-    if (((!_only_infections) || (u1_after != u1_before) || (u2_prob != 0.)) && false)
-        _daily_infections[d][u1].emplace_back(u1, u2, u1_after, u1_before, u2_prob);
+    // update the u1 probability to be infected
+    if (p != 0)
+    _infections[u1].infected.update(t, p);
 }
 
 void Infections::update_for_newday(int t, const user_t &u1) {
-    // user infection probability
-    double up = _infections[u1].prob();
+    // user probability to be tested (NOT usd: for debug)
+    double u1t = _infections[u1].tested.get();
 
-    // user probability to be symptomatic
-    double sp = _infections[user].symptomatic(t);
+    // user infected probability
+    double u1p = _infections[u1].prob();
 
-    // probability to have symptoms
-    double p = symptomatic_prob()*up*sp;
+    // if the user is symptomatic
+    double u1s = _infections[u1].symptomatic(t);
+
+    // user probability to be asymptomatic
+    double p = u1p*sp*u1s;
 
     // update the probability to be testes
-    _infections[user].tested.update(t, p);
+    if (p != 0)
+    _infections[u1].tested.update(t, p);
 
     // decrease the infection probability for the test probability
-    double tp = _infections[user].tested.get(t);
-    _infections[user].infected.scale(t, tp);
+    double ti = _infections[u1].tested.get(t);
+
+    _infections[u1].infected.scale(t, ti);
 }
 
 
@@ -426,8 +381,7 @@ void Infections::save_info(const std::string& filename) const {
         << "infection_rate," << infection_rate() << /*" rate/day" <<*/ std::endl
         << "cr_over_s," << (((double)contact_range())/dworld().side())  << std::endl
         << "beta," << beta  << std::endl
-        << "dt," << _disease.dt  << std::endl
-        << "tau,"<< _disease.tau  << std::endl
+        << "tau,"<< tau  << std::endl
         << "latent_days," << latent_days() << /*" days" <<*/ std::endl
         << "removed_days," << removed_days() << /*" days" <<*/ std::endl
         << "n_infected," << _infected.size()  << std::endl
@@ -437,6 +391,11 @@ void Infections::save_info(const std::string& filename) const {
 
 void Infections::save_table(const std::string& filename, const time_duration& interval) const {
     std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+
+    // list of ALL users, SORTED
+    const s_users& susers = dworld().users();
+    std::vector<user_t> users(susers.cbegin(), susers.cend());
+    sort(users.begin(), users.end());
 
     // header
     std::ofstream ofs(with_ext(filename, ".csv"));
@@ -455,7 +414,7 @@ void Infections::save_table(const std::string& filename, const time_duration& in
 
         ofs << d << "," << t;
 
-        for (const user_t &user : dworld().users()) {
+        for (const user_t &user : users) {
             double prob = _infections.at(user).prob(t);
             ofs << stdx::format(",%.5g", prob);
         }
@@ -465,23 +424,6 @@ void Infections::save_table(const std::string& filename, const time_duration& in
     std::cout << "Infections::done" << std::endl;
 }
 
-
-//static void collect_daily(tmb_users& daily_encs, const tms_users& encs, int dts) {
-//
-//    // 1) for each time slot
-//    for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
-//        int d = (it->first)/dts;
-//        const ms_users& musers = it->second;
-//
-//        // 2) for each (user -> encounters)
-//        for(auto uit = musers.cbegin(); uit != musers.cend(); ++uit) {
-//            const user_t& user = uit->first;
-//            const s_users& users = uit->second;
-//
-//            daily_encs[d][user].insert(users.cbegin(), users.cend());
-//        }
-//    }
-//}
 
 void Infections::save_daily(const std::string& filename, file_format format) const {
     if (format == file_format::CSV)
@@ -572,5 +514,4 @@ void Infections::save_daily_xml(const std::string& filename) const {
 
     ofs << "</infections>\n";
     std::cout << "Infections::done" << std::endl;
-
 }

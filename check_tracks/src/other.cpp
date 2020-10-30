@@ -29,15 +29,17 @@ std::string grid_fname(const std::string& worlds_dir, int side, int interval) {
     return fname;
 }
 
-std::vector<std::tuple<int, int>> make_params(const stdx::properties& props) {
-    std::vector<std::tuple<int, int>> params;
+std::vector<std::tuple<int, int, double>> make_params(const stdx::properties& props) {
+    std::vector<std::tuple<int, int, double>> params;
 
     std::vector<int> sides = props.get_ints("sides");
     std::vector<int> intervals = props.get_ints("intervals");
+    std::vector<double> efficiencies = props.get_doubles("contact_efficiency");
 
     for (int side : sides)
         for (int interval: intervals)
-            params.emplace_back(side, interval);
+            for (double efficiency : efficiencies)
+                params.emplace_back(side, interval, efficiency);
 
     return params;
 }
@@ -65,15 +67,16 @@ void save_results(const stdx::properties& props,
 
     int side = dworld.side();
     int interval = dworld.interval();
+    int efficiency = infections.contact_efficiencty()*10;
 
-    std::string dir = stdx::format(R"(%s\%d_%d)",
+    std::string dir = stdx::format(R"(%s\%d_%d_%d)",
                                    props.get("infections.dir").c_str(),
-                                   side, interval);
+                                   side, interval, efficiency);
     create_directory(path(dir));
 
     std::string filename = stdx::format(
-        R"(%s\infections_%d_%d_%03d_3months.csv)",
-        dir.c_str(), side, interval, i);
+        R"(%s\infections_%02d_%02d_%02d_%03d.csv)",
+        dir.c_str(), side, interval, efficiency, i);
 
     infections.save_info(filename);
     infections.save_table(filename, time_duration(24, 0, 0));
@@ -83,7 +86,12 @@ void save_results(const stdx::properties& props,
 
 // --------------------------------------------------------------------------
 
-void simulate(const stdx::properties& props, int side, int interval, const vs_users& vinfected) {
+void simulate(const stdx::properties& props,
+              int side,
+              int interval,
+              double efficiency,
+              const vs_users& vinfected)
+{
     std::string data_dir = props.get("worlds.dir");
     DiscreteWorld dworld;
     dworld.load(grid_fname(data_dir, side, interval));
@@ -94,11 +102,11 @@ void simulate(const stdx::properties& props, int side, int interval, const vs_us
         .infection_rate(props.get("infection_rate", .01))
         .latent_days(props.get("latent_days", 5))
         .removed_days(props.get("removed_days", 15))
+        .asymptomatic_days(props.get("asymptomatic_days", 2))
         .test_prob(props.get("test_prob", 0.01))
-        .only_infections(props.get("only_infections", true))
-        .contact_mode(
-            static_cast<contact_mode>(props.get("contact_mode", {"none", "random", "daily", "user"})),
-            props.get("contact_prob", 1.0))
+        .symptomatic_prob(props.get("symptomatic_prob", 0.20))
+        .contact_efficiency(efficiency)
+        //.only_infections(props.get("only_infections", true))
         .dworld(dworld);
 
     for (int i : stdx::range(vinfected.size())) {
@@ -112,7 +120,7 @@ void simulate(const stdx::properties& props) {
     double quota = props.get("quota", 0.05);
     int nsims = props.get("nsims", 1);
 
-    std::vector<std::tuple<int, int>> params = make_params(props);
+    std::vector<std::tuple<int, int, double>> params = make_params(props);
 
     // vector of random infected users
     vs_users vinfected;
@@ -127,7 +135,7 @@ void simulate(const stdx::properties& props) {
         for(int i : stdx::range(nsims)) {
             s_users infected = dworld.users(quota);
 
-            std::cout << (i+1) << " infected: "<< stdx::str(infected) << std::endl;
+            std::cout << (i+1) << " infected[" << infected.size() << "]: "<< stdx::str(infected) << std::endl;
 
             vinfected.push_back(infected);
         }
@@ -136,21 +144,23 @@ void simulate(const stdx::properties& props) {
     if (params.size() < 4) {
         std::cout << "Sequential simulations ..." << std::endl;
 
-        for(std::tuple<int, int> p : params) {
+        for(std::tuple<int, int, double> p : params) {
             int side = std::get<0>(p);
             int interval = std::get<1>(p);
+            double efficiency = std::get<2>(p);
 
-            simulate(props, side, interval, vinfected);
+            simulate(props, side, interval, efficiency, vinfected);
         }
     }
     else {
         std::cout << "Parallel simulations ..." << std::endl;
 
-        tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
+        tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int, double>& p) {
             int side = std::get<0>(p);
             int interval = std::get<1>(p);
+            double efficiency = std::get<2>(p);
 
-            simulate(props, side, interval, vinfected);
+            simulate(props, side, interval, efficiency, vinfected);
         });
     }
 }
@@ -186,12 +196,12 @@ void world(const stdx::properties& props) {
     create_directory(path(by_slots));
     create_directory(path(by_time));
 
-    std::vector<std::tuple<int, int>> params = make_params(props);
+    std::vector<std::tuple<int, int, double>> params = make_params(props);
 
     if (params.size() < 4) {
         std::cout << "Sequential ..." << std::endl;
 
-        for(std::tuple<int, int> p : params) {
+        for(std::tuple<int, int, double> p : params) {
             int side = std::get<0>(p);
             int interval = std::get<1>(p);
 
@@ -201,7 +211,7 @@ void world(const stdx::properties& props) {
     else {
         std::cout << "Parallel ..." << std::endl;
 
-        tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
+        tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int, double>& p) {
             int side = std::get<0>(p);
             int interval = std::get<1>(p);
 

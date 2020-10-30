@@ -139,6 +139,17 @@ namespace stdx {
         return values;
     }
 
+    std::vector<double> properties::get_doubles(const std::string &name, const std::string &sep) const {
+        std::string vlist = get(name, std::string(""));
+        std::vector<std::string> parts = stdx::split(vlist, sep);
+        std::vector<double> values;
+        for(const std::string& v : parts) {
+            double value = ::atof(v.c_str());
+            values.push_back(value);
+        }
+        return values;
+    }
+
     // ----------------------------------------------------------------------
 
     void properties::read(properties& props, const std::string& file) {

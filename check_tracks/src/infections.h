@@ -64,25 +64,12 @@ namespace summer {
     // day -> u1 -> [(u2, u1a, u1b, u2p), ...]
     typedef std::map<int, users_encs_t> daily_encs_t;
 
-
-    enum contact_mode {
-        none, random, daily, user
-    };
-
-    // ----------------------------------------------------------------------
-
-    struct bluetooth_t {
-        double efficency;     // communication efficiency
-    };
-
     // ----------------------------------------------------------------------
 
     /**
      * Information of  the disease
      */
     struct disease_t {
-        double dt;          // delta_T
-        double tau;         // (1-exp(-beta*delta_T))*(d/D)^2   D: side
         int latent;         // number of time slots for an agent infected but not infectious
         int asymptomatic;   // number of time slots of asymptomatic disease
         int removed;        // number of time slots of the disease life;
@@ -192,21 +179,22 @@ namespace summer {
         int d;          // contact_range (in meters)
         double beta;    // infection_rate (infections/day)
 
+        int a;          // asymptomaitic_days: n of days before to have symptoms
         int l;          // latent_days: n of days before to became infectious.
         int r;          // removed_days: n of days after the first contact to became NOT infectious.
-        int s;          // symptoms_days: n of days before to have symptoms
 
         double sp;      // symptoms probability
         double tp;      // disease test probability
-        long seed;      // random seed;
+        double ce;      // contact efficiency
 
         //
         // Implementation
         //
 
-        disease_t _disease;  // disease information
+        disease_t _disease;     // disease information
 
         int dts;        // days in time slots
+        double tau;     // dworld infection probability
 
         // starting list of infected users
         s_users _infected;
@@ -219,18 +207,9 @@ namespace summer {
         // day -> u1 -> u2 -> [u1_after, u1_before, u2_prob]
         daily_encs_t _daily_infections;
 
-        // contact modes
-        //      none
-        //      random
-        //      user
-        //      daily
-        contact_mode _cmode;        // contact mode
-        double       _cmode_prob;   // contact probability
-        int          _cmode_day;
-        s_users      _cmode_users;
-
         // random generator
         stdx::random_t rnd;
+        long seed;      // random seed;
 
         // if to dump only infections
         bool _only_infections;
@@ -250,31 +229,28 @@ namespace summer {
         int         contact_range() const { return this->d; }
         /// infection rate per day
         Infections& infection_rate(double ir) { this->beta = ir; return *this; }
-        double      infection_rate() const { return this->beta; }
+        double      infection_rate() const    { return this->beta; }
 
+        /// n days after infection asymptomatic
+        Infections& asymptomatic_days(int ad) { this->a = ad; return *this; }
+        int         asymptomatic_days() const { return this->a; }
         /// n days after infection to became infective
         Infections& latent_days(int ld) { this->l = ld; return *this; }
         int         latent_days() const { return this->l; }
         /// n days after infection to became removed
         Infections& removed_days(int rd) { this->r = rd; return *this; }
         int         removed_days() const { return this->r; }
-        /// n days after infection to have symptoms
-        Infections& symptoms_days(int sd) { this->s = sd; return *this; }
-        int         symptoms_days() const { return this->s; }
 
         /// test probability
         Infections& test_prob(double tp) { this->tp = tp; return *this; }
-        double      test_prob() const { return this->tp; }
+        double      test_prob() const    { return this->tp; }
         /// symptomatic probability
         Infections& symptomatic_prob(double sp) { this->sp = sp; return *this; }
-        double      symptomatic_prob() const { return this->sp; }
+        double      symptomatic_prob() const    { return this->sp; }
 
         /// contact mode:
-        Infections& contact_mode(const contact_mode cm, double cmp) {
-            this->_cmode = cm;
-            this->_cmode_prob = cmp;
-            return *this;
-        }
+        Infections& contact_efficiency(double ce) { this->ce = ce; return *this; }
+        double      contact_efficiencty() const   { return this->ce; }
 
         /// Quota [0,1] of infected users
         Infections& infected(double quota);
@@ -332,25 +308,10 @@ namespace summer {
         void propagate_infection();
 
         /// apply the contact model
-        const s_users& apply_contact_model(int t, const s_users& uset);
+        //const s_users& apply_contact_model(int t, const s_users& uset);
 
         void update_for_encounter(int t, const user_t& u1, const user_t& u2);
         void update_for_newday(int t, const user_t& u1);
-
-        /// Update the users infected probability
-        /// \param t        time slot
-        /// \param users    users
-        /// \param aprob    aggregate probability
-        double update_prob(int t, const user_t& user, double aprob);
-
-        /// Update the user probability based on daily test prob
-        void encounter_prob(int t, const user_t& u1, const user_t& u2);
-
-        /// Update the user probability based on daily test prob
-        void daily_prob(int t, const user_t& user);
-
-        /// Latent factor
-        double latent(int t0, int t) const;
 
         void save_daily_csv(const std::string& filename) const;
         void save_daily_xml(const std::string& filename) const;
