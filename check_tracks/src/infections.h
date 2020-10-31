@@ -42,19 +42,6 @@ namespace summer {
         enc_t(const user_t& u1, const user_t& u2, double u1a, double u1b, double u2p)
             :u1(u1), u2(u2), u1_after(u1a), u1_before(u1b), u2_prob(u2p)
         { }
-
-        //void set(double u1a, double u1b, double u2p) {
-        //    if (count == 0) {
-        //        u1_after = u1a;
-        //        u1_before = u1b;
-        //        u2_prob = u2p;
-        //        count = 1;
-        //    }
-        //    else {
-        //        u1_after = u1a;
-        //        count += 1;
-        //    }
-        //}
     };
 
     //              [(u2, u1a, u1b, u2p), ...]
@@ -66,6 +53,8 @@ namespace summer {
 
     // ----------------------------------------------------------------------
 
+    struct history_t;
+
     /**
      * Information of  the disease
      */
@@ -74,8 +63,8 @@ namespace summer {
         int asymptomatic;   // number of time slots of asymptomatic disease
         int removed;        // number of time slots of the disease life;
 
-        double infective(int t0, int t);
-        double symptomatic(int t0, int t);
+        double symptomatic(const history_t& histo, int t);
+        double infective(const history_t& histo, int t);
     };
 
     // ----------------------------------------------------------------------
@@ -94,22 +83,16 @@ namespace summer {
      */
     struct prob_hist_t {
         std::vector<tprob_t> hist;
-        int infected;
+        int positive;
 
         prob_hist_t() {
-            infected = invalid;
+            positive = invalid;
             hist.emplace_back(invalid, 0.);
         }
 
         /// time slot when it got infected
-        int when_infected() const {
-            return infected;
-        }
-
-        /// user infection probability
-        double get() const {
-            size_t n = hist.size();
-            return hist[n-1].prob;
+        int when_positive() const {
+            return positive;
         }
 
         /// user infectious probability
@@ -130,14 +113,12 @@ namespace summer {
      */
     struct history_t {
         user_t user;                    // user
-        const disease_t* disease_p;     // disease information
         prob_hist_t tested;             // probability to be tested
         prob_hist_t infected;           // probability to be infected
 
         /// initialize the data structure
         void set(const user_t& u, const disease_t& d, double test_prob) {
             user = u;
-            disease_p = &d;
             tested.set(0, test_prob);
         }
 
@@ -147,20 +128,19 @@ namespace summer {
         }
 
         /// initially infected & infective
-        void infective(int t) {
-            infected.set(t - disease_p->latent, 1.);
+        void is_infected(int t) {
+            infected.set(t, 1.);
+        }
+
+        /// when become infected
+        int when_infected() const {
+            return infected.when_positive();
         }
 
         /// user infected probability
-        double prob() const {
-            return infected.get();
+        double prob(int t) const {
+            return infected.get(t);
         }
-
-        /// user infectious probability
-        double prob(int t) const;
-
-        /// disease symptoms
-        double symptomatic(int t) const;
     };
 
     /// users history map:  user -> history
@@ -250,7 +230,7 @@ namespace summer {
 
         /// contact mode:
         Infections& contact_efficiency(double ce) { this->ce = ce; return *this; }
-        double      contact_efficiencty() const   { return this->ce; }
+        double      contact_efficiency() const    { return this->ce; }
 
         /// Quota [0,1] of infected users
         Infections& infected(double quota);
@@ -307,12 +287,12 @@ namespace summer {
         /// propagate the infection
         void propagate_infection();
 
-        /// apply the contact model
-        //const s_users& apply_contact_model(int t, const s_users& uset);
-
+        /// update the probability of u1 after an encounter with u2
         void update_for_encounter(int t, const user_t& u1, const user_t& u2);
+        /// update the probability of u1 because theday is changed
         void update_for_newday(int t, const user_t& u1);
 
+        // IO
         void save_daily_csv(const std::string& filename) const;
         void save_daily_xml(const std::string& filename) const;
     };

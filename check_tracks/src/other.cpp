@@ -6,10 +6,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <tbb/parallel_for_each.h>
-#include "infections.h"
 #include <stdx/ranges.h>
 #include <stdx/properties.h>
 #include <stdx/to_string.h>
+#include <stdx/strings.h>
+#include "infections.h"
+#include "other.h"
 
 using namespace boost::filesystem;
 using namespace boost;
@@ -29,6 +31,7 @@ std::string grid_fname(const std::string& worlds_dir, int side, int interval) {
     return fname;
 }
 
+
 std::vector<std::tuple<int, int, double>> make_params(const stdx::properties& props) {
     std::vector<std::tuple<int, int, double>> params;
 
@@ -43,6 +46,83 @@ std::vector<std::tuple<int, int, double>> make_params(const stdx::properties& pr
 
     return params;
 }
+
+// --------------------------------------------------------------------------
+// infeced_users
+// --------------------------------------------------------------------------
+
+void infected_users(const stdx::properties& props) {
+    // dworld used to retrieve the list of users
+    DiscreteWorld dworld;
+    dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
+
+    // some parameters
+    int nsims = props.get("nsims", 1);
+
+    double quota = props.get("quota", 0.0);
+    int n_infected = props.get("n_infected", 0);
+
+    vs_users vinfected;
+    s_users infected;
+
+    if (quota != 0) {
+        for(int i : stdx::range(nsims)) {
+            infected = dworld.users(quota);
+            std::cout << (i+1) << " infected[" << infected.size() << "]: "<< stdx::str(infected) << std::endl;
+            vinfected.push_back(infected);
+        }
+    }
+    else{
+        for(int i : stdx::range(nsims)) {
+            infected = dworld.users(n_infected);
+            std::cout << (i+1) << " infected[" << infected.size() << "]: "<< stdx::str(infected) << std::endl;
+            vinfected.push_back(infected);
+        }
+    }
+
+    std::string infected_file = props.get("infected.file");
+
+    save_infected(infected_file, vinfected);
+}
+
+
+void save_infected(const std::string file, const std::vector<std::unordered_set<int>>&  vinfected) {
+    std::ofstream os;
+    os.open(file.c_str());
+
+    for (auto users : vinfected) {
+        int i=0;
+        for (auto user : users) {
+            if (i++ > 0) os << ",";
+            os << user;
+        }
+        os << std::endl;
+    }
+}
+
+void load_infected(const std::string file, std::vector<std::unordered_set<int>>&  vinfected) {
+    std::ifstream is;
+    is.open(file.c_str());
+
+    std::string line;
+    std::unordered_set<int> users;
+
+    while (getline(is, line)) {
+        users.clear();
+
+        if(line.empty())
+            continue;
+
+        std::vector<std::string> parts = stdx::split(line, ",");
+        for (auto part : parts) {
+            int user = atol(part.c_str());
+            users.insert(user);
+        }
+
+        vinfected.push_back(users);
+    }
+}
+
 
 // --------------------------------------------------------------------------
 // Simulate
@@ -67,7 +147,7 @@ void save_results(const stdx::properties& props,
 
     int side = dworld.side();
     int interval = dworld.interval();
-    int efficiency = infections.contact_efficiencty()*10;
+    int efficiency = (int)infections.contact_efficiency()*10;
 
     std::string dir = stdx::format(R"(%s\%d_%d_%d)",
                                    props.get("infections.dir").c_str(),
@@ -80,7 +160,7 @@ void save_results(const stdx::properties& props,
 
     infections.save_info(filename);
     infections.save_table(filename, time_duration(24, 0, 0));
-    infections.save_daily(filename, Infections::file_format::XML);
+    //infections.save_daily(filename, Infections::file_format::XML);
 }
 
 
@@ -117,29 +197,12 @@ void simulate(const stdx::properties& props,
 
 void simulate(const stdx::properties& props) {
 
-    double quota = props.get("quota", 0.05);
-    int nsims = props.get("nsims", 1);
-
+    // parameters used for the simulation
     std::vector<std::tuple<int, int, double>> params = make_params(props);
 
     // vector of random infected users
     vs_users vinfected;
-
-    // generated the vector of random infected users
-    DiscreteWorld dworld;
-    dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
-    {
-        //DiscreteWorld dworld;
-        //dworld.load(grid_fname(props.get("worlds.dir"), 100, 60));
-
-        for(int i : stdx::range(nsims)) {
-            s_users infected = dworld.users(quota);
-
-            std::cout << (i+1) << " infected[" << infected.size() << "]: "<< stdx::str(infected) << std::endl;
-
-            vinfected.push_back(infected);
-        }
-    }
+    load_infected(props.get("infected.file"), vinfected);
 
     if (params.size() < 4) {
         std::cout << "Sequential simulations ..." << std::endl;
