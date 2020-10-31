@@ -17,7 +17,20 @@ using namespace boost::posix_time;
 // disease_t
 // --------------------------------------------------------------------------
 
-double disease_t::infective(const history_t& histo, int t) {
+double disease_t::symptomatic(const history_t& histo, int t) const {
+    int t0 = histo.when_infected();
+    if (t0 == invalid)
+        return 0.;
+
+    int dt = t - t0;
+    if (asymptomatic < dt && dt <= removed)
+        return 1.;
+    else
+        return 0.;
+}
+
+
+double disease_t::infective(const history_t& histo, int t) const {
     int t0 = histo.when_infected();
     if (t0 == invalid)
         return 0.;
@@ -29,18 +42,30 @@ double disease_t::infective(const history_t& histo, int t) {
         return 0.;
 }
 
-
-double disease_t::symptomatic(const history_t& histo, int t) {
+double disease_t::duration(const history_t& histo, int t) const {
     int t0 = histo.when_infected();
     if (t0 == invalid)
         return 0.;
 
     int dt = t - t0;
-    if (asymptomatic < dt && dt <= removed)
+    if (0 < dt && dt <= removed)
         return 1.;
     else
         return 0.;
 }
+
+bool disease_t::susceptible(const history_t& histo, int t) const {
+    int t0 = histo.when_infected();
+    if (t0 == invalid)
+        return 0.;
+
+    int dt = t - t0;
+    if (dt <= removed)
+        return true;
+    else
+        return false;
+}
+
 
 // --------------------------------------------------------------------------
 // prob_hist_t
@@ -68,8 +93,6 @@ void prob_hist_t::set(int t, double p)  {
         return;
     else if (p != entry.prob)
         hist.emplace_back(t, p);
-    if (p > 0 && positive == invalid)
-        positive = t;
 }
 
 
@@ -108,7 +131,6 @@ Infections::Infections() {
     _disease.asymptomatic = 0;
     _disease.removed = -invalid;
 
-    _only_infections = true;
     seed = 123;
 }
 
@@ -148,6 +170,7 @@ Infections& Infections::propagate() {
     init_simulation();
     init_infected();
 
+    init_propagation();
     propagate_infection();
 
     std::cout << "Infection::end" << std::endl;
@@ -167,6 +190,7 @@ void Infections::init_simulation() {
 
     // day in time slots
     dts = int(time_duration(24, 0, 0)/dworld().interval_td());
+    last_ts = invalid;
 
     // cell side
     double D = dworld().side();
@@ -238,6 +262,16 @@ void Infections::init_infected() {
 }
 
 
+void Infections::init_propagation() {
+
+    for(int day = -r-1; day < 0; day++) {
+        for(const user_t& u1 : dworld().users())
+            if (_infected.count(u1))
+                update_for_newday(day, u1);
+    }
+}
+
+
 void Infections::propagate_infection() {
 
     // t -> u1 -> {u21,...}
@@ -252,18 +286,24 @@ void Infections::propagate_infection() {
     //
 
     // previous day
-    int pd = 0;
+    // 'init_propagation' has initialized until day = -1
+    // the simulation starts with day=0
+    int prev_day = -1;
 
     // 1) for each time slot 't'
     for(auto it = encs.cbegin(); it != encs.cend(); ++it) {
         int t = it->first;
-        int d = t/dts;
+        int day = t/dts;
+
+        // update 'last_ts' processed
+        if (t > last_ts) last_ts = t;
 
         // if it is the new day, update the prob based on the test prob
-        if (pd != d) {
+        // note: day -> FIRST time slot of the day
+        while (prev_day < day) {
+            prev_day += 1;
             for(const user_t& u1 : dworld().users())
-                update_for_newday(t, u1);
-            pd = d;
+                update_for_newday(prev_day, u1);
         }
 
         // user -> {user,...}
@@ -289,44 +329,53 @@ void Infections::update_for_encounter(int t, const user_t& u1, const user_t& u2)
 
     const history_t& u2histo = _infections[u2];
 
-    // user probability to be infected (NOT used: for debug)
+    // user probability to be infected (DEBUG)
     double u1p = _infections[u1].prob(t);
 
     // u2 infectious probability (with latency)
-    double u2p   = u2histo.prob(t)*_disease.infective(u2histo, t);
+    double u2p = u2histo.prob(t)*_disease.infective(u2histo, t);
 
     // probability to be infected
     double p = tau*ce*u2p;
 
     // update the u1 probability to be infected
     if (p != 0)
-    _infections[u1].infected.update(t, p);
+    _infections[u1].infected_update(t, p);
 }
 
-void Infections::update_for_newday(int t, const user_t &u1) {
+/*
+ * t = d*dts
+ */
+void Infections::update_for_newday(int day, const user_t &u1) {
 
-    const history_t& u1histo = _infections[u1];
+    int t = day*dts;     // FIRST time slot of the day d
 
-    // user probability to be tested (NOT usd: for debug)
-    double u1t = u1histo.tested.get(t);
+    history_t& u1histo = _infections[u1];
+
+    // user removed
+    u1histo.removed(t-1, _disease.susceptible(u1histo, t));
+
+    // user probability to be tested (DEBUG)
+    double u1t = u1histo.tested_get(t-1);
 
     // user infected probability
-    double u1p = u1histo.prob(t);
+    double u1p = u1histo.prob(t-1);
 
     // if the user is symptomatic
-    double u1s = _disease.symptomatic(u1histo, t);
+    double u1s = _disease.symptomatic(u1histo, t-1);
 
     // user probability to be symptomatic
     double p = u1p*sp*u1s;
 
     // update the probability to be testes
     if (p != 0)
-    _infections[u1].tested.update(t, p);
+    _infections[u1].tested_update(t, p);
 
     // decrease the infection probability for the test probability
-    double ti = _infections[u1].tested.get(t);
+    double pt = _infections[u1].tested_get(t-1);
 
-    _infections[u1].infected.scale(t, ti);
+    if (pt != 0 && u1p != 0)
+    _infections[u1].infected_scale(t, pt);
 }
 
 
@@ -383,18 +432,24 @@ void Infections::save_table(const std::string& filename, const time_duration& in
         ofs << "," << user << "";
     ofs << std::endl;
 
-    // slots per day
-    int dslots = max(1, (int)(interval/dworld().interval_td()));
-    // end (latest) slot
-    int eslot = (ptime(date(2020, 4, 1)) - ptime(date(2020,1,1)))/dworld().interval_td();
+    // dts: time slots per day
+    // last_ts: last timeslot processes
 
-    for(int t=0; t < eslot; t += dslots) {
+    // dump the status of the users at the END of the day
+    for(int t=dts-1; t <= last_ts; t += dts) {
         int d = t/dts;
 
         ofs << d << "," << t;
 
         for (const user_t &user : users) {
-            double prob = _infections.at(user).prob(t);
+            if (user == 411) {
+                const history_t& histo = _infections.at(user);
+                double prob = histo.prob(t);
+                double dd = _disease.duration(histo, t);
+                double p = prob*dd;
+            }
+            const history_t& histo = _infections.at(user);
+            double prob = histo.prob(t);//*_disease.duration(histo, t);
             ofs << stdx::format(",%.5g", prob);
         }
         ofs << std::endl;

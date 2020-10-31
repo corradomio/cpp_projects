@@ -147,7 +147,7 @@ void save_results(const stdx::properties& props,
 
     int side = dworld.side();
     int interval = dworld.interval();
-    int efficiency = (int)infections.contact_efficiency()*10;
+    int efficiency = (int)lround(infections.contact_efficiency()*10);
 
     std::string dir = stdx::format(R"(%s\%d_%d_%d)",
                                    props.get("infections.dir").c_str(),
@@ -175,6 +175,7 @@ void simulate(const stdx::properties& props,
     std::string data_dir = props.get("worlds.dir");
     DiscreteWorld dworld;
     dworld.load(grid_fname(data_dir, side, interval));
+    int nsims = props.get("nsims", 1);
 
     Infections infections;
     infections
@@ -189,7 +190,7 @@ void simulate(const stdx::properties& props,
         //.only_infections(props.get("only_infections", true))
         .dworld(dworld);
 
-    for (int i : stdx::range(vinfected.size())) {
+    for (int i : stdx::range(nsims)) {
         simulate(props, dworld, infections, vinfected[i], i);
         save_results(props, dworld, infections, i);
     }

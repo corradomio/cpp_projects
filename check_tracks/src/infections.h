@@ -63,8 +63,11 @@ namespace summer {
         int asymptomatic;   // number of time slots of asymptomatic disease
         int removed;        // number of time slots of the disease life;
 
-        double symptomatic(const history_t& histo, int t);
-        double infective(const history_t& histo, int t);
+        double symptomatic(const history_t& histo, int t) const;
+        double infective(const history_t& histo, int t) const;
+        double duration(const history_t& histo, int t) const;
+
+        bool susceptible(const history_t& histo, int t) const;
     };
 
     // ----------------------------------------------------------------------
@@ -83,17 +86,17 @@ namespace summer {
      */
     struct prob_hist_t {
         std::vector<tprob_t> hist;
-        int positive;
+        //int positive;
 
         prob_hist_t() {
-            positive = invalid;
+            //positive = invalid;
             hist.emplace_back(invalid, 0.);
         }
 
         /// time slot when it got infected
-        int when_positive() const {
-            return positive;
-        }
+        //int when_positive() const {
+        //    return positive;
+        //}
 
         /// user infectious probability
         double get(int t) const;
@@ -111,15 +114,18 @@ namespace summer {
     /**
      * user infected history
      */
-    struct history_t {
+    class history_t {
         user_t user;                    // user
         prob_hist_t tested;             // probability to be tested
         prob_hist_t infected;           // probability to be infected
+        int positive;
 
+    public:
         /// initialize the data structure
         void set(const user_t& u, const disease_t& d, double test_prob) {
             user = u;
-            tested.set(0, test_prob);
+            tested.set(invalid, test_prob);
+            positive = invalid;
         }
 
         /// initially not infected
@@ -130,16 +136,41 @@ namespace summer {
         /// initially infected & infective
         void is_infected(int t) {
             infected.set(t, 1.);
+            positive = t;
         }
 
-        /// when become infected
+        /// when become infected (can be 'invalid')
         int when_infected() const {
-            return infected.when_positive();
+            return positive;
         }
 
         /// user infected probability
         double prob(int t) const {
             return infected.get(t);
+        }
+
+        void infected_update(int t, double p) {
+            p = infected.update(t, p);
+            if (p != 0 && positive == invalid)
+                positive = t;
+        }
+
+        void infected_scale(int t, double p) {
+            infected.scale(t, p);
+        }
+
+        /// user retired
+        void removed(int t, bool susceptible) {
+            if (!susceptible)
+                infected.set(t,0);
+        }
+
+        double tested_get(int t) const {
+            return tested.get(t);
+        }
+
+        double tested_update(int t, double p) {
+            return tested.update(t, p);
         }
     };
 
@@ -167,6 +198,9 @@ namespace summer {
         double tp;      // disease test probability
         double ce;      // contact efficiency
 
+        // starting list of infected users
+        s_users _infected;
+
         //
         // Implementation
         //
@@ -174,10 +208,8 @@ namespace summer {
         disease_t _disease;     // disease information
 
         int dts;        // days in time slots
+        int last_ts;    // last tieslot processed
         double tau;     // dworld infection probability
-
-        // starting list of infected users
-        s_users _infected;
 
         // infection status for each user
         // user -> history
@@ -190,9 +222,6 @@ namespace summer {
         // random generator
         stdx::random_t rnd;
         long seed;      // random seed;
-
-        // if to dump only infections
-        bool _only_infections;
 
     public:
         Infections();
@@ -261,12 +290,6 @@ namespace summer {
         /// save infection status day per day
         void save_table(const std::string& filename, const time_duration& interval) const;
 
-        /// if to save only the infections
-        Infections& only_infections(bool enable=true) {
-            _only_infections = enable;
-            return *this;
-        }
-
         /// save the encounters & infection probability, day per day
         void save_daily(const std::string& filename, file_format format) const;
 
@@ -283,6 +306,7 @@ namespace summer {
         /// initialize the infected users
         void init_simulation();
         void init_infected();
+        void init_propagation();
 
         /// propagate the infection
         void propagate_infection();
