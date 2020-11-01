@@ -168,6 +168,9 @@ namespace summer {
         /// length of the time interval in 'boost::posix_time::time_duration'
         const time_duration& interval_td() const { return _interval; }
 
+        /// day in time slots
+        int day_ts() const { return (int)(86400L/_interval.total_seconds()); }
+
         //
         // Populate
         //
@@ -212,7 +215,7 @@ namespace summer {
         void save_slot_encounters(const std::string& filename);
 
         /// save time encounters
-        void save_time_encounters(const std::string& filename);
+        void save_time_encounters(const std::string& filename, bool as_set=false);
 
         // ------------------------------------------------------------------
         // Cereal's serialization support

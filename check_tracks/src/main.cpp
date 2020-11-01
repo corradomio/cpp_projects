@@ -10,6 +10,7 @@ int main(int argc, char** argv) {
     options.add_options()
         ("h,help", "this help")
         ("w,world","dump world encounters")
+        ("e,encounters","dump world encounters")
         ("i,infected","generate the list of infected users")
         ("c,config", "configuration file (default 'tracks.properties')",
             cxxopts::value<std::string>()->default_value("tracks.properties"))
@@ -27,6 +28,8 @@ int main(int argc, char** argv) {
 
     if (opts.count("world"))
         world(props);
+    if (opts.count("encounters"))
+        encounters(props);
     else if (opts.count("infected"))
         infected_users(props);
     else

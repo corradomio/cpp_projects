@@ -26,7 +26,9 @@ add_executable(check_tracks
     src/infections.h
     src/infections.cpp
     src/other.cpp src/other.h
-    ../../../MinGW/libs/include/cxxopts.h src/prob.h)
+    ../../../MinGW/libs/include/cxxopts.h
+    src/encounters.cpp
+)
 
 target_link_libraries(check_tracks
     boost_filesystem-mt

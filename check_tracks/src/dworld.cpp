@@ -199,29 +199,32 @@ static std::string str(const coords_t& c) {
 
 
 void DiscreteWorld::save_slot_encounters(const std::string& filename) {
-    std::cout << "DiscreteWorld::slot encounters " << filename << "[" << _cusers.size() << "]..." << std::endl;
+    std::cout << "DiscreteWorld::slot_encounters " << filename << "[" << _cusers.size() << "]..." << std::endl;
     std::string sep = "|";
 
     std::ofstream ofs(filename);
-    ofs << R"("latitude","longitude","timestamp","encounters")" << std::endl;
+    ofs << "latitude,longitude,timestamp,encounters" << std::endl;
 
     for (auto it=this->_cusers.cbegin(); it != _cusers.end(); it++) {
         const coords_t& c = it->first;
         const s_users& users = it->second;
 
         if (users.size() > 1) {
-            ofs << str(c) << ",\"" << stdx::str(users, sep) << "\"" << std::endl;
+            ofs << str(c) << "," << stdx::str(users, sep) << "" << std::endl;
         }
     }
 
-    std::cout << "DiscreteWorld::done" << std::endl;
+    std::cout << "DiscreteWorld::slot_encounters::done" << std::endl;
 }
 
-void DiscreteWorld::save_time_encounters(const std::string& filename) {
-    std::cout << "DiscreteWorld::time encounters " << filename << "[" << _encs.size() << "]..." << std::endl;
+
+void DiscreteWorld::save_time_encounters(const std::string& filename, bool as_set) {
+    std::cout << "DiscreteWorld::time_encounters " << filename << "[" << _encs.size() << "]..." << std::endl;
+
+    int dts = day_ts();
 
     std::ofstream ofs(filename);
-    ofs << R"("timestamp","user","encounters")" << std::endl;
+    ofs << "day,timestamp,user,encounter" << std::endl;
 
     // for all times
     for(auto it = _encs.cbegin(); it != _encs.cend(); ++it) {
@@ -233,20 +236,17 @@ void DiscreteWorld::save_time_encounters(const std::string& filename) {
         for (auto uit = msusers.cbegin(); uit != msusers.cend(); ++uit) {
 
             const user_t& user = uit->first;
-            const s_users& users = uit->second;
+            const s_users& encounters = uit->second;
 
-            ofs << t << "," << user << "," << stdx::str(users) << std::endl;
+            if (as_set) {
+                ofs << (t/dts) << "," << t << "," << user << "," << stdx::str(encounters) << std::endl;
+            }
+            else {
+                for (auto encounter : encounters)
+                    ofs << (t/dts) << "," << t << "," << user << "," << encounter << std::endl;
+            }
         }
     }
 
-    //std::vector<int> tids = stdx::keys(_encs, true);
-    //
-    //for (int t : tids) {
-    //    ptime timestamp = to_timestamp(t);
-    //
-    //    if (!_encs[t].empty())
-    //        ofs << t << "," << "\"" << str(_encs[t]) << "\"" << std::endl;
-    //}
-
-    std::cout << "DiscreteWorld::done" << std::endl;
+    std::cout << "DiscreteWorld::time_encounters::done" << std::endl;
 }
