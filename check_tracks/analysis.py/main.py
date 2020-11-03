@@ -2,6 +2,7 @@
 
 import pandas as pd
 import pandasx as pdx
+import csvx
 
 HOME_DIR = ".."
 BY_LOC_DIR = HOME_DIR + "/encounters/by_loc"
@@ -24,18 +25,38 @@ USERS = [200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217
          1485,1528,1542,1728,1742,1928,2128,2328,2528,2728,2928,3128
 ]
 
+NSIMS=100
+
 GT_SIDE = 5
 GT_INTERVAL = 1
 GT_CONTACT_EFFICIENCY = 10
 
-SIDES = 5, 10, 20, 50, 100
-INTERVALS = 1, 5, 10, 15, 30, 60
-CONTACT_EFFICIENCIES = 10, 9, 7, 5, 3, 1
+SIDES = [5, 10, 20, 50, 100]
+INTERVALS = [1, 5, 10, 15, 30, 60]
+CONTACT_EFFICIENCIES = [10]
+
+CE_SIDES = [5, 10, 20]
+CE_INTERVALS = [1, 5, 10, 15, 30]
+CE_CONTACT_EFFICIENCIES = [10, 9, 7, 5, 3, 1]
+
+
+def precision_list(gt_list, u_list, n_users):
+    prec_list = []
+    for n in n_users:
+        gt = set(gt_list[0:n])
+        us = set( u_list[0:n])
+
+        tp = gt.intersection(us)
+        prec = round(len(tp)/n, 4)
+
+        prec_list.append(prec)
+    return prec_list
+# end
 
 
 def load_infected():
     df = pdx.load_data(INFECTED_USERS, header=0, dtype=[str]*20)
-    print(df.head())
+    # print(df.head())
     return df
 # end
 
@@ -52,27 +73,65 @@ def load_infections_data(
     )
 
     df = pdx.load_data(filename, dtype=[int, int] + [float]*398)
-    print(df.head())
+    # print(df.head())
     return df
 # end
 
 
-def select_most_infected(infections: pd.DataFrame, day: int):
+def sort_most_infected(infections: pd.DataFrame):
     infected = []
-    for user in USERS:
-        pass
+    for u in USERS:
+        inf_prob = infections[str(u)].max()
+        infected.append( (u, inf_prob) )
     pass
 
+    # sort by infection probability
+    most_infected = sorted(infected, key=lambda p: (p[1], -p[0]), reverse=True)
+    return [p[0] for p in most_infected], most_infected, len([p for p in most_infected if p[1] > 0])
+# end
 
 
 def main(name="PyCharm"):
     infected = load_infected()
     gt_infections = load_infections_data()
+    gt_user_list, gt_most_infected, gt_n_infected = sort_most_infected(gt_infections)
+
+    print("n infected(gt):", gt_n_infected)
+
+    data = []
 
     for side in SIDES:
         for interval in INTERVALS:
-            infections = load_infections_data(side=side, interval=interval, contact_efficiency=10, index=0)
+            for ce in CONTACT_EFFICIENCIES:
+                for index in range(NSIMS):
+                    infections = load_infections_data(side=side, interval=interval, contact_efficiency=ce, index=index)
+                    user_list, most_infected, n_infected = sort_most_infected(infections)
+                    print("n infected({},{}):".format(side, interval), n_infected)
 
+                    prec_list = precision_list(gt_user_list, user_list, [20, 25, 30, 35, 40, 45, 50])
+
+                    data.append([
+                        side, interval, ce, n_infected, index
+                    ] + prec_list)
+    # end
+
+    # for side in CE_SIDES:
+    #     for interval in CE_INTERVALS:
+    #         for ce in CE_CONTACT_EFFICIENCIES:
+    #             for index in range(NSIMS):
+    #                 infections = load_infections_data(side=side, interval=interval, contact_efficiency=ce, index=index)
+    #                 user_list, most_infected, n_infected = sort_most_infected(infections)
+    #                 print("n infected({},{}):".format(side, interval), n_infected)
+    #
+    #                 prec_list = precision_list(gt_user_list, user_list, [20, 25, 30, 35, 40, 45, 50])
+    #
+    #                 data.append([
+    #                     side, interval, ce, n_infected, index
+    #                 ] + prec_list)
+    # end
+
+    header = ["side", "interval", "ce", "n_infected", "index", "20", "25", "30", "35", "40", "45", "50"]
+    csvx.save_csv("results.csv", data, header)
 # end
 
 

@@ -165,7 +165,7 @@ Infections& Infections::infected(const s_users& users) {
 // --------------------------------------------------------------------------
 
 Infections& Infections::propagate() {
-    std::cout << "Infection::propagate ..." << std::endl;
+    //std::cout << "Infection::propagate ..." << std::endl;
 
     init_simulation();
     init_infected();
@@ -173,7 +173,7 @@ Infections& Infections::propagate() {
     init_propagation();
     propagate_infection();
 
-    std::cout << "Infection::end" << std::endl;
+    //std::cout << "Infection::end" << std::endl;
     return *this;
 }
 
@@ -186,7 +186,7 @@ Infections& Infections::propagate() {
  * Initialize the simulation parameters
  */
 void Infections::init_simulation() {
-    std::cout << "Infection::init_simulation" << std::endl;
+    //std::cout << "Infection::init_simulation" << std::endl;
 
     // day in time slots
     dts = int(time_duration(24, 0, 0)/dworld().interval_td());
@@ -218,7 +218,7 @@ void Infections::init_simulation() {
  * Initialize the infected users and the other users
  */
 void Infections::init_infected() {
-    std::cout << "Infection::init_infected" << std::endl;
+    //std::cout << "Infection::init_infected" << std::endl;
 
     _infections.clear();
 
@@ -249,7 +249,7 @@ void Infections::init_infected() {
                 continue;
 
             // it is an infected user
-            if (stdx::contains(_infected, user))
+            if (_infected.count(user)) //if (stdx::contains(_infected, user))
                 _infections[user].is_infected(t - _disease.latent);
             else
                 _infections[user].not_infected(t);
@@ -258,6 +258,21 @@ void Infections::init_infected() {
             processed.insert(user);
             complete = (n_users == processed.size());
         }
+    }
+
+    // all users are processed
+    if (n_users == processed.size())
+        return;
+
+    // mark as infected the 'infected' users not processed
+    for (const user_t& user : dworld().users()) {
+        if (processed.count(user))
+            continue;
+
+        if (_infected.count(user) == 0)
+            _infections[user].not_infected(0);
+        else
+            _infections[user].is_infected(0);
     }
 }
 
@@ -418,7 +433,7 @@ void Infections::save_info(const std::string& filename) const {
 
 
 void Infections::save_table(const std::string& filename, const time_duration& interval) const {
-    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+    //std::cout << "Infections::saving in " << filename << " ..." << std::endl;
 
     // list of ALL users, SORTED
     const s_users& susers = dworld().users();
@@ -455,7 +470,7 @@ void Infections::save_table(const std::string& filename, const time_duration& in
         ofs << std::endl;
     }
 
-    std::cout << "Infections::done" << std::endl;
+    //std::cout << "Infections::done" << std::endl;
 }
 
 
@@ -468,7 +483,7 @@ void Infections::save_daily(const std::string& filename, file_format format) con
 
 
 void Infections::save_daily_csv(const std::string& filename) const {
-    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+    //std::cout << "Infections::saving in " << filename << " ..." << std::endl;
 
     // ----------------------------------------------------------------------
     // IO
@@ -500,12 +515,12 @@ void Infections::save_daily_csv(const std::string& filename) const {
         }
     }
 
-    std::cout << "Infections::done" << std::endl;
+    //std::cout << "Infections::done" << std::endl;
 }
 
 
 void Infections::save_daily_xml(const std::string& filename) const {
-    std::cout << "Infections::saving in " << filename << " ..." << std::endl;
+    //std::cout << "Infections::saving in " << filename << " ..." << std::endl;
 
     // ----------------------------------------------------------------------
     // IO
@@ -548,5 +563,5 @@ void Infections::save_daily_xml(const std::string& filename) const {
     }
 
     ofs << "</infections>\n";
-    std::cout << "Infections::done" << std::endl;
+    //std::cout << "Infections::done" << std::endl;
 }

@@ -198,6 +198,8 @@ void simulate(const stdx::properties& props,
 
 void simulate(const stdx::properties& props) {
 
+    bool seq = props.get("sequential", false);
+
     // parameters used for the simulation
     std::vector<std::tuple<int, int, double>> params = make_params(props);
 
@@ -205,8 +207,8 @@ void simulate(const stdx::properties& props) {
     vs_users vinfected;
     load_infected(props.get("infected.file"), vinfected);
 
-    if (params.size() < 4) {
-        std::cout << "Sequential simulations ..." << std::endl;
+    if (params.size() < 4 || seq) {
+        std::cout << "Sequential::simulations ..." << std::endl;
 
         for(std::tuple<int, int, double> p : params) {
             int side = std::get<0>(p);
@@ -215,9 +217,10 @@ void simulate(const stdx::properties& props) {
 
             simulate(props, side, interval, efficiency, vinfected);
         }
+        std::cout << "Sequential::done" << std::endl;
     }
     else {
-        std::cout << "Parallel simulations ..." << std::endl;
+        std::cout << "Parallel::simulations ..." << std::endl;
 
         tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int, double>& p) {
             int side = std::get<0>(p);
@@ -226,6 +229,7 @@ void simulate(const stdx::properties& props) {
 
             simulate(props, side, interval, efficiency, vinfected);
         });
+        std::cout << "Parallel::done" << std::endl;
     }
 }
 
