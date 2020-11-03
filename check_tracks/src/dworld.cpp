@@ -16,6 +16,34 @@ using namespace hls::khalifa::summer;
 
 
 // --------------------------------------------------------------------------
+// location_t
+// --------------------------------------------------------------------------
+
+location_t::location_t():
+    min(+infty,+infty,+infty),
+    max(-infty,-infty,-infty),
+    first(+infty,+infty,+infty),
+    last(-infty,-infty,-infty)
+{ }
+
+
+void location_t::update(const coords_t& c) {
+    // c'e' un problema con un utente che ha coordinate negative.
+    // Lo saltiamo
+    if (c.i < 0 || c.j< 0)
+        return;
+
+    if (c.i < min.i) min.i = c.i;
+    if (c.j < min.j) min.j = c.j;
+    if (c.t < first.t) first = c;
+
+    if (c.i > max.i) max.i = c.i;
+    if (c.j > max.j) max.j = c.j;
+    if (c.t > last.t) last = c;
+}
+
+
+// --------------------------------------------------------------------------
 // DiscreteWorld
 // --------------------------------------------------------------------------
 
@@ -150,6 +178,31 @@ coords_t DiscreteWorld::to_coords(double latitude, double longitude, const ptime
 
 
 // --------------------------------------------------------------------------
+// locations
+// --------------------------------------------------------------------------
+
+void DiscreteWorld::update_daily_locations() {
+    if (!_locs.empty())
+        return;
+
+    int dts = day_ts();
+
+    for (auto uit = _ucoords.cbegin(); uit != _ucoords.cend(); ++uit) {
+        const user_t& u = uit->first;
+
+        const std::vector<coords_t> & coords = uit->second;
+
+        for(const coords_t& c : coords) {
+            int d = c.t/dts;
+
+            _locs[d][u].update(c);
+            _locs[-1][-1].update(c);
+        }
+    }
+}
+
+
+// --------------------------------------------------------------------------
 // IO
 // --------------------------------------------------------------------------
 
@@ -178,20 +231,20 @@ void DiscreteWorld::load(const std::string& filename) {
 // Special saves
 // --------------------------------------------------------------------------
 
-static std::string str(const vs_users& vs) {
-    std::stringstream sbuf;
-    std::string sep = "|";
-
-    sbuf << "[";
-    if (!vs.empty()) {
-        sbuf << stdx::str(vs[0], sep);
-        for(size_t i=1; i<vs.size(); ++i)
-            sbuf << ";" << stdx::str(vs[i], sep);
-    }
-
-    sbuf << "]";
-    return sbuf.str();
-}
+//static std::string str(const vs_users& vs) {
+//    std::stringstream sbuf;
+//    std::string sep = "|";
+//
+//    sbuf << "[";
+//    if (!vs.empty()) {
+//        sbuf << stdx::str(vs[0], sep);
+//        for(size_t i=1; i<vs.size(); ++i)
+//            sbuf << ";" << stdx::str(vs[i], sep);
+//    }
+//
+//    sbuf << "]";
+//    return sbuf.str();
+//}
 
 static std::string str(const coords_t& c) {
     return stdx::format("%d,%d,%d", c.i, c.j, c.t);
@@ -249,4 +302,28 @@ void DiscreteWorld::save_time_encounters(const std::string& filename, bool as_se
     }
 
     std::cout << "DiscreteWorld::time_encounters::done" << std::endl;
+}
+
+
+void DiscreteWorld::save_daily_locations(const std::string& filename){
+    update_daily_locations();
+
+    std::ofstream ofs(filename);
+    ofs << "day,user,min_i,min_j,max_i,max_j,first_i,first_j,last_i,last_j" << std::endl;
+    for (auto dit = _locs.cbegin(); dit != _locs.cend(); ++dit) {
+        int d = dit->first;
+
+        const ml_users& lusers = dit->second;
+        for(auto uit = lusers.cbegin(); uit != lusers.cend(); ++uit) {
+            const user_t& u = uit->first;
+            const location_t& l = uit->second;
+
+            ofs << d << "," << u
+                << "," << l.min.i << "," << l.min.j
+                << "," << l.max.i << "," << l.max.j
+                << "," << l.first.i << "," << l.first.j
+                << "," << l.last.i << "," << l.last.j
+                << std::endl;
+        }
+    }
 }

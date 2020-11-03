@@ -25,8 +25,8 @@ void encounters(const stdx::properties& props, int side, int interval) {
     time_enc = stdx::format("encounters/by_time/time_enc_sets_%d_%d.csv", side, interval);
     dworld.save_time_encounters(time_enc, true);
 
-    //std::string time_slots = stdx::format("encounters/by_slots/slot_encs_%d_%d.csv", side, interval);
-    //dworld.save_slot_encounters(time_slots);
+    std::string daily_locs = stdx::format("encounters/by_loc/daily_locations_%d_%d.csv", side, interval);
+    dworld.save_daily_locations(daily_locs);
 }
 
 

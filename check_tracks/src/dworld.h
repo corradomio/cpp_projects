@@ -40,6 +40,9 @@ namespace hls {
 namespace khalifa {
 namespace summer {
 
+    // one years back, in seconds: 1*365*24*60*60
+    const int infty = 1073741824;
+
     struct coords_t {
         int i, j, t;
 
@@ -87,6 +90,17 @@ namespace summer {
         ar(c.i, c.j, c.t);
     }
 
+    struct location_t {
+        coords_t min;
+        coords_t max;
+        coords_t first;
+        coords_t last;
+
+        location_t();
+
+        void update(const coords_t& c);
+    };
+
 }}}
 
 namespace hks = hls::khalifa::summer;
@@ -112,6 +126,8 @@ typedef std::unordered_map<user_t, std::vector<hks::coords_t>> u_coords;    // u
 typedef std::unordered_map<user_t, s_users>  ms_users;                      // user -> set of users
 typedef std::map<int, ms_users> tms_users;                                  // t -> user -> set of users
 typedef stdx::unordered_bag<user_t> b_users;                                // user -> count
+typedef std::unordered_map<user_t, hks::location_t> ml_users;               // user -> location
+typedef std::map<int, ml_users> dml_users;                                  // day -> user -> location
 
 namespace hls {
 namespace khalifa {
@@ -141,6 +157,9 @@ namespace summer {
 
         /// cells visited by each user: user -> [(i,j,t), ...]
         u_coords _ucoords;
+
+        /// user locations: d-> user -> location
+        dml_users   _locs;
 
         /// time slot encounters:  t -> [u1 -> {u2...}]
         ///     for eacn time slot
@@ -217,6 +236,9 @@ namespace summer {
         /// save time encounters
         void save_time_encounters(const std::string& filename, bool as_set=false);
 
+        /// save user locations
+        void save_daily_locations(const std::string& filename);
+
         // ------------------------------------------------------------------
         // Cereal's serialization support
         // ------------------------------------------------------------------
@@ -241,6 +263,13 @@ namespace summer {
         // ----------------------------------------------------------------------
 
         void dump();
+
+    private:
+
+        // ----------------------------------------------------------------------
+        // locations
+
+        void update_daily_locations();
 
     };
 
