@@ -132,6 +132,8 @@ void simulate(const stdx::properties& props,
               const DiscreteWorld& dworld, Infections& infections,
               const s_users& infected, int i) {
 
+    std::cout << "Infections::simulate [" << infections.contact_efficiency() << "] " << i << std::endl;
+
     // initialize the infected users
     infections.infected(infected);
 
@@ -166,6 +168,10 @@ void save_results(const stdx::properties& props,
 
 // --------------------------------------------------------------------------
 
+DiscreteWorld dworld;
+int w_side = 0;
+int w_interval = 0;
+
 void simulate(const stdx::properties& props,
               int side,
               int interval,
@@ -173,8 +179,14 @@ void simulate(const stdx::properties& props,
               const vs_users& vinfected)
 {
     std::string data_dir = props.get("worlds.dir");
-    DiscreteWorld dworld;
-    dworld.load(grid_fname(data_dir, side, interval));
+    //DiscreteWorld dworld;
+
+    if (w_side != side || w_interval != interval) {
+        dworld.load(grid_fname(data_dir, side, interval));
+        w_side = side;
+        w_interval = interval;
+    }
+
     int nsims = props.get("nsims", 1);
 
     Infections infections;
