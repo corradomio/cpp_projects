@@ -10,6 +10,7 @@
 #include <stdx/properties.h>
 #include <stdx/to_string.h>
 #include <stdx/strings.h>
+#include <stdx/params.h>
 #include "infections.h"
 #include "other.h"
 
@@ -18,6 +19,14 @@ using namespace boost;
 using namespace hls::khalifa::summer;
 
 
+
+// --------------------------------------------------------------------------
+// Static
+// --------------------------------------------------------------------------
+
+//DiscreteWorld dworld;
+//int w_side = 0;
+//int w_interval = 0;
 
 // --------------------------------------------------------------------------
 // Parameters
@@ -29,22 +38,6 @@ std::string grid_fname(const std::string& worlds_dir, int side, int interval) {
         worlds_dir.c_str(),
         side, interval);
     return fname;
-}
-
-
-std::vector<std::tuple<int, int, double>> make_params(const stdx::properties& props) {
-    std::vector<std::tuple<int, int, double>> params;
-
-    std::vector<int> sides = props.get_ints("sides");
-    std::vector<int> intervals = props.get_ints("intervals");
-    std::vector<double> efficiencies = props.get_doubles("contact_efficiency");
-
-    for (int side : sides)
-        for (int interval: intervals)
-            for (double efficiency : efficiencies)
-                params.emplace_back(side, interval, efficiency);
-
-    return params;
 }
 
 // --------------------------------------------------------------------------
@@ -168,10 +161,6 @@ void save_results(const stdx::properties& props,
 
 // --------------------------------------------------------------------------
 
-DiscreteWorld dworld;
-int w_side = 0;
-int w_interval = 0;
-
 void simulate(const stdx::properties& props,
               int side,
               int interval,
@@ -179,13 +168,14 @@ void simulate(const stdx::properties& props,
               const vs_users& vinfected)
 {
     std::string data_dir = props.get("worlds.dir");
-    //DiscreteWorld dworld;
+    DiscreteWorld dworld;
+    dworld.load(grid_fname(data_dir, side, interval));
 
-    if (w_side != side || w_interval != interval) {
-        dworld.load(grid_fname(data_dir, side, interval));
-        w_side = side;
-        w_interval = interval;
-    }
+    //if (w_side != side || w_interval != interval) {
+    //    dworld.load(grid_fname(data_dir, side, interval));
+    //    w_side = side;
+    //    w_interval = interval;
+    //}
 
     int nsims = props.get("nsims", 1);
 
@@ -212,8 +202,11 @@ void simulate(const stdx::properties& props) {
 
     bool seq = props.get("sequential", false);
 
-    // parameters used for the simulation
-    std::vector<std::tuple<int, int, double>> params = make_params(props);
+
+    std::vector<int> sides = props.get_ints("sides");
+    std::vector<int> intervals = props.get_ints("intervals");
+    std::vector<double> efficiencies = props.get_doubles("contact_efficiency");
+    std::vector<std::tuple<int, int, double>> params = stdx::make_params(sides, intervals, efficiencies);
 
     // vector of random infected users
     vs_users vinfected;
@@ -250,21 +243,22 @@ void simulate(const stdx::properties& props) {
 // world
 // --------------------------------------------------------------------------
 
+
+
 void world(const stdx::properties& props, int side, int interval) {
+
+    DiscreteWorld dworld;
     std::string data_dir = props.get("worlds.dir");
     std::string dir = props.get("encounters.dir");
     std::string by_slots = stdx::format(R"(%s/by_slots)", dir.c_str());
-    std::string by_time  = stdx::format(R"(%s/by_time)", dir.c_str());
+    std::string by_time  = stdx::format(R"(%s/by_time)",  dir.c_str());
 
-    DiscreteWorld dworld;
     dworld.load(grid_fname(data_dir, side, interval));
 
-    std::string slot_encs = stdx::format(R"(%s/by_slot_%d_%d_3months.csv)",
-                                         by_slots.c_str(), side, interval);
-    dworld.save_slot_encounters(slot_encs);
+    std::string slot_users = stdx::format(R"(%s/by_slot_%d_%d.csv)", by_slots.c_str(), side, interval);
+    dworld.save_slot_users(slot_users);
 
-    std::string time_encs = stdx::format(R"(%s/by_time_%d_%d_3months.csv)",
-                                         by_time.c_str(), side, interval);
+    std::string time_encs = stdx::format(R"(%s/by_time_%d_%d.csv)", by_time.c_str(), side, interval);
     dworld.save_time_encounters(time_encs);
 }
 
@@ -276,12 +270,17 @@ void world(const stdx::properties& props) {
     create_directory(path(by_slots));
     create_directory(path(by_time));
 
-    std::vector<std::tuple<int, int, double>> params = make_params(props);
+    bool seq = props.get("sequential", false);
 
-    if (params.size() < 4) {
+    std::vector<int> sides = props.get_ints("sides");
+    std::vector<int> intervals = props.get_ints("intervals");
+
+    std::vector<std::tuple<int, int>> params = stdx::make_params(sides, intervals);
+
+    if (params.size() < 4 || seq) {
         std::cout << "Sequential ..." << std::endl;
 
-        for(std::tuple<int, int, double> p : params) {
+        for(std::tuple<int, int> p : params) {
             int side = std::get<0>(p);
             int interval = std::get<1>(p);
 
@@ -291,7 +290,7 @@ void world(const stdx::properties& props) {
     else {
         std::cout << "Parallel ..." << std::endl;
 
-        tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int, double>& p) {
+        tbb::parallel_for_each(params.begin(), params.end(), [&](const std::tuple<int, int>& p) {
             int side = std::get<0>(p);
             int interval = std::get<1>(p);
 

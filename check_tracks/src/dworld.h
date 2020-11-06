@@ -158,11 +158,11 @@ namespace summer {
         /// cells visited by each user: user -> [(i,j,t), ...]
         u_coords _ucoords;
 
-        /// user locations: d-> user -> location
+        /// user locations: d -> user -> location
         dml_users   _locs;
 
         /// time slot encounters:  t -> [u1 -> {u2...}]
-        ///     for eacn time slot
+        ///     for each time slot
         ///     for each user
         ///         set of encountered other users
         tms_users _encs;
@@ -231,7 +231,7 @@ namespace summer {
         void load(const std::string& filename);
 
         /// save slot encounters
-        void save_slot_encounters(const std::string& filename);
+        void save_slot_users(const std::string& filename, bool as_set=false);
 
         /// save time encounters
         void save_time_encounters(const std::string& filename, bool as_set=false);

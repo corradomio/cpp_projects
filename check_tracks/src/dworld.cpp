@@ -63,7 +63,8 @@ DiscreteWorld::~DiscreteWorld() {
     _susers.clear();
     _cusers.clear();
     _ucoords.clear();
-    //_encs.clear();
+    _locs.clear();
+    _encs.clear();
 }
 
 
@@ -251,19 +252,25 @@ static std::string str(const coords_t& c) {
 }
 
 
-void DiscreteWorld::save_slot_encounters(const std::string& filename) {
+void DiscreteWorld::save_slot_users(const std::string& filename, bool as_set) {
     std::cout << "DiscreteWorld::slot_encounters " << filename << "[" << _cusers.size() << "]..." << std::endl;
     std::string sep = "|";
 
+    int dts = day_ts();
+
     std::ofstream ofs(filename);
-    ofs << "latitude,longitude,timestamp,encounters" << std::endl;
+    ofs << "day,timestamp,lat,lon,user" << std::endl;
 
     for (auto it=this->_cusers.cbegin(); it != _cusers.end(); it++) {
         const coords_t& c = it->first;
         const s_users& users = it->second;
 
-        if (users.size() > 1) {
-            ofs << str(c) << "," << stdx::str(users, sep) << "" << std::endl;
+        if (as_set) {
+            ofs << (c.t/dts) << "," << c.t << "," << c.i << "," << c.j << "," << stdx::str(users, sep) << "" << std::endl;
+        }
+        else {
+            for (const user_t& u : users)
+                ofs << (c.t/dts) << "," << c.t << "," << c.i << "," << c.j<< "," << u << "" << std::endl;
         }
     }
 
