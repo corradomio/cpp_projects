@@ -5,6 +5,7 @@ import pandas as pd
 import pandasx as pdx
 import csvx
 from commons import *
+from itertoolsx import flatten
 
 
 def precision_list(gt_list, u_list, n_users):
@@ -86,7 +87,7 @@ def collect_data(sides, intervals, ceffs, nsims, gt_list):
                     user_list, most_infected, n_infected = sort_most_infected(infections)
                     print("n infected({},{}):".format(side, interval), n_infected)
 
-                    prec_list = precision_list(gt_user_list, user_list, [20, 25, 30, 35, 40, 45, 50])
+                    prec_list = precision_list(gt_user_list, user_list, N_AGENTS)
                     prec_mat.append([n_infected] + prec_list)
                 # end
 
@@ -111,14 +112,9 @@ def main():
     # infected = load_infected()
 
     header = ["side", "interval", "ce",
-              "mean_infected", "sdv_infected",
-              "p20", "sdv20",
-              "p25", "sdv25",
-              "p30", "sdv30",
-              "p35", "sdv35",
-              "p40", "sdv40",
-              "p45", "sdv45",
-              "p50", "sdv50"]
+              "mean_infected", "sdv_infected"] + flatten(
+        [("p" + str(i), "sdv"+str(i)) for i in N_AGENTS]
+    )
 
     nsims = NSIMS
 
