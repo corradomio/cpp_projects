@@ -1,3 +1,4 @@
+import numpy as np
 
 DIGITS = 4
 
@@ -36,3 +37,6 @@ CONTACT_EFFICIENCIES = [10]
 CE_SIDES = [5, 10, 20]
 CE_INTERVALS = [1, 5, 10, 15, 30]
 CE_CONTACT_EFFICIENCIES = [10, 9, 7, 5, 3, 1]
+
+TOT_AGENTS = 400
+N_AGENTS = (np.array([.08, .10, .12, .14, .16, .18, .20], dtype=float)*TOT_AGENTS).astype(int)

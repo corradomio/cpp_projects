@@ -4,3 +4,6 @@ infections
 infections.*
 *.zip
 docs
+__pycache__
+
+

@@ -6,8 +6,6 @@ import pyplotx as pltx
 
 from commons import *
 
-N_AGENTS = 20, 25, 30, 35, 40, 45, 50
-
 
 def load_data() -> pd.DataFrame:
     df = pdx.load_data("infected_operator.csv")
@@ -34,11 +32,11 @@ def plot_data_by_side(df: pd.DataFrame,
                 prec[i] = p
                 sdev[i] = s
                 i += 1
-            pltx.plot(N_AGENTS, prec, sdev=sdev, label="{}min".format(interval))
-        plt.ylim(0.6, 1.01)
-        plt.xlabel("n top infected")
+            pltx.plot(N_AGENTS/TOT_AGENTS, prec, sdev=sdev, label="{}min".format(interval))
+        plt.ylim(0.4, 1.01)
+        plt.xlabel("n_top_infected/n_users")
         plt.ylabel("precision")
-        plt.title("Precision Infections (side: {}m, 1-sdev)".format(side))
+        plt.title("Precision Infections (side: {}m)".format(side))
         plt.legend()
         fname = "plots/{}_{}m.png".format(fprefix, side)
         plt.savefig(fname, dpi=300)
@@ -64,11 +62,11 @@ def plot_data_by_intervals(df: pd.DataFrame,
                 prec[i] = p
                 sdev[i] = s
                 i += 1
-            pltx.plot(N_AGENTS, prec, sdev=sdev, label="{}m".format(side))
-        plt.ylim(0.6, 1.01)
-        plt.xlabel("n top infected")
+            pltx.plot(N_AGENTS/TOT_AGENTS, prec, sdev=sdev, label="{}m".format(side))
+        plt.ylim(0.4, 1.01)
+        plt.xlabel("n_top_infected/n_users")
         plt.ylabel("precision")
-        plt.title("Precision Infections (interval: {}min, 1-sdev)".format(interval))
+        plt.title("Precision Infections (interval: {}min)".format(interval))
         plt.legend()
         fname = "plots/{}_{}min.png".format(fprefix, interval)
         plt.savefig(fname, dpi=300)

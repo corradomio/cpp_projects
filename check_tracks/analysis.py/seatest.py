@@ -13,3 +13,9 @@ sns.lineplot(x="timepoint", y="signal",
              hue="region", style="event",
              data=fmri)
 plt.show()
+
+import pandas as pd
+
+ds = pd.DataFrame()
+se = pd.Series()
+ix = pd.Index()
