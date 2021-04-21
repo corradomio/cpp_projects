@@ -13,8 +13,10 @@ link_directories(
 
 add_executable(check_cuda
 #    main.cu
-#    main2.cu
-    main3.cu cugraph.h)
+    main2.cu
+#    main3.cu
+    cugraph.h
+)
 
 set_target_properties(
     check_cuda

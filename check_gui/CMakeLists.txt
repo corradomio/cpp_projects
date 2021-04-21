@@ -17,7 +17,7 @@ link_directories(
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(check_gui main_nana.cpp main_fltk.cpp)
+add_executable(check_gui main_nana.cpp main_fltk.cpp main_wxtk.cpp)
 
 target_link_libraries(check_gui
     tbb
@@ -26,6 +26,7 @@ target_link_libraries(check_gui
     fltk_images
     comctl32.lib
     nana
+    wx_mswud-3.1.dll
 #    fltk_jpeg
 #    fltk_png
 #    X11

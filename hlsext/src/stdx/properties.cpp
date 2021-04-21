@@ -11,9 +11,7 @@
 
 namespace stdx {
 
-
-    properties::properties() {
-    }
+    properties::properties() { }
 
     properties::properties(const std::string& file) {
         read(*this, file);

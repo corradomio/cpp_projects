@@ -28,9 +28,9 @@ namespace stdx {
 
     class property_not_found_exception : public std::exception {
     public:
-        property_not_found_exception() {}
-        property_not_found_exception(const property_not_found_exception& e): message(e.message) {}
-        property_not_found_exception(const std::string& msg) : message(msg) {}
+        property_not_found_exception() noexcept {}
+        property_not_found_exception(const property_not_found_exception& e) noexcept: message(e.message) {}
+        property_not_found_exception(const std::string& msg) noexcept: message(msg) {}
 
         virtual ~property_not_found_exception() throw() {}
 

@@ -5,9 +5,10 @@
 #include <nana/gui.hpp>
 #include <nana/gui/widgets/button.hpp>
 
-int main()
+using namespace nana;
+
+int main1()
 {
-    using namespace nana;
     form fm;
     fm.caption(L"Hello, World!");
     button btn(fm, rectangle{20, 20, 150, 30});
@@ -15,4 +16,6 @@ int main()
     btn.events().click(API::exit);
     fm.show();
     exec();
+
+    return 0;
 }

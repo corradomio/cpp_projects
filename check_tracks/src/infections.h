@@ -190,7 +190,7 @@ namespace summer {
         int d;          // contact_range (in meters)
         double beta;    // infection_rate (infections/day)
 
-        int a;          // asymptomaitic_days: n of days before to have symptoms
+        int a;          // asymptomatic_days: n of days before to have symptoms
         int l;          // latent_days: n of days before to became infectious.
         int r;          // removed_days: n of days after the first contact to became NOT infectious.
 
@@ -208,7 +208,7 @@ namespace summer {
         disease_t _disease;     // disease information
 
         int dts;        // days in time slots
-        int last_ts;    // last tieslot processed
+        int last_ts;    // last timeslot processed
         double tau;     // dworld infection probability
 
         // infection status for each user

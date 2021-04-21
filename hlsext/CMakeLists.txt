@@ -38,6 +38,6 @@ set(SOURCE_FILES
     src/hls/util/properties_utils.h
     src/stdx/properties.cpp
     src/hls/util/properties_utils.cpp
-    include/stdx/strings.h src/stdx/strings.cpp)
+    include/stdx/strings.h src/stdx/strings.cpp include/cpp/syntax.h)
 
 add_library(hlsext ${SOURCE_FILES})
