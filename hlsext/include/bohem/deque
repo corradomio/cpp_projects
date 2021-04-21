@@ -6,7 +6,7 @@
 #define BOHEM_DEQUE_H
 
 #include <deque>
-#include "allocator.h"
+#include "allocator"
 
 namespace bohem {
 
