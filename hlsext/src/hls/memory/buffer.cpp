@@ -1,5 +1,5 @@
-#include "../../../include/hls/memory/buffer.hpp"
-#include "../../../include/hls/memory/alloc.hpp"
+#include "../../../include/hls/memory/buffer.h"
+#include "../../../include/hls/memory/alloc.h"
 
 
 using namespace hls::memory;

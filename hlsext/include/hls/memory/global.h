@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "stdx/exception.h"
-#include "alloc.hpp"
+#include "alloc.h"
 
 namespace hls {
 namespace memory {

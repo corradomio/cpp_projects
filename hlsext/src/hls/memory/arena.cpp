@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 10/10/2015.
 //
 
-#include "../../../include/hls/memory/arena.hpp"
-#include "../../../include/hls/memory/alloc.hpp"
+#include "../../../include/hls/memory/arena.h"
+#include "../../../include/hls/memory/alloc.h"
 
 using namespace hls::memory;
 

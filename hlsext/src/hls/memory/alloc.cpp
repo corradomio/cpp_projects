@@ -3,7 +3,7 @@
 //
 
 #include <stdlib.h>
-#include "../../../include/hls/memory/alloc.hpp"
+#include "../../../include/hls/memory/alloc.h"
 
 using namespace hls::memory;
 

@@ -7,7 +7,7 @@
 
 #include <set>
 #include <multiset>
-#include "allocator.h"
+#include "allocator"
 
 namespace bohem {
 

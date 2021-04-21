@@ -1,4 +1,4 @@
-#include "../../../include/hls/memory/global.hpp"
+#include "../../../include/hls/memory/global.h"
 
 using namespace hls::memory;
 

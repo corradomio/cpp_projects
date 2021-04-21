@@ -231,7 +231,7 @@ namespace math {
 
 
     template<typename T> T sq(T x) { return x*x; }
-    template<typename T> T dist(T x, T y, T z) { return sqrt(sq(x) + sq(y) + sq(z)); }
+    template<typename T> T norm(T x, T y, T z) { return sqrt(sq(x) + sq(y) + sq(z)); }
 
 }};
 
