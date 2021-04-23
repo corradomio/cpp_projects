@@ -15,7 +15,7 @@ set(SOURCE_FILES
 #    src/cstd/malloc-2.8.6.c
 #    src/cstd/malloc-2.8.6.h
 
-    include/boostx/date_time_op.h
+    include/boostx/date_time/date_time_op.h
     include/bohem/vector
     include/bohem/string
     include/bohem/containers

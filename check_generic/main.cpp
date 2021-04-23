@@ -1,55 +1,58 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <stdio.h>
+#include <ref/vector.h>
+#include <ref/unordered_map.h>
+#include <ref/map.h>
+#include <ref/unordered_set.h>
+#include <ref/set.h>
+#include <std/hash.h>
 
-const int N = 1000;
-int V[N];
+class C {
+    static int gid;
 
-int rmin(const int V[], int i) {
-    if (i < 0)
-        return __INT_MAX__;
-    else if (i == 0)
-        return V[0];
-    int fmin = rmin(V, i-1);
-    if (fmin < V[i])
-        return fmin;
-    else
-        return V[i];
-}
+    int id;
+public:
+    C() { id = gid++; printf("C(%d)\n", id); }
+    C(const C& c) { id = gid++; printf("C(%d <- %d)\n", id, c.id); }
+   ~C() { printf("~C(%d)\n", id); }
+};
+
+int C::gid = 0;
+
+void appmain(const std::vector<std::string>& apps) {
+    std::cout << "Hello World" << std::endl;
+
+    typedef std::pair<double, double> coords_t;
+    typedef int uid_t;
+
+    //ref::vector<C> v;
+    //for (int i=0; i<10; ++i)
+    //    v.emplace_back();
+    //
+    //ref::vector<C> w = v;
+    //std::hash<double> x;
+
+    ref::set<coords_t> m;
+    m.emplace(std::make_pair(0,0));
+    m.emplace(std::make_pair(0,0));
+    std::cout << m.size() << std::endl;
+
+    ref::set<coords_t> p = m;
+    p.emplace(std::make_pair(0,1));
+    std::cout << m.size() << std::endl;
 
 
-int main(int argc, char** argv) {
+    //std::cout << m[std::make_pair(0,0)] << std::endl;
 
-    // Inizializzazione del generatore di numeri casuali
-    // 'argv' ha un indirizzo sempre diverso
-    // idea: usare l'indirizzo come un long da usare con srand()
-
-    union {
-        void* ptr;
-        long ival;
-    } init;
-    init.ptr = argv;
-
-    printf("init srand: %ld\n", init.ival);
-    srand(init.ival);
-
-    // inizializzazione di min con il PIU' ALTO valore per un intero
-    int min = __INT_MAX__;
-
-    // inizializzazione del vettore e identificazione del valore minimo
-    for(int i=0;i<N; ++i) {
-        V[i] = 1 + rand() % 1000;
-        if (V[i] < min)
-            min = V[i];
-    }
-
-    printf("  real min: %d\n", min);
-
-    // 'rmin' minimo cercato in modo ricorsivo
-
-    int min_found = rmin(V, N-1);
-
-    // minimo trovato
-    printf(" min found: %d\n", min_found);
-
-   return 0;
+    //ref::vector<int> v;
+    //for (int i=0; i<10; ++i)
+    //    v.push_back(i);
+    //
+    //ref::vector<int> w = v;
+    //w[0] += 100;
+    //
+    //for(int i=0; i<v.size(); ++i)
+    //    std::cout << v[i] << std::endl;
 }
