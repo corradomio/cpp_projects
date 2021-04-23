@@ -2,12 +2,12 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
-#include <ref/vector.h>
-#include <ref/unordered_map.h>
-#include <ref/map.h>
-#include <ref/unordered_set.h>
-#include <ref/set.h>
-#include <std/hash.h>
+#include <ref/vector>
+#include <ref/unordered_map>
+#include <ref/map>
+#include <ref/unordered_set>
+#include <ref/set>
+#include <std/hash>
 
 class C {
     static int gid;
@@ -26,6 +26,8 @@ void appmain(const std::vector<std::string>& apps) {
 
     typedef std::pair<double, double> coords_t;
     typedef int uid_t;
+
+    std::string s = std::to_string(100);
 
     //ref::vector<C> v;
     //for (int i=0; i<10; ++i)

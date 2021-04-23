@@ -17,8 +17,15 @@ namespace ref {
         typename _Alloc = std::allocator<std::pair<const _Key, _Tp> >
     >
     struct map {
+    public:
+        typedef _Key                       key_type;
+        typedef _Tp                        mapped_type;
+        typedef std::pair<const _Key, _Tp> value_type;
+        typedef _Compare                   key_compare;
+        typedef _Alloc                     allocator_type;
+
         typedef std::map<_Key, _Tp, _Compare, _Alloc> collection;
-        typedef std::shared_ptr<collection> pointer;
+        typedef std::shared_ptr<collection>           pointer;
 
         pointer ptr;
 

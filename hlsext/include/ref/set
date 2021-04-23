@@ -16,6 +16,12 @@ namespace ref {
         typename _Alloc = std::allocator<_Key>
     >
     struct set {
+        typedef _Key     key_type;
+        typedef _Key     value_type;
+        typedef _Compare key_compare;
+        typedef _Compare value_compare;
+        typedef _Alloc   allocator_type;
+
         typedef std::set<_Key, _Compare, _Alloc> collection;
         typedef std::shared_ptr<collection> pointer;
 

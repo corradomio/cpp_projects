@@ -11,11 +11,11 @@ using namespace boost::posix_time;
 
 namespace std {
 
-    std::string to_string(time_duration td) {
+    inline string to_string(time_duration td) {
         return to_simple_string(td);
     }
 
-    std::string to_string(ptime t) {
+    inline string to_string(ptime t) {
         return to_simple_string(t);
     }
 
