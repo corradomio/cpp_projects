@@ -13,6 +13,8 @@ namespace stdx {
 
     std::vector<std::string> split(const std::string& str, const std::string& delim);
 
+    std::string replace(const std::string& str, const std::string& from, const std::string& to);
+
 }
 
 #endif //HLSEXT_STRINGS_H

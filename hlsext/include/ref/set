@@ -68,8 +68,8 @@ namespace ref {
 
         // Pointers
 
-        std::shared_ptr<std::set<_Key, _Compare, _Alloc>> get() const { return  ptr; }
-        std::set<_Key, _Compare, _Alloc>&                 ref() const { return *ptr; }
+        pointer     get() const { return  ptr; }
+        collection& ref() const { return *ptr; }
     };
 }
 

@@ -17,3 +17,13 @@ std::vector<std::string> stdx::split(const std::string& str, const std::string& 
         parts.push_back(str.substr(start));
     return parts;
 }
+
+std::string stdx::replace(const std::string& cstr, const std::string& from, const std::string& to) {
+    std::string str = cstr;
+    size_t start_pos = str.find(from);
+    while (start_pos != std::string::npos){
+        str.replace(start_pos, from.length(), to);
+        start_pos = str.find(from);
+    }
+    return str;
+}

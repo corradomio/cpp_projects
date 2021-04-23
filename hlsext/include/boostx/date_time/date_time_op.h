@@ -16,7 +16,8 @@ namespace std {
     }
 
     inline string to_string(ptime t) {
-        return to_simple_string(t);
+        std::string str  = to_iso_extended_string(t);
+        return str.replace(str.find("T"), 1, " ");
     }
 
 }
@@ -24,11 +25,11 @@ namespace std {
 namespace boost {
 namespace posix_time {
 
-    ptime to_ptime(std::string s) {
+    inline ptime to_ptime(std::string s) {
         return time_from_string(s);
     }
 
-    time_duration to_duration(std::string s) {
+    inline time_duration to_duration(std::string s) {
         return duration_from_string(s);
     }
 

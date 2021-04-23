@@ -57,7 +57,8 @@ namespace ref {
         void insert(const _Value& v) { (*ptr).insert(v); }
         void  erase(const _Value& v) { (*ptr).erase(v); }
 
-        void emplace(const _Value& v) { (*ptr).emplace(v); }
+        template <class... Args>
+        void emplace(Args&&... args) { (*ptr).emplace(args...); }
 
         // Pointers
 
