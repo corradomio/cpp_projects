@@ -17,6 +17,7 @@ class C {
     int id;
 public:
     C() { id = gid++; printf("C(%d)\n", id); }
+    C(int dummy) { id = gid++; printf("C(%d)\n", id); }
     C(const C& c) { id = gid++; printf("C(%d <- %d)\n", id, c.id); }
    ~C() { printf("~C(%d)\n", id); }
 };
@@ -27,18 +28,20 @@ int C::gid = 0;
 void appmain(const std::vector<std::string>& apps) {
     std::cout << "Hello World" << std::endl;
 
-    bohem::vector<C> v;
-    for (int i=0; i<10; ++i)
-        v.emplace_back();
+    std::map<int,C> m;
 
-    bohem::vector<C> w = v;
+    m.emplace(std::pair<int,C>(0, 0));
 
-    std::cout << "End" << std::endl;
-
+    //bohem::vector<C> v;
+    //for (int i=0; i<10; ++i)
+    //    v.emplace_back();
+    //
+    //bohem::vector<C> w = v;
+    //std::cout << "End" << std::endl;
 
     //typedef std::pair<double, double> coords_t;
     //typedef int uid_t;
-
+    //
     //std::string s = std::to_string(100);
 
     //ref::vector<C> v;

@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 18/09/2020.
 //
 
-#ifndef HLSEXT_SET_H
-#define HLSEXT_SET_H
+#ifndef REF_SET_H
+#define REF_SET_H
 
 #include <memory>
 #include <set>
@@ -73,4 +73,4 @@ namespace ref {
     };
 }
 
-#endif //HLSEXT_SET_H
+#endif // REF_SET_H

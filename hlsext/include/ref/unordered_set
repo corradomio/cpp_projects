@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 18/09/2020.
 //
 
-#ifndef HLSEXT_UNORDERED_SET_H
-#define HLSEXT_UNORDERED_SET_H
+#ifndef REF_UNORDERED_SET_H
+#define REF_UNORDERED_SET_H
 
 #include <memory>
 #include <unordered_set>
@@ -67,4 +67,4 @@ namespace ref {
     };
 }
 
-#endif //HLSEXT_UNORDERED_SET_H
+#endif // REF_UNORDERED_SET_H

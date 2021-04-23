@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 18/09/2020.
 //
 
-#ifndef HLSEXT_UNORDERED_MAP_H
-#define HLSEXT_UNORDERED_MAP_H
+#ifndef REF_UNORDERED_MAP_H
+#define REF_UNORDERED_MAP_H
 
 #include <memory>
 #include <unordered_map>
@@ -65,6 +65,9 @@ namespace ref {
         void insert(const _Key& k, const _Tp& v) { (*ptr)[k] = v; }
         void  erase(const _Key& k) { (*ptr).erase(k); }
 
+        template <class... Args>
+        void emplace(Args&&... args) { (*ptr).emplace(args...); }
+
         // Pointers
 
         pointer     get() const { return  ptr; }
@@ -73,4 +76,4 @@ namespace ref {
 
 }
 
-#endif //HLSEXT_UNORDERED_MAP_H
+#endif // REF_UNORDERED_MAP_H

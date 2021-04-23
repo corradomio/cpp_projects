@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 18/09/2020.
 //
 
-#ifndef HLSEXT_MAP_H
-#define HLSEXT_MAP_H
+#ifndef REF_MAP_H
+#define REF_MAP_H
 
 #include <memory>
 #include <map>
@@ -79,4 +79,4 @@ namespace ref {
 
 }
 
-#endif //HLSEXT_MAP_H
+#endif // REF_MAP_H
