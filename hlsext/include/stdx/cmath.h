@@ -5,7 +5,7 @@
 #ifndef CHECK_HLSEXT_CMATH_H
 #define CHECK_HLSEXT_CMATH_H
 
-#include<cmath>
+#include <cmath>
 
 #ifndef _GLIBCXX_USE_C99_MATH_TR1
 
