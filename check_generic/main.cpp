@@ -9,6 +9,8 @@
 #include <ref/set>
 #include <std/hash>
 
+#include <bohem/vector>
+
 class C {
     static int gid;
 
@@ -21,13 +23,23 @@ public:
 
 int C::gid = 0;
 
+
 void appmain(const std::vector<std::string>& apps) {
     std::cout << "Hello World" << std::endl;
 
-    typedef std::pair<double, double> coords_t;
-    typedef int uid_t;
+    bohem::vector<C> v;
+    for (int i=0; i<10; ++i)
+        v.emplace_back();
 
-    std::string s = std::to_string(100);
+    bohem::vector<C> w = v;
+
+    std::cout << "End" << std::endl;
+
+
+    //typedef std::pair<double, double> coords_t;
+    //typedef int uid_t;
+
+    //std::string s = std::to_string(100);
 
     //ref::vector<C> v;
     //for (int i=0; i<10; ++i)
@@ -36,14 +48,14 @@ void appmain(const std::vector<std::string>& apps) {
     //ref::vector<C> w = v;
     //std::hash<double> x;
 
-    ref::set<coords_t> m;
-    m.emplace(std::make_pair(0,0));
-    m.emplace(std::make_pair(0,0));
-    std::cout << m.size() << std::endl;
-
-    ref::set<coords_t> p = m;
-    p.emplace(std::make_pair(0,1));
-    std::cout << m.size() << std::endl;
+    //ref::set<coords_t> m;
+    //m.emplace(std::make_pair(0,0));
+    //m.emplace(std::make_pair(0,0));
+    //std::cout << m.size() << std::endl;
+    //
+    //ref::set<coords_t> p = m;
+    //p.emplace(std::make_pair(0,1));
+    //std::cout << m.size() << std::endl;
 
 
     //std::cout << m[std::make_pair(0,0)] << std::endl;

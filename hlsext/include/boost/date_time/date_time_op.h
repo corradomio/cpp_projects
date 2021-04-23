@@ -53,6 +53,15 @@ namespace posix_time {
         return (num.total_seconds()+0.)/(den.total_seconds()+0.);
     }
 
+
+    inline long diff_days(const ptime& date_start, const ptime& date_end) {
+        return (date_end - date_start).hours()/24;
+    }
+
+    inline long diff_days(const std::pair<ptime, ptime>& date_range) {
+        return diff_days(date_range.first, date_range.second);
+    }
+
 } }
 
 #endif //HLSEXT_DATE_TIME_OP_H
