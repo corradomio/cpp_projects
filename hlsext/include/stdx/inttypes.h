@@ -1,14 +1,13 @@
 //
-// Created by Corrado Mio on 21/10/2015.
+// Created by Corrado Mio (Local) on 23/04/2021.
 //
 
-#ifndef INTTYPES_NUMTYPES_HPP
-#define INTTYPES_NUMTYPES_HPP
+#ifndef STDX_INTTYPES_H
+#define STDX_INTTYPES_H
 
 #include <cstdint>
 
-namespace hls {
-namespace lang {
+namespace stdx {
 
     typedef bool bool_t;
     typedef char char_t;
@@ -18,6 +17,6 @@ namespace lang {
     typedef uint32_t dword_t;
     typedef uint64_t qword_t;
 
-}}
+}
 
-#endif //INTTYPES_NUMTYPES_HPP
+#endif // STDX_INTTYPES_H
