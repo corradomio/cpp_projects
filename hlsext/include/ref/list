@@ -1,0 +1,72 @@
+//
+// Created by Corrado Mio on 18/09/2020.
+//
+
+#ifndef HLSEXT_SET_H
+#define HLSEXT_SET_H
+
+#include <memory>
+#include <list>
+
+namespace ref {
+
+    template<
+        typename _Tp,
+        typename _Alloc = std::allocator<_Tp>
+    >
+    struct list {
+        typedef _Tp     value_type;
+        typedef _Alloc   allocator_type;
+
+        typedef std::list<_Tp, _Alloc> collection;
+        typedef std::shared_ptr<collection> pointer;
+
+        pointer ptr;
+
+        // Constructor
+
+        set() { ptr = std::make_shared<collection>(); }
+        set(const list& v): ptr(v.ptr) { }
+        ~list() { ptr = nullptr; }
+
+        // Member functions
+
+        list& operator=(const list& v) {
+            ptr = v.ptr;
+            return *this;
+        }
+
+        // Element access
+
+        // Iterators
+
+        typename collection::iterator       begin()        { return (*ptr).begin(); }
+        typename collection::iterator       end()          { return (*ptr).end(); }
+        typename collection::const_iterator begin()  const { return (*ptr).begin(); }
+        typename collection::const_iterator end()    const { return (*ptr).end(); }
+
+        typename collection::const_iterator cbegin() const { return (*ptr).cbegin(); }
+        typename collection::const_iterator cend()   const { return (*ptr).cend(); }
+
+        // Capacity
+
+        bool  empty() const { return (*ptr).empty(); }
+        size_t size() const { return (*ptr).size(); }
+
+        // Modifiers
+
+        void clear() { (*ptr).clear(); }
+        void insert(const _Key& v) { (*ptr).insert(v); }
+        void  erase(const _Key& v) { (*ptr).erase(v); }
+
+        template <class... Args>
+        void emplace(Args&&... args) { (*ptr).emplace(args...); }
+
+        // Pointers
+
+        pointer     get() const { return  ptr; }
+        collection& ref() const { return *ptr; }
+    };
+}
+
+#endif //HLSEXT_SET_H
