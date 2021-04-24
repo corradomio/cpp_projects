@@ -24,6 +24,9 @@ namespace ref {
 
         vector() { ptr = std::make_shared<collection>(); }
         vector(const vector& v): ptr(v.ptr) { }
+        vector(std::initializer_list<_Tp> ilist) {
+            ptr = std::make_shared<collection>(ilist);
+        }
         ~vector() { ptr = nullptr; }
 
         // Member functions

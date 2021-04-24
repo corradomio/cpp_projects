@@ -28,9 +28,12 @@ int C::gid = 0;
 void appmain(const std::vector<std::string>& apps) {
     std::cout << "Hello World" << std::endl;
 
-    std::map<int,C> m;
+    std::cout
+    << std::fixed << double(6045787.14846557) << std::endl
+    << std::fixed <<  float(6045787.14846557) << std::endl;
 
-    m.emplace(std::pair<int,C>(0, 0));
+    //std::map<int,C> m;
+    //m.emplace(std::pair<int,C>(0, 0));
 
     //bohem::vector<C> v;
     //for (int i=0; i<10; ++i)

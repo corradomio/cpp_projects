@@ -42,7 +42,6 @@ namespace stdx {
         std::string message;
     };
 
-
     class properties {
     public:
         properties();
@@ -68,12 +67,12 @@ namespace stdx {
         std::string operator[] (const std::string& name) const { return get(name); }
 
         // -- specialized
-        bool get(const std::string& name, bool defaultValue) const;
-        int get(const std::string& name, int defaultValue) const;
-        long get(const std::string& name, long defaultValue) const;
+        bool   get(const std::string& name, bool defaultValue) const;
+        int    get(const std::string& name, int defaultValue) const;
+        long   get(const std::string& name, long defaultValue) const;
         double get(const std::string& name, double defaultValue) const;
-        int get(const std::string& name, const std::vector<std::string>& enums) const;
-        int get(const std::string& name, const std::initializer_list<std::string>& enums) const;
+        int    get(const std::string& name, const std::vector<std::string>& enums) const;
+        int    get(const std::string& name, const std::initializer_list<std::string>& enums) const;
 
         std::vector<long> get_longs(const std::string& name, const std::string& sep=",") const;
         std::vector<int> get_ints(const std::string& name, const std::string& sep=",") const;
