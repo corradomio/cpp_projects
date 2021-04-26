@@ -233,6 +233,13 @@ namespace math {
     template<typename T> T sq(T x) { return x*x; }
     template<typename T> T norm(T x, T y, T z) { return sqrt(sq(x) + sq(y) + sq(z)); }
 
+    template<typename T>
+    T chop(T x, T min, T max) {
+        if (x < min) return min;
+        if (x > max) return max;
+        return x;
+    }
+
 }};
 
 #endif //CHECK_HLSEXT_CMATH_H

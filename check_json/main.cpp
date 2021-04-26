@@ -4,6 +4,8 @@
 #include <rapidjson/stringbuffer.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <vector>
+#include <map>
 
 using namespace rapidjson;
 using namespace nlohmann;
@@ -11,22 +13,31 @@ using namespace nlohmann;
 int main() {
     //json j = json::parse("{ \"happy\": true, \"pi\": 3.141 }");
 
-    json j = R"(
-    {
-        "k": 1,
-        "m": {
-            "a": 11,
-            "b": 12
-        }
-    }
-    )"_json;
+    json j;
+    j["a"]["b"] = std::vector<int>{1,2,3};
+
+    j["c"] = std::map<std::string,int> {
+        {"a",11},
+        {"b",22}
+    };
 
     std::cout << j.dump() << std::endl;
 
-    json m = j["m"];
-
-    std::cout << m.dump() << std::endl;
-
+    //json j = R"(
+    //{
+    //    "k": 1,
+    //    "m": {
+    //        "a": 11,
+    //        "b": 12
+    //    }
+    //}
+    //)"_json;
+    //
+    //std::cout << j.dump() << std::endl;
+    //
+    //json m = j["m"];
+    //
+    //std::cout << m.dump() << std::endl;
 }
 
 int main1() {
