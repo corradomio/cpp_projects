@@ -16,8 +16,13 @@ namespace std {
     }
 
     inline string to_string(ptime t) {
-        std::string str  = to_iso_extended_string(t);
+        std::string str = to_iso_extended_string(t);
         return str.replace(str.find("T"), 1, " ");
+    }
+
+    inline string to_string(ptime::date_type d) {
+        std::string str = to_simple_string(d);
+        return str;
     }
 
 }
@@ -54,12 +59,16 @@ namespace posix_time {
     }
 
 
-    inline long diff_days(const ptime& date_start, const ptime& date_end) {
-        return (date_end - date_start).hours()/24;
+    inline long days_diff(const ptime& dt0, const ptime& dte) {
+        return (dte - dt0).hours()/24;
     }
 
-    inline long diff_days(const std::pair<ptime, ptime>& date_range) {
-        return diff_days(date_range.first, date_range.second);
+    inline long days_diff(const std::pair<ptime, ptime>& date_range) {
+        return days_diff(date_range.first, date_range.second);
+    }
+
+    inline ptime days_add(const ptime& dt0, int days) {
+        return dt0 + time_duration(24*days, 0, 0);
     }
 
 } }

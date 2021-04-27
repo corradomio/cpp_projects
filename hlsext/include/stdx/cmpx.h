@@ -10,7 +10,7 @@
 
 #include <cmath>
 
-namespace hls {
+namespace stdx {
 namespace math {
 
     const float eps = 1.0e-5;
