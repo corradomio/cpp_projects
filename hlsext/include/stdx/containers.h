@@ -15,6 +15,20 @@
 
 namespace stdx {
 
+    template<typename _Tp>
+    void copy(std::unordered_set<_Tp>& tcoll, const std::vector<_Tp>& fcoll) {
+        for(auto it = fcoll.begin(); it != fcoll.end(); ++it) {
+            tcoll.emplace(*it);
+        }
+    }
+
+    template<typename _Tp>
+    void copy(std::unordered_set<_Tp>& tcoll, const std::unordered_set<_Tp>& fcoll) {
+        for(auto it = fcoll.begin(); it != fcoll.end(); ++it) {
+            tcoll.emplace(*it);
+        }
+    }
+
     // ----------------------------------------------------------------------
     // Keys
     // ----------------------------------------------------------------------
@@ -53,24 +67,14 @@ namespace stdx {
     // Containment
     // ----------------------------------------------------------------------
 
-    template<typename _Tp, typename _Compare>
-    bool contains(const std::set<_Tp, _Compare>& set, const _Tp& v) {
-        return set.find(v) != set.end();
+    template<typename Collection>
+    bool contains(const Collection& coll, const typename Collection::value_type& v) {
+        return coll.find(v) != coll.end();
     }
 
-    template<typename _Tp, typename _Compare>
-    bool contains(const std::unordered_set<_Tp, _Compare>& set, const _Tp& v) {
-        return set.find(v) != set.end();
-    }
-
-    template<typename _Key, typename _Tp>
-    bool contains_key(const std::map<_Key, _Tp>& map, const _Key& k) {
-        return map.find(k) != map.end();
-    }
-
-    template<typename _Key, typename _Tp>
-    bool contains_key(const std::unordered_map<_Key, _Tp>& map, const _Key& k) {
-        return map.find(k) != map.end();
+    template<typename Dictionary, typename _Key>
+    bool contains_key(const Dictionary& dict, const typename Dictionary::key_value& k) {
+        return dict.find(k) != dict.end();
     }
 
     // ----------------------------------------------------------------------

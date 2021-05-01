@@ -13,30 +13,34 @@
 namespace stdx {
 namespace math {
 
-    const float eps = 1.0e-5;
+    const double eps = 1.0e-8;
+    // x < 0
+    inline bool isltz(double x) { return (x < -eps); }
+    // x > 0
+    inline bool isgtz(double x) { return (x > +eps); }
+    // x = 0
+    inline bool isz(double x) { return (-eps <= x) && (x <= +eps); }
+    // x = y
+    inline bool iseq(double x, double y) { return isz(x - y); }
+    // x < y
+    inline bool islt(double x, double y) { return isltz(x - y); }
+    // x > y
+    inline bool isgt(double x, double y) { return isgtz(x - y); }
+    // x != y
+    inline bool isne(double x, double y) { return !isz(x - y); }
+    // x <= y
+    inline bool isle(double x, double y) { return !isgtz(x - y); }
+    // x >= y
+    inline bool isge(double x, double y) { return !isltz(x - y); }
 
-    inline bool iseqz(float x) { return ((x < 0) ? (x >= -eps) : (x <= +eps)); }
+    // x in [min,max]
+    inline bool isin(double x, double min, double max) {
+        return (min-eps) <= x && x <= (max + eps);
+    }
 
-    inline bool isltz(float x) { return (x < -eps); }
-
-    inline bool isgtz(float x) { return (x > +eps); }
-
-    inline bool isz(float x) { return iseqz(x - 0); }
-
-    inline bool iso(float x) { return iseqz(x - 1); }
-
-    inline bool iseq(float x, float y) { return iseqz(x - y); }
-
-    inline bool islt(float x, float y) { return isltz(x - y); }
-
-    inline bool isgt(float x, float y) { return isgtz(x - y); }
-
-    inline bool isne(float x, float y) { return !iseqz(x - y); }
-
-    inline bool isle(float x, float y) { return !isgtz(x - y); }
-
-    inline bool isge(float x, float y) { return !isltz(x - y); }
-
+    inline bool isbetween(double x, double min, double max) {
+        return min <= x && x <= max;
+    }
 }}
 
 

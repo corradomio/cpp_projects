@@ -63,7 +63,7 @@ namespace posix_time {
         return (dte - dt0).hours()/24;
     }
 
-    inline long days_diff(const std::pair<ptime, ptime>& date_range) {
+    inline long days_diff(const date_range_t& date_range) {
         return days_diff(date_range.first, date_range.second);
     }
 

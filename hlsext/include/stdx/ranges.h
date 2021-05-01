@@ -45,10 +45,12 @@ namespace stdx {
         typedef const iter_t const_iterator;
 
         range_t(const T& begin, const T& end): _begin(begin),_end(end) { }
-        const_iterator  begin() const { return iter_t(*this, _begin); }
-        const_iterator    end() const { return iter_t(*this, _end); }
+        const_iterator  begin() { return iter_t(*this, _begin); }
+        const_iterator    end() { return iter_t(*this, _end); }
         const_iterator cbegin() const { return iter_t(*this, _begin); }
         const_iterator   cend() const { return iter_t(*this, _end); }
+
+        size_t size() const { return _end - _begin; }
     };
 
     template<typename T> range_t<T> range(T end) { return range_t<T>(0, end); }
