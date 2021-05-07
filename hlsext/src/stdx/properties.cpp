@@ -96,6 +96,13 @@ namespace stdx {
             return ::atof(get(name).c_str());
     }
 
+    float properties::get(const std::string &name, float defaultValue) const {
+        if (!contains(name))
+            return defaultValue;
+        else
+            return ::atof(get(name).c_str());
+    }
+
     int properties::get(const std::string& name, const std::vector<std::string>& enums) const {
         std::string value = get(name);
         for(int i=0; i<enums.size(); ++i)

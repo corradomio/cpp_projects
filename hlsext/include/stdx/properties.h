@@ -71,6 +71,7 @@ namespace stdx {
         int    get(const std::string& name, int defaultValue) const;
         long   get(const std::string& name, long defaultValue) const;
         double get(const std::string& name, double defaultValue) const;
+        float  get(const std::string& name, float defaultValue) const;
         int    get(const std::string& name, const std::vector<std::string>& enums) const;
         int    get(const std::string& name, const std::initializer_list<std::string>& enums) const;
 
