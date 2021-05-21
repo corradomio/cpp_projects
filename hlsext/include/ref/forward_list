@@ -1,12 +1,12 @@
 //
-// Created by Corrado Mio on 18/09/2020.
+// Created by Corrado Mio (Local) on 21/05/2021.
 //
 
-#ifndef REF_LIST_H
-#define REF_LIST_H
+#ifndef CHECK_GENERIC_FORWARD_LIST_H
+#define CHECK_GENERIC_FORWARD_LIST_H
 
 #include <memory>
-#include <list>
+#include <forward_list>
 
 namespace ref {
 
@@ -14,24 +14,24 @@ namespace ref {
         typename _Tp,
         typename _Alloc = std::allocator<_Tp>
     >
-    struct list {
+    struct forward_list {
         typedef _Tp value_type;
         typedef _Alloc allocator_type;
 
-        typedef std::list<_Tp, _Alloc> collection;
+        typedef std::forward_list<_Tp, _Alloc> collection;
         typedef std::shared_ptr<collection> pointer;
 
         pointer ptr;
 
         // Constructor
 
-        list() { ptr = std::make_shared<collection>(); }
-        list(const list& v): ptr(v.ptr) { }
-        ~list() { ptr = nullptr; }
+        forward_list() { ptr = std::make_shared<collection>(); }
+        forward_list(const forward_list& v): ptr(v.ptr) { }
+        ~forward_list() { ptr = nullptr; }
 
         // Member functions
 
-        list& operator=(const list& v) {
+        forward_list& operator=(const forward_list& v) {
             ptr = v.ptr;
             return *this;
         }
@@ -58,7 +58,7 @@ namespace ref {
         void clear() { (*ptr).clear(); }
 
         template <class... Args>
-        void emplace(Args&&... args) { (*ptr).emplace_back(args...); }
+        void emplace(Args&&... args) { (*ptr).emplace_front(args...); }
 
         // Pointers
 
@@ -67,4 +67,4 @@ namespace ref {
     };
 }
 
-#endif // REF_LIST_H
+#endif //CHECK_GENERIC_FORWARD_LIST_H

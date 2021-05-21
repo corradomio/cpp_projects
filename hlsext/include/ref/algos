@@ -9,14 +9,10 @@
 
 namespace ref {
 
-    template<typename _Kp, typename _Tp> std::string to_string(const std::pair<_Kp, _Tp>& v) {
-        return std::to_string(v.first) + ":" + std::to_string(v.second);
-    }
-
     template<typename C1, typename C2>
-    void add_all(C1& c1, const C2& c2) {
-        for(auto it=c2.cbegin(); it != c2.cend(); ++it)
-            c1.add(*it);
+    void copy_all(const C1& c1, C2& c2) {
+        for(auto it=c1.cbegin(); it != c1.cend(); ++it)
+            c2.emplace(*it);
     }
 
 }
