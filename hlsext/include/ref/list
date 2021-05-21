@@ -25,8 +25,8 @@ namespace ref {
 
         // Constructor
 
-        set() { ptr = std::make_shared<collection>(); }
-        set(const list& v): ptr(v.ptr) { }
+        list() { ptr = std::make_shared<collection>(); }
+        list(const list& v): ptr(v.ptr) { }
         ~list() { ptr = nullptr; }
 
         // Member functions
@@ -56,11 +56,13 @@ namespace ref {
         // Modifiers
 
         void clear() { (*ptr).clear(); }
-        void insert(const _Key& v) { (*ptr).insert(v); }
-        void  erase(const _Key& v) { (*ptr).erase(v); }
+        void insert(const _Tp& v) { (*ptr).insert(v); }
+        void  erase(const _Tp& v) { (*ptr).erase(v); }
 
         template <class... Args>
-        void emplace(Args&&... args) { (*ptr).emplace(args...); }
+        void emplace(Args&&... args) { (*ptr).emplace_back(args...); }
+        template <class... Args>
+        void add(Args&&... args) { (*ptr).emplace_back(args...); }
 
         // Pointers
 

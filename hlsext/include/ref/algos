@@ -1,0 +1,49 @@
+//
+// Created by Corrado Mio (Local) on 21/05/2021.
+//
+
+#ifndef CHECK_GENERIC_REF_ALGOS_H
+#define CHECK_GENERIC_REF_ALGOS_H
+
+#include <string>
+
+namespace ref {
+
+    template<typename _Kp, typename _Tp> std::string to_string(const std::pair<_Kp, _Tp>& v) {
+        return std::to_string(v.first) + ":" + std::to_string(v.second);
+    }
+
+    template<typename C1, typename C2>
+    void add_all(C1& c1, const C2& c2) {
+        for(auto it=c2.cbegin(); it != c2.cend(); ++it)
+            c1.add(*it);
+    }
+
+}
+
+namespace std {
+
+    template<typename _Kp, typename _Tp>
+    std::string to_string(const std::pair<_Kp, _Tp>& v) {
+        return std::to_string(v.first) + ":" + std::to_string(v.second);
+    }
+
+    template<typename C>
+    std::string to_string(const C& c) {
+        std::string sbuf;
+
+        sbuf.append("[");
+        if (!c.empty()) {
+            auto it = c.begin();
+            sbuf.append(std::to_string(*it));
+            for(it++; it != c.end(); it++)
+                sbuf.append(",").append(std::to_string(*it));
+        }
+
+        sbuf.append("]");
+        return sbuf;
+    }
+
+}
+
+#endif //CHECK_GENERIC_REF_ALGOS_H

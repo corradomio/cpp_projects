@@ -67,6 +67,7 @@ namespace ref {
 
         template <class... Args>
         void emplace(const typename collection::const_iterator& it, Args&&... args) { (*ptr).emplace(it, args...); }
+        void add(const _Tp& v) { (*ptr).push_back(v); }
 
         template <class... Args>
         void emplace_back(Args&&... args) { (*ptr).emplace(cend(), args...); }

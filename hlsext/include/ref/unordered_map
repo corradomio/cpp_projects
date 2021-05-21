@@ -65,8 +65,8 @@ namespace ref {
         void insert(const _Key& k, const _Tp& v) { (*ptr)[k] = v; }
         void  erase(const _Key& k) { (*ptr).erase(k); }
 
-        template <class... Args>
-        void emplace(Args&&... args) { (*ptr).emplace(args...); }
+        void put(const _Key& k, const _Tp& v) { (*ptr)[k] = v; }
+        void add(const std::pair<_Key, _Tp>& p) { (*ptr)[p.first] = p.second; }
 
         // Pointers
 

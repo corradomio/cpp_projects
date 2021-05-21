@@ -12,136 +12,172 @@
 #include <set>
 #include <unordered_set>
 
+#include <map>
+#include <unordered_map>
+
+
 using namespace std;
 
 namespace stdx {
 
-    template<typename _Tp> std::string str(const std::vector<_Tp>& v);
-    template<typename _Tp> std::string str(const std::set<_Tp>& v);
-    template<typename _Tp> std::string str(const std::unordered_set<_Tp>& v);
+    //template<typename _Tp> std::string to_string(const std::list<_Tp>& v);
+    //template<typename _Tp> std::string to_string(const std::vector<_Tp>& v);
+    //template<typename _Tp> std::string to_string(const std::set<_Tp>& v);
+    //template<typename _Tp> std::string to_string(const std::unordered_set<_Tp>& v);
+    //template<typename _Kp, typename _Tp> std::string to_string(const std::map<_Kp,_Tp>& v);
+    //template<typename _Kp, typename _Tp> std::string to_string(const std::unordered_map<_Kp, _Tp>& v);
 
-    template<typename _Tp> std::string str(const std::vector<_Tp>& v, std::string& sep);
-    template<typename _Tp> std::string str(const std::set<_Tp>& v, std::string& sep);
-    template<typename _Tp> std::string str(const std::unordered_set<_Tp>& v, std::string& sep);
+    //template<typename _Tp> std::string to_string(const std::list<_Tp>& v, const std::string& sep);
+    //template<typename _Tp> std::string to_string(const std::vector<_Tp>& v, const std::string& sep);
+    //template<typename _Tp> std::string to_string(const std::set<_Tp>& v, const std::string& sep);
+    //template<typename _Tp> std::string to_string(const std::unordered_set<_Tp>& v, const std::string& sep);
+    //template<typename _Kp, typename _Tp> std::string to_string(const std::map<_Kp, _Tp>& v, const std::string& sep);
+    //template<typename _Kp, typename _Tp> std::string to_string(const std::unordered_map<_Kp, _Tp>& v, const std::string& sep);
 
-    template<typename _Tp>
-    std::string str(const _Tp& v) {
-        return std::to_string(v);
-    }
-
-    //template<typename _Tp>
-    //std::string str(const _Tp& v, const char* chr) {
-    //    std::string sep = chr;
-    //    return stdx::str(v, sep);
+    //template<typename _Kp, typename _Tp> std::string to_string(const std::pair<_Kp, _Tp>& v) {
+    //    return std::to_string(v.first) + ":" + std::to_string(v.second);
     //}
 
-    template<>
-    inline std::string str<std::string>(const std::string& s) { return s; }
+    //template<typename _Tp>
+    //std::string to_string(const _Tp& v) {
+    //    return std::to_string(v);
+    //}
 
-    template<typename _Tp>
-    std::string str(const std::vector<_Tp>& v) {
-        std::string sep = ";";
-        return stdx::str(v, sep);
-    }
+    //template<>
+    //inline std::string to_string<std::string>(const std::string& s) { return s; }
 
-    template<typename _Tp>
-    std::string str(const std::set<_Tp>& s) {
-        std::string sep = ";";
-        return stdx::str(s, sep);
-    }
+    //template<typename _Tp>
+    //std::string to_string(const std::list<_Tp>& v) {
+    //    std::string sep = ",";
+    //    return stdx::to_string(v, sep);
+    //}
 
-    template<typename _Tp>
-    std::string str(const std::unordered_set<_Tp>& s) {
-        std::string sep = ";";
-        return stdx::str(s, sep);
-    }
+    //template<typename _Tp>
+    //std::string to_string(const std::vector<_Tp>& v) {
+    //    std::string sep = ",";
+    //    return stdx::to_string(v, sep);
+    //}
+
+    //template<typename _Tp>
+    //std::string to_string(const std::set<_Tp>& s) {
+    //    std::string sep = ",";
+    //    return stdx::to_string(s, sep);
+    //}
+
+    //template<typename _Tp>
+    //std::string to_string(const std::unordered_set<_Tp>& s) {
+    //    std::string sep = ",";
+    //    return stdx::to_string(s, sep);
+    //}
+
+    //template<typename _Kp, typename _Tp>
+    //std::string to_string(const std::map<_Kp,_Tp>& s) {
+    //    std::string sep = ",";
+    //    return stdx::to_string(s, sep);
+    //}
+
+    //template<typename _Kp, typename _Tp>
+    //std::string to_string(const std::unordered_map<_Kp,_Tp>& s) {
+    //    std::string sep = ",";
+    //    return stdx::to_string(s, sep);
+    //}
 
 
-    template<typename _Tp>
-    std::string str(const std::vector<_Tp>& v, std::string& sep) {
-        //std::stringstream sbuf;
-        //
-        //sbuf << "[";
-        //if (!v.empty()) {
-        //    sbuf << v[0];
-        //    for(size_t i=1; i<v.size(); ++i)
-        //        sbuf << sep << v[i];
-        //}
-        //
-        //sbuf << "]";
-        //return sbuf.str();
+    //template<typename _Tp>
+    //std::string to_string(const std::list<_Tp>& v, const std::string& sep) {
+    //    std::string sbuf;
+    //
+    //    sbuf.append("[");
+    //    if (!v.empty()) {
+    //        auto it = v.begin();
+    //        sbuf.append(stdx::to_string(*it));
+    //        for(it++; it != v.end(); it++)
+    //            sbuf.append(sep).append(stdx::to_string(*it));
+    //    }
+    //
+    //    sbuf.append("]");
+    //    return sbuf;
+    //}
 
-        std::string sbuf;
+    //template<typename _Tp>
+    //std::string to_string(const std::vector<_Tp>& v, const std::string& sep) {
+    //    std::string sbuf;
+    //
+    //    sbuf.append("[");
+    //    if (!v.empty()) {
+    //        sbuf.append(stdx::to_string(v[0]));
+    //        for(size_t i=1; i<v.size(); ++i)
+    //            sbuf.append(sep).append(stdx::to_string(v[i]));
+    //    }
+    //
+    //    sbuf.append("]");
+    //    return sbuf;
+    //}
 
-        sbuf.append("[");
-        if (!v.empty()) {
-            sbuf.append(stdx::str(v[0]));
-            for(size_t i=1; i<v.size(); ++i)
-                sbuf.append(sep).append(stdx::str(v[i]));
-        }
+    //template<typename _Tp>
+    //std::string to_string(const std::set<_Tp>& v, const std::string& sep) {
+    //    std::string sbuf;
+    //
+    //    sbuf.append("{");
+    //    if (!v.empty()) {
+    //        auto it = v.begin();
+    //        sbuf.append(stdx::to_string(*it));
+    //        for(it++; it != v.end(); it++)
+    //            sbuf.append(sep).append(stdx::to_string(*it));
+    //    }
+    //
+    //    sbuf.append("}");
+    //    return sbuf;
+    //}
 
-        sbuf.append("]");
-        return sbuf;
-    }
+    //template<typename _Tp>
+    //std::string to_string(const std::unordered_set<_Tp>& v, const std::string& sep) {
+    //    std::string sbuf;
+    //
+    //    sbuf.append("{");
+    //    if (!v.empty()) {
+    //        auto it = v.begin();
+    //        sbuf.append(stdx::to_string(*it));
+    //        for(it++; it != v.end(); it++)
+    //            sbuf.append(sep).append(stdx::to_string(*it));
+    //    }
+    //
+    //    sbuf.append("}");
+    //    return sbuf;
+    //}
 
-    template<typename _Tp>
-    std::string str(const std::set<_Tp>& v, std::string& sep) {
-        //std::stringstream sbuf;
-        //
-        //sbuf << "{";
-        //if (!v.empty()) {
-        //    auto it = v.begin();
-        //    sbuf << (*it);
-        //    for(it++; it != v.end(); it++)
-        //        sbuf << sep << (*it);
-        //}
-        //
-        //sbuf << "}";
-        //return sbuf.str();
 
-        std::string sbuf;
+    //template<typename _Kp, typename _Tp>
+    //std::string to_string(const std::map<_Kp, _Tp>& v, const std::string& sep) {
+    //    std::string sbuf;
+    //
+    //    sbuf.append("{");
+    //    if (!v.empty()) {
+    //        auto it = v.begin();
+    //        sbuf.append(stdx::to_string(*it));
+    //        for(it++; it != v.end(); it++)
+    //            sbuf.append(sep).append(stdx::to_string(*it));
+    //    }
+    //
+    //    sbuf.append("}");
+    //    return sbuf;
+    //}
 
-        sbuf.append("{");
-        if (!v.empty()) {
-            auto it = v.begin();
-            sbuf.append(stdx::str(*it));
-            for(it++; it != v.end(); it++)
-                sbuf.append(sep).append(stdx::str(*it));
-        }
-
-        sbuf.append("}");
-        return sbuf;
-    }
-
-    template<typename _Tp>
-    std::string str(const std::unordered_set<_Tp>& v, std::string& sep) {
-        //std::stringstream sbuf;
-        ////std::stringbuf sbuf;
-        //
-        //sbuf << "{";
-        //if (!v.empty()) {
-        //    auto it = v.begin();
-        //    sbuf << (*it);
-        //    for(it++; it != v.end(); it++)
-        //        sbuf << sep << (*it);
-        //}
-        //
-        //sbuf << "}";
-        //return sbuf.str();
-
-        std::string sbuf;
-
-        sbuf.append("{");
-        if (!v.empty()) {
-            auto it = v.begin();
-            sbuf.append(stdx::str(*it));
-            for(it++; it != v.end(); it++)
-                sbuf.append(sep).append(stdx::str(*it));
-        }
-
-        sbuf.append("}");
-        return sbuf;
-    }
+    //template<typename _Kp, typename _Tp>
+    //std::string to_string(const std::unordered_map<_Kp, _Tp>& v, const std::string& sep) {
+    //    std::string sbuf;
+    //
+    //    sbuf.append("{");
+    //    if (!v.empty()) {
+    //        auto it = v.begin();
+    //        sbuf.append(stdx::to_string(*it));
+    //        for(it++; it != v.end(); it++)
+    //            sbuf.append(sep).append(stdx::to_string(*it));
+    //    }
+    //
+    //    sbuf.append("}");
+    //    return sbuf;
+    //}
 
 }
 

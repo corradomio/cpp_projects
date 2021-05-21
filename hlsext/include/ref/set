@@ -65,6 +65,8 @@ namespace ref {
 
         template <class... Args>
         void emplace(Args&&... args) { (*ptr).emplace(args...); }
+        template <class... Args>
+        void add(Args&&... args) { (*ptr).emplace(args...); }
 
         // Pointers
 
