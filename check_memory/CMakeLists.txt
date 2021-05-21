@@ -14,3 +14,7 @@ link_directories(
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(check_memory main.cpp)
+
+target_link_libraries(check_memory
+    gc
+)

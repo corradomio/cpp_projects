@@ -1,5 +1,5 @@
 #include <iostream>
-//#include <vector>
+#include <vector>
 #include <algorithm>
 #include <ref/list>
 #include <ref/forward_list>
@@ -9,18 +9,20 @@
 #include <ref/map>
 #include <ref/unordered_map>
 #include <ref/algos>
-//#include <stdx/to_string.h>
 
+#include <bohem/allocator>
 
-void appmain(const std::vector<std::string>& apps) {
-    std::cout << "Hello World 1" << std::endl;
+void test1(void) {
 
-    //std::vector<int> vi;
+    std::vector<int> vi;
     //std::vector<int> vj;
-    //for(int i=0; i<10; ++i)
-    //    vi.emplace_back(100+i);
-    //std::cout << std::to_string(vi) << std::endl;
-    //std::cout << std::to_string(vj) << std::endl;
+    for(int i=0; i<10; ++i)
+        vi.emplace_back(100+i);
+    ref::vector<int> vj;
+    ref::copy_all(vi, vj);
+
+    std::cout << std::to_string(vi) << std::endl;
+    std::cout << std::to_string(vj) << std::endl;
 
     //ref::map<int, int> v;
     //ref::map<int, int> x = v;
@@ -40,4 +42,15 @@ void appmain(const std::vector<std::string>& apps) {
     std::cout << std::to_string(x) << std::endl;
     std::cout << std::to_string(w) << std::endl;
 
+}
+
+
+void appmain(const std::vector<std::string>& apps) {
+    std::cout << "Hello World 1" << std::endl;
+
+    std::vector<int, bohem::allocator<int>> v;
+    for (int i=0; i<100; ++i)
+        v.emplace_back(i);
+
+    std::cout << std::to_string(v) << std::endl;
 }

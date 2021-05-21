@@ -9,8 +9,8 @@
 
 namespace stdx {
 
-    typedef bool bool_t;
-    typedef char char_t;
+    typedef bool     bool_t;
+    typedef char     char_t;
     typedef char_t   char8_t;
     typedef uint8_t  byte_t;
     typedef uint16_t word_t;
