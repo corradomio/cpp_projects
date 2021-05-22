@@ -9,6 +9,39 @@
 
 namespace ref {
 
+    //template<typename Collection>
+    //struct cref {
+    //    typedef typename Collection collection;
+    //    typedef std::shared_ptr<typename Collection> refptr;
+    //    typedef typename Collection::iterator iterator;
+    //    typedef typename Collection::const_iterator const_iterator;
+    //    typedef typename Collection::reference reference;
+    //
+    //    refptr ptr;
+    //
+    //    cref() {
+    //        ptr = std::make_shared<collection>();
+    //    }
+    //
+    //    cref(const cref& p): ptr(p.ptr) { }
+    //    cref(const std::initializer_list<_Tp>& ilist) {
+    //        ptr = std::make_shared<collection>(ilist);
+    //    }
+    //    ~cref() { ptr = nullptr; }
+    //
+    //    iterator        begin() { (*ptr).begin(); }
+    //    iterator          end() { (*ptr).end(); }
+    //    const_iterator  begin() const { (*ptr).begin(); }
+    //    const_iterator    end() const { (*ptr).end(); }
+    //    const_iterator cbegin() const { (*ptr).cbegin(); }
+    //    const_iterator   cend() const { (*ptr).cend(); }
+    //
+    //    bool  empty() const { (*ptr).empty(); }
+    //    size_t size() const { (*ptr).size();  }
+    //
+    //
+    //};
+
     template<typename C1, typename C2>
     void copy_all(const C1& c1, C2& c2) {
         for(auto it=c1.cbegin(); it != c1.cend(); ++it)
