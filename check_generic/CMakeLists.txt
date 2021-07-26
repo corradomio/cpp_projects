@@ -13,7 +13,12 @@ link_directories(
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(check_generic main.cpp)
+add_executable(check_generic
+    main.cpp
+    main2.cpp
+    main3.cpp
+    main4.cpp
+)
 
 target_link_libraries(check_generic
     pqxx
