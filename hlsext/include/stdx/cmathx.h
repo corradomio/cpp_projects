@@ -199,13 +199,13 @@ namespace std {
 namespace stdx {
 namespace math {
 
-    const float  maxfloat  = 3.40282347e+38F;
-    const double maxdouble = 0;
+    const float  maxfloat  = 3.40282347e+38f;
+    const double maxdouble = 1.79769e+308;
 
     const double e      = 2.7182818284590452354;
     const double log2e  = 1.4426950408889634074;    //
     const double log10e = 0.43429448190325182765;
-    const double ln2    = 0.693147180559945309417;
+    const double ln2    = 0.693147180559945309427;
     const double ln10   = 2.30258509299404568402;
 
     const double pi     = 3.14159265358979323846;   // PI
@@ -222,12 +222,12 @@ namespace math {
 
 
     template<typename T> T round(T x);
-    template<> double round<double>(double x) { return ::round(x);  }
-    template<> float  round< float>(float  x) { return ::roundf(x); }
+    template<> inline double round<double>(double x) { return ::round(x);  }
+    template<> inline float  round< float>(float  x) { return ::roundf(x); }
 
     template<typename T> T sqrt(T x);
-    template<> double sqrt<double>(double x) { return ::sqrt(x);  }
-    template<> float  sqrt< float>(float  x) { return ::sqrtf(x); }
+    template<> inline double sqrt<double>(double x) { return ::sqrt(x);  }
+    template<> inline float  sqrt< float>(float  x) { return ::sqrtf(x); }
 
 
     template<typename T> T sq(T x) { return x*x; }
@@ -241,5 +241,47 @@ namespace math {
     }
 
 }};
+
+namespace stdx {
+
+    template<typename T> T max(T x, T y) { return x < y ? y : x; }
+    template<typename T> T min(T x, T y) { return x < y ? x : y; }
+
+};
+
+
+namespace stdx {
+namespace math {
+
+    const double eps = 1.0e-7;
+    // x < 0
+    inline bool isltz(double x) { return (x < -eps); }
+    // x > 0
+    inline bool isgtz(double x) { return (x > +eps); }
+    // x = 0
+    inline bool isz(double x) { return (-eps <= x) && (x <= +eps); }
+    // x = y
+    inline bool iseq(double x, double y) { return isz(x - y); }
+    // x < y
+    inline bool islt(double x, double y) { return isltz(x - y); }
+    // x > y
+    inline bool isgt(double x, double y) { return isgtz(x - y); }
+    // x != y
+    inline bool isne(double x, double y) { return !isz(x - y); }
+    // x <= y
+    inline bool isle(double x, double y) { return !isgtz(x - y); }
+    // x >= y
+    inline bool isge(double x, double y) { return !isltz(x - y); }
+
+    // x in [min+eps,max-eps]
+    inline bool isin(double x, double min, double max) {
+        return (min-eps) <= x && x <= (max+eps);
+    }
+
+    inline bool isbetween(double x, double min, double max) {
+        return min <= x && x <= max;
+    }
+}}
+
 
 #endif //CHECK_HLSEXT_CMATH_H

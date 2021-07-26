@@ -19,7 +19,7 @@ void test1(pqxx::connection& c) {
     // in a query's text.
     int count = t.query_value<int>(
         "SELECT count(uid) "
-        "FROM abu_dhabi_tracks_ts "
+        "FROM abu_dhabi_tracks "
         "WHERE uid =1");
 
     std::cout << "Count # " << count << '\n';
@@ -97,9 +97,10 @@ void test2(pqxx::connection& c) {
 
 int main(int, char *argv[])
 {
-    pqxx::connection c{"postgresql://osmuser:osmuser@192.168.161.129/osm"};
-    c.prepare("sel", "SELECT uid,lon,lat FROM abu_dhabi_tracks_ts "
-                     "WHERE \"timestamp\" BETWEEN ($1::timestamp) AND (($1::timestamp) + (interval '1 hour'))");
+    std::string conn = "postgresql://osmuser:osmuser@localhost/osm";
+    pqxx::connection c{conn};
+    c.prepare("sel", "SELECT uid,ilon,ilat FROM abu_dhabi_tracks "
+                     "WHERE tid BETWEEN 0 AND 288");
 
     test1(c);
     test2(c);

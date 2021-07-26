@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <random>
 #include <ref/list>
 #include <ref/forward_list>
 #include <ref/vector>
@@ -44,13 +45,33 @@ void test1(void) {
 
 }
 
+typedef size_t aid_t;
+typedef std::pair<long, long> coords_t;
+typedef ref::set<aid_t> agents_s;
+typedef ref::map<coords_t, agents_s> agents_ms;
 
-void appmain(const std::vector<std::string>& apps) {
+inline coords_t make_coords(long lon, long lat) {
+    return std::make_pair<>(lon, lat);
+}
+
+
+
+
+void appmain1(const std::vector<std::string>& apps) {
     std::cout << "Hello World 1" << std::endl;
 
-    std::vector<int, bohem::allocator<int>> v;
-    for (int i=0; i<100; ++i)
-        v.emplace_back(i);
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> rnd_coords(0,10);
+
+    ::srand(100);
+
+    agents_ms v;
+    for (int i=0; i<10000; ++i) {
+        long lon = rnd_coords(generator);
+        long lat = rnd_coords(generator);
+        coords_t c = make_coords(lon, lat);
+        v[c].emplace(i % 10);
+    }
 
     std::cout << std::to_string(v) << std::endl;
 }

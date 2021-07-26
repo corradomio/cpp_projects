@@ -71,4 +71,23 @@ namespace ref {
     };
 }
 
+namespace std {
+
+    template<typename T>
+    std::string to_string(const ref::set<T>& c) {
+        std::string sbuf;
+
+        sbuf.append("[");
+        if (!c.empty()) {
+            auto it = c.begin();
+            sbuf.append(std::to_string(*it));
+            for(it++; it != c.end(); it++)
+                sbuf.append(",").append(std::to_string(*it));
+        }
+
+        sbuf.append("]");
+        return sbuf;
+    }
+}
+
 #endif // REF_SET_H
