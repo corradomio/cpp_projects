@@ -4,13 +4,15 @@
 
 #include <iostream>
 #include <stdx/properties.h>
+#include <stdio.h>
+#include <stdx/cmathx.h>
+#include <winsock2.h>
+#include <iphlpapi.h>
 
+//  (ULONG Family, ULONG Flags, PVOID Reserved, PIP_ADAPTER_ADDRESSES AdapterAddresses, PULONG SizePointer);
 
 int main() {
-    stdx::properties props("D:\\Projects.github\\cpp_projects\\check_hlsext\\args.properties");
-
-    for(const std::string& k : props.names())
-        std::cout << k << ":" << props.get(k) << std::endl;
-
-    props.get_ints("pm");
+    printf("%g\n", stdx::math::epsof(0));
+    printf("%g\n", stdx::math::epsof(1));
+    GetAdaptersAddresses(0, 0, NULL, NULL, NULL);
 }

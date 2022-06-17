@@ -11,8 +11,10 @@ link_directories(
     "D:/MinGW/libs/lib"
 )
 
-add_executable(check_igraph main.cpp)
+add_executable(check_igraph
+    main.cpp
+    igraph.cpp igraph.hpp igraph_simple.cpp igraph_dstruct.cpp)
 
 target_link_libraries(check_igraph
-    igraph.dll
+    igraph
 )

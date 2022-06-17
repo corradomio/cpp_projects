@@ -1,0 +1,95 @@
+//////////////////////////////////////////////////////////
+// THIS FILE IS PART OF THE 'libagents' LIBRARY PACKAGE //
+//////////////////////////////////////////////////////////
+
+/*
+ * The 'libagents' library is copyrighted software, all rights reserved.
+ * (c) Information Technology Group - www.itgroup.ro
+ * (c) Virgil Mager
+ *
+ * THE 'libagents' LIBRARY IS LICENSED FREE OF CHARGE, AND IT IS DISTRIBUTED "AS IS",
+ * WITH EXPRESS DISCLAIMER OF SUITABILITY FOR ANY PARTICULAR PURPOSE,
+ * AND WITH NO WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED,
+ * TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW.
+ *
+ * IN NO EVENT OTHER THAN WHEN MANDATED BY APPLICABLE LAW, SHALL THE AUTHOR(S),
+ * THE PUBLISHER(S), AND/OR THE COPYRIGHT HOLDER(S) OF THE 'libagents' LIBRARY,
+ * BE LIABLE FOR ANY CONSEQUENTIAL DAMAGES WHICH MAY DIRECTLY OR INDIRECTLY RESULT
+ * FROM THE USE OR MISUSE, IN ANY WAY AND IN ANY FORM, OF THE 'libagents' LIBRARY.
+ *
+ * Permission is hereby granted by the 'libagents' library copyright holder(s)
+ * to create and/or distribute any form of work based on, and/or dervied from,
+ * and/or which uses in any way, the 'libagents' library, in full or in part, provided that
+ * ANY SUCH DISTRUBUTION PROMINENTLY INCLUDES THE ORIGINAL 'libagents' LIBRARY PACKAGE.
+ */
+
+
+libagents-2.0.2/2020-04-23
+==========================
+* minor corrections in the doc
+* replaced doc format from ODT with HybridPDF
+
+
+libagents-2.0.1/2020-03-16
+==========================
+* corrections in the doc: the names of in some objects and methods in several diagrams were not updated according to the names that changed in v2.0.0
+
+
+libagents-2.0.0/2020-03-03
+==========================
+* source code compatibility with v1.0.x broken (some methods renamed or moved, see below)
+  - major version bump
+* the internal message buffer sizes can bow be specified individually for the Core object's Intercom buffers and the inter-Agent communication buffer of each Thread object
+* introduced new static class 'Sys'
+  - moved 'Core::wh_threads()' and 'Core::ticker()' to 'Sys::threads()' and 'Sys::ticker()'
+* removed user access to the Core class' Intercom object
+  - moved 'Core::Intercom::PutMessage()' and 'Core::Intercom::GetMessage()' to 'Core::ReadIoMessage()' and 'Core::DeliverIoMessage()'
+* renamed several methods of various objects, see 'libagents-manual-2.0.0' document for details, section 'History'
+
+
+libagents-1.0.3/2016-02-02
+==========================
+* fixed a bug in 'message_t::to_string()' and 'message_t::from_string()'
+  - 'message_t::to_string()' and 'message_t::from_string()' methods were buggy for messages larger than 127 data cells
+  - 'message_t::to_string()' can now serialize messages with at most 255 data cells; trying to serialize a larger message will terminate the application with a runtime error
+  - 'message_t::from_string()' can now properly de-serialize messages that were serialized with 'message_t::to_string()' (up to 255 data cells)
+* increased the maximum byte-size that can be serialized/deserialized with 'message_t::to_string()' and 'message_t::from_string()'
+  - in previous versions the max size for a string-type 'strnum_t' data cell, and also for the total size of the serialized message, was 64KB-1 (else a runtime error occurred); now increased to 2GB
+* added several new checks and locks in preparation for a future libagents version with more reliable handling of creation and deletion of Task/Thread/Agent objects at runtime
+* reversed the order in which the ClockThread and CountersThread are started in the 'stopwatch' example application (in the StopwatchTask::onStarted() method)
+  - the CountersThread must be started before the ClockThread to ensure that the ClockAgent does not send messages to not-yet-started SecondsAgent
+  - note: in the 'stopwatch' application the ordering above is irrelevant because of the specifics of the application; however, the change was made to illustrate the correct order
+* other minor changes
+
+
+libagents-1.0.2/2015-12-22
+==========================
+* fixed a bug in message_t::to_string(), message_t::from_string(), message_t::prettyPrint()
+  - message_t::to_string(), message_t::prettyPrint() used to crash if the message contained data cell(s) of type 'void*'
+  - message_t::from_string() used to crash if the input string contained the serialized form of 'void*' data cell(s)
+* added a runtime test in the 'Core' constructor to ensure that the host system's 'unsigned long long' can hold a pointer value: this used to be a hidden assumption
+  - if the condition above is not met then the aplication will terminate with a runtime error upon construction of its Core object
+* added a runtime test that ensures that storing an integer value in an strnum_t data cell will not lose precision
+  - the application will terminate with a runtime error whenever a too large integer value is loaded in an strnum_t data cell
+  - it is now a compile-time error to load a 'long' or 'long long' value in an strnum_t data cell: explicit casting to 'int' or 'double' is required
+* updated the docs w/r to the changes above; other minor changes
+
+
+libagents-1.0.1/2015-12-01
+==========================
+* minor changes in the 'stopwatch' example application
+
+
+libagents-1.0.0/2015-10-10
+==========================
+* initial release
+
+known problems
+--------------
+* the libagents messaging performance is relatively low
+  - known path to ~4x the current speed: replace current dynamic containers (std::map, std::string, etc) with custom containers which use fixed-size-blocks allocator from a (quasi)-static memory pool
+* inconsistent use of quotes (') and double-quotes (") in the libagents docs
+
+priorities for next releases
+----------------------------
+* improve libagents messaging performance

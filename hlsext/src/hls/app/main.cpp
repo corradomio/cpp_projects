@@ -5,7 +5,7 @@
 
 extern void appmain(const std::vector<std::string>& apps);
 
-int main(int argc, char** argv, char**env) {
+void main(int argc, char** argv, char**env) {
     try {
         std::vector<std::string> args(argc);
 

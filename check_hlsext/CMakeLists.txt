@@ -12,23 +12,25 @@ link_directories(
 )
 
 add_executable(check_hlsext
-    main1.cpp
-    main2.cpp
-    main3.cpp
-    main4.cpp
-    main5.cpp
-    main6.cpp
-    main7.cpp
-    main8.cpp
-    main9.cpp
+#    main1.cpp
+#    main2.cpp
+#    main3.cpp
+#    main4.cpp
+#    main5.cpp
+#    main6.cpp
+#    main7.cpp
+#    main8.cpp
+#    main9.cpp
+    mainA.cpp
     ../hlsext/include/stdx/random.h
-    ../hlsext/include/stdx/cmath.h
+    ../hlsext/include/stdx/cmathx.h
     ../hlsext/include/stdx/containers.h
     ../hlsext/include/stdx/ranges.h
 )
 
 target_link_libraries(check_hlsext
     hlsext
-#    gcmt-lib
+#    gc wsock32
+    iphlpapi
 )
 

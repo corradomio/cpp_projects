@@ -14,16 +14,16 @@ link_directories(
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(check_generic
-    main.cpp
-    main2.cpp
-    main3.cpp
-    main4.cpp
-)
+#    main2.cpp
+#    main3.cpp
+#    main4.cpp
+#    main5.cpp
+    main.cpp)
 
 target_link_libraries(check_generic
-    pqxx
-    pq
-    ws2_32
-    hlsext
-    gc
-    )
+#    pqxx
+#    pq
+#    ws2_32
+#    hlsext
+#    gc
+)

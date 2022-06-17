@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include <ref/vector.h>
-#include <ref/map.h>
-#include <ref/set.h>
-#include <ref/unordered_map.h>
-#include <ref/unordered_set.h>
+#include <ref/vector>
+#include <ref/map>
+#include <ref/set>
+#include <ref/unordered_map>
+#include <ref/unordered_set>
 #include <stdx/containers.h>
 
 
@@ -12,7 +12,7 @@
 ref::vector<int> fill_vector() {
     ref::vector<int> vect;
     for(int i=0; i<10; ++i)
-        vect.insert(i*i);
+        vect.emplace(i*i);
     return vect;
 }
 void dump_vector(ref::vector<int> vect) {
@@ -25,7 +25,7 @@ void dump_vector(ref::vector<int> vect) {
 ref::map<int, int> fill_map() {
     ref::map<int, int> map;
     for (int i =0; i<10; ++i) {
-        map.insert(i, i*i);
+        map.emplace(std::pair<int,int>(i, i*i));
     }
     return map;
 }
@@ -39,7 +39,7 @@ void dump_map(const ref::map<int, int> map) {
 ref::set<int> fill_set() {
     ref::set<int> set;
     for(int i=0; i<10; ++i)
-        set.insert(i*i);
+        set.emplace(i*i);
     return set;
 }
 void dump_set(ref::set<int> set) {
@@ -52,7 +52,7 @@ void dump_set(ref::set<int> set) {
 ref::unordered_map<int, int> fill_unordered_map() {
     ref::unordered_map<int, int> map;
     for (int i =0; i<10; ++i) {
-        map.insert(i, i*i);
+        map.emplace(std::pair<int, int>(i, i*i));
     }
     return map;
 }
@@ -66,7 +66,7 @@ void dump_unordered_map(const ref::unordered_map<int, int> map) {
 ref::unordered_set<int> fill_unordered_set() {
     ref::unordered_set<int> set;
     for(int i=0; i<10; ++i)
-        set.insert(i*i);
+        set.emplace(i*i);
     return set;
 }
 void dump_unordered_set(ref::unordered_set<int> set) {

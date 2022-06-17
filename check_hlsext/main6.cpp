@@ -16,8 +16,8 @@ int main6() {
     std::vector<std::set<std::string>> vs{m,m};
 
     std::string sep = ",";
-    std::cout << stdx::str(v, sep) << std::endl;
-    std::cout << stdx::str(vs, sep) << std::endl;
+    //std::cout << stdx::str(v, sep) << std::endl;
+    //std::cout << stdx::str(vs, sep) << std::endl;
 
     return 0;
 }

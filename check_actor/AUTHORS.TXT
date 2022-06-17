@@ -1,0 +1,29 @@
+//////////////////////////////////////////////////////////
+// THIS FILE IS PART OF THE 'libagents' LIBRARY PACKAGE //
+//////////////////////////////////////////////////////////
+
+/*
+ * The 'libagents' library is copyrighted software, all rights reserved.
+ * (c) Information Technology Group - www.itgroup.ro
+ * (c) Virgil Mager
+ *
+ * THE 'libagents' LIBRARY IS LICENSED FREE OF CHARGE, AND IT IS DISTRIBUTED "AS IS",
+ * WITH EXPRESS DISCLAIMER OF SUITABILITY FOR ANY PARTICULAR PURPOSE,
+ * AND WITH NO WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED,
+ * TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW.
+ *
+ * IN NO EVENT OTHER THAN WHEN MANDATED BY APPLICABLE LAW, SHALL THE AUTHOR(S),
+ * THE PUBLISHER(S), AND/OR THE COPYRIGHT HOLDER(S) OF THE 'libagents' LIBRARY,
+ * BE LIABLE FOR ANY CONSEQUENTIAL DAMAGES WHICH MAY DIRECTLY OR INDIRECTLY RESULT
+ * FROM THE USE OR MISUSE, IN ANY WAY AND IN ANY FORM, OF THE 'libagents' LIBRARY.
+ *
+ * Permission is hereby granted by the 'libagents' library copyright holder(s)
+ * to create and/or distribute any form of work based on, and/or dervied from,
+ * and/or which uses in any way, the 'libagents' library, in full or in part, provided that
+ * ANY SUCH DISTRUBUTION PROMINENTLY INCLUDES THE ORIGINAL 'libagents' LIBRARY PACKAGE.
+ */
+
+libagents-1.0.4 - 1.0.0
+=======================
+* core developers
+  - Virgil Mager

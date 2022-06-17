@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.16)
 project(check_wsl)
 
 include_directories(
-    /mnt/d/Projects.github/cpp_projects/hlsext/include
+    /usr/include
     /home/ubuntu/libs/include
 )
 

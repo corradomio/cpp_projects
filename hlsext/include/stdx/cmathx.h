@@ -246,6 +246,7 @@ namespace stdx {
 
     template<typename T> T max(T x, T y) { return x < y ? y : x; }
     template<typename T> T min(T x, T y) { return x < y ? x : y; }
+    template<typename T> T abs(T x){ return x < 0 ? -x : x; }
 
 };
 
@@ -253,7 +254,25 @@ namespace stdx {
 namespace stdx {
 namespace math {
 
-    const double eps = 1.0e-7;
+    const double eps = 1.0e-4;
+
+    inline double epsof(double x) {
+        double f = 1.;
+        double p = 1.;
+        int c = 0;
+        double y = abs(x);
+        while (y < (y+f)) {
+            c++;
+            p = f;
+            f /= 2.;
+        }
+        return p;
+    }
+
+    inline double epsof(double x, double y) {
+        return epsof(max(abs(x),abs(y)));
+    }
+
     // x < 0
     inline bool isltz(double x) { return (x < -eps); }
     // x > 0

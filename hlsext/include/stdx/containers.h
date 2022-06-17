@@ -72,8 +72,8 @@ namespace stdx {
         return coll.find(v) != coll.end();
     }
 
-    template<typename Dictionary, typename _Key>
-    bool contains_key(const Dictionary& dict, const typename Dictionary::key_value& k) {
+    template<typename Dictionary>
+    bool contains_key(const Dictionary& dict, const typename Dictionary::key_type& k) {
         return dict.find(k) != dict.end();
     }
 

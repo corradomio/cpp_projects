@@ -4,7 +4,7 @@
 #include <tbb/parallel_for_each.h>
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << "Hello Cruel World!" << std::endl;
 
     std::unordered_map<int, int> m;
 
@@ -14,6 +14,8 @@ int main() {
     tbb::parallel_for_each(m, [](const std::pair<int,int>& p) {
         std::cout << p.first << std::endl;
     });
+
+    std::cout << "Done!" << std::endl;
 
     return 0;
 }
