@@ -18,7 +18,7 @@ add_executable(check_generic
 #    main3.cpp
 #    main4.cpp
 #    main5.cpp
-    main.cpp)
+        main7.cpp main8.cpp main.cpp)
 
 target_link_libraries(check_generic
 #    pqxx
