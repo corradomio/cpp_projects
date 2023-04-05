@@ -12,28 +12,28 @@ namespace memory {
 
     const size_t MAGIC_NUM = 0x3A41C52AA25C14A3L;
 
-    class out_of_memory : public stdx::exception_t {
+    class out_of_memory : public stdx::exception {
     public:
         out_of_memory() { }
         out_of_memory(const out_of_memory& e) { }
         out_of_memory& operator =(const out_of_memory& e) { return *this; }
     };
 
-    class memory_corrupted : public stdx::exception_t {
+    class memory_corrupted : public stdx::exception {
     public:
         memory_corrupted() { }
         memory_corrupted(const memory_corrupted& e) { }
         memory_corrupted& operator =(const memory_corrupted& e) { return *this; }
     };
 
-    class invalid_ptr : public stdx::exception_t {
+    class invalid_ptr : public stdx::exception {
     public:
         invalid_ptr() { }
         invalid_ptr(const invalid_ptr& e) { }
         invalid_ptr& operator =(const invalid_ptr& e) { return *this; }
     };
 
-    class already_free : public stdx::exception_t {
+    class already_free : public stdx::exception {
     public:
         already_free() { }
         already_free(const invalid_ptr& e) { }

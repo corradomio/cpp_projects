@@ -663,7 +663,7 @@ di una dimensione predefinita e non troppo piccola (ad esempio 1KB), ed usare de
 Situazioni di questo genere si trovano abbastanza spesso in applicazioni che 
 che utilizzano internet per la comunicazione:
 
-le informazioni che arrivano devono essere salvare in opportuni buffere e quindi
+le informazioni che arrivano devono essere salvare in opportuni buffer e quindi
 processate (ad esempio deserializzata). Allo stesso modo, le informazioni che devono
 essere inviate, prima devono essere serializzate in un buffer, quindi inviate sulla
 connessione di rete.

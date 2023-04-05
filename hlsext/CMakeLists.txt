@@ -16,9 +16,9 @@ set(SOURCE_FILES
 #    src/cstd/malloc-2.8.6.h
 
     include/boost/date_time/date_time_op.h
-    include/bohem/vector
-    include/bohem/string
-    include/bohem/containers
+#    include/bohem/vector
+#    include/bohem/string
+#    include/bohem/containers
     include/ref/map
     include/ref/vector
     include/ref/set
@@ -28,7 +28,7 @@ set(SOURCE_FILES
     include/stdx/containers.h
     include/stdx/properties.h
     include/stdx/strings.h
-    include/cpp/syntax.h
+#    include/cpp/syntax.h
 
     src/hls/app/main.cpp
     src/stdx/exception.cpp

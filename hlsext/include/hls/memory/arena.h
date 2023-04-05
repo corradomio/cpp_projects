@@ -11,7 +11,7 @@
 namespace hls {
 namespace memory {
 
-    class page_overflow : public stdx::exception_t {
+    class page_overflow : public stdx::exception {
     public:
         page_overflow() { }
         page_overflow(const page_overflow& e) { }

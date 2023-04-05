@@ -4,6 +4,10 @@
 
 #ifndef GENERIC_HASH_HPP
 #define GENERIC_HASH_HPP
+#include <cstddef>
+#include <utility>
+#include <bits/stl_pair.h>
+#include <hash_fun.h>
 
 namespace std {
 

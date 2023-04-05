@@ -14,7 +14,7 @@ using namespace stdx;
 // block_t
 // --------------------------------------------------------------------------
 
-static block_t* BLOCK_END = reinterpret_cast<block_t*>(0xFFFFFFFFFFFFFFFFul);
+static block_t* BLOCK_END = nullptr; // reinterpret_cast<block_t*>(0xFFFFFFFFFFFFFFFFul);
 
 thread_local block_t* block_t::_top = BLOCK_END;
 
@@ -97,42 +97,42 @@ std::string stdx::demangle(char const* name) {
 
 
 // --------------------------------------------------------------------------
-// exception_t
+// stdx::exception
 // --------------------------------------------------------------------------
 
-exception_t::exception_t() {
-    _what = "<throwed a exception>";
+stdx::exception::exception() {
+    _what = "<thrown an exception>";
     _fillstack();
 }
 
 
-exception_t::exception_t(const char* msg) {
+stdx::exception::exception(const char* msg) {
     assert(msg);
     _what = msg;
     _fillstack();
 }
 
 
-exception_t::exception_t(const std::string& msg) {
+stdx::exception::exception(const std::string& msg) {
     _what = msg;
     _fillstack();
 }
 
 
-exception_t::~exception_t() throw () {
+stdx::exception::~exception() throw () {
     _callstack.clear();
 }
 
 
 // --------------------------------------------------------------------------
 
-void exception_t::_fillstack() {
+void stdx::exception::_fillstack() {
     for(block_t* top = block_t::_top; top != BLOCK_END; top=top->_prev)
         _callstack.push_back(*top);
 }
 
 
-exception_t& exception_t::setcs(const char *fi, int l, const char *fu) {
+stdx::exception& stdx::exception::setcs(const char *fi, int l, const char *fu) {
     block_t here;
     here._file = fi;
     here._line = l;
@@ -144,7 +144,7 @@ exception_t& exception_t::setcs(const char *fi, int l, const char *fu) {
 
 // --------------------------------------------------------------------------
 
-void exception_t::printstack() {
+void stdx::exception::printstack() {
     size_t n,i;
     block_t* ti_ptr;
 

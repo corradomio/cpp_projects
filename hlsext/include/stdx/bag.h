@@ -12,7 +12,7 @@ namespace stdx {
 
     template <
         typename _Key,
-        typename _Tp = uint16_t,
+        typename _Tp = unsigned int,
         typename _Compare = std::less<_Key>,
         typename _Alloc = std::allocator<std::pair<const _Key, _Tp> >
     >

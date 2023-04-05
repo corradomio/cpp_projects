@@ -10,8 +10,8 @@
 /*
  * Exception trowing:
  *
- *      throw stdx::exception_t(<message>)
- *      throw stdx::exception_t(<message>).from_here()
+ *      throw stdx::exception(<message>)
+ *      throw stdx::exception(<message>).from_here()
  *
  * Note: 'from_here()' is a MACRO converted in:
  *
@@ -49,9 +49,9 @@ namespace stdx {
         int         _line;
         const char* _function;
 
-        /// la classe 'exception_t' puo' accedere alle informazioni di
+        /// la classe 'stdx::exception' puo' accedere alle informazioni di
         /// questa classe
-        friend class exception_t;
+        friend class exception;
 
     public:
         /// costruttore usato nella macro '_try'
@@ -83,10 +83,10 @@ namespace stdx {
 
 
     // ----------------------------------------------------------------------
-    // exception_t
+    // stdx::exception
     // ----------------------------------------------------------------------
 
-    class exception_t : std::exception
+    class exception : std::exception
     {
         std::vector<block_t>  _callstack;
         std::string _what;
@@ -94,10 +94,10 @@ namespace stdx {
         void _fillstack();
 
     public:
-        exception_t();
-        exception_t(const char* msg);
-        exception_t(const std::string& msg);
-        virtual ~exception_t() throw ();
+        exception();
+        exception(const char* msg);
+        exception(const std::string& msg);
+        virtual ~exception() throw ();
 
         virtual const char* what() const throw() { return _what.c_str(); }
 
@@ -106,7 +106,7 @@ namespace stdx {
         void printstack();
 
     public:
-        exception_t& setcs(const char *fi, int l, const char *fu);
+        exception& setcs(const char *fi, int l, const char *fu);
     };
 
 };

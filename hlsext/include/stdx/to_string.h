@@ -4,6 +4,7 @@
 
 #ifndef INFSIM_TO_STRING_H
 #define INFSIM_TO_STRING_H
+#include <string>
 #include <unordered_set>
 
 namespace std {

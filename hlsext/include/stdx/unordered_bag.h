@@ -11,7 +11,7 @@ namespace stdx {
 
     template <
         typename _Key,
-        typename _Tp = uint16_t,
+        typename _Tp = unsigned int,
         typename _Hash = std::hash<_Key>,
         typename _Pred = std::equal_to<_Key>,
         typename _Alloc = std::allocator<std::pair<const _Key, _Tp>>

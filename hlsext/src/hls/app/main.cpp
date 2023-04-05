@@ -5,7 +5,7 @@
 
 extern void appmain(const std::vector<std::string>& apps);
 
-void main(int argc, char** argv, char**env) {
+int main(int argc, char** argv, char**env) {
     try {
         std::vector<std::string> args(argc);
 
@@ -14,7 +14,7 @@ void main(int argc, char** argv, char**env) {
 
         appmain(args);
     }
-    catch(stdx::exception_t& e) {
+    catch(stdx::exception& e) {
         e.printstack();
         return 1;
     }
