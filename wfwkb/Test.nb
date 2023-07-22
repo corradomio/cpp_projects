@@ -1,0 +1,146 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      5437,        138]
+NotebookOptionsPosition[      4865,        120]
+NotebookOutlinePosition[      5264,        136]
+CellTagsIndexPosition[      5221,        133]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"WKBParser", "=", 
+   RowBox[{"LibraryFunctionLoad", "[", 
+    RowBox[{
+    "\"\<D:\\\\Projects.github\\\\cpp_projects\\\\wfwkb\\\\cmake-build-debug\\\
+\\libwfwkb.dll\>\"", ",", " ", "\"\<wkb_parser\>\"", ",", " ", 
+     RowBox[{"{", "ByteArray", "}"}], ",", " ", "ByteArray"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ba", "=", 
+   RowBox[{"ByteArray", "[", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "2", ",", "3", ",", "4"}], "}"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Print", "@", 
+   RowBox[{"WKBParser", "[", "ba", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"LibraryFunctionUnload", "[", "WKBParser", 
+  "]"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.89891961340474*^9, 3.898919664700717*^9}, {
+  3.8989206756414394`*^9, 3.8989207280773044`*^9}, {3.8989222047041006`*^9, 
+  3.898922206408228*^9}},
+ CellLabel->"In[73]:=",ExpressionUUID->"a0a05b7f-1fe8-445e-86fc-e4fa4ec7983f"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{
+   TagBox["ByteArray",
+    "SummaryHead"], "[", 
+   DynamicModuleBox[{Typeset`open$$ = False, Typeset`embedState$$ = "Ready"}, 
+    TemplateBox[{
+      PaneSelectorBox[{False -> GridBox[{{
+            GridBox[{{
+               TagBox["\"4 bytes\"", "SummaryItem"]}}, 
+             GridBoxAlignment -> {
+              "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+             False, GridBoxItemSize -> {
+              "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+             GridBoxSpacings -> {"Columns" -> {{2}}, "Rows" -> {{Automatic}}},
+              BaseStyle -> {
+              ShowStringCharacters -> False, NumberMarks -> False, 
+               PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+          GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+          AutoDelete -> False, 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+          BaselinePosition -> {1, 1}], True -> GridBox[{{
+            GridBox[{{
+               TagBox["\"4 bytes\"", "SummaryItem"]}}, 
+             GridBoxAlignment -> {
+              "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+             False, GridBoxItemSize -> {
+              "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+             GridBoxSpacings -> {"Columns" -> {{2}}, "Rows" -> {{Automatic}}},
+              BaseStyle -> {
+              ShowStringCharacters -> False, NumberMarks -> False, 
+               PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+          GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+          AutoDelete -> False, 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+          BaselinePosition -> {1, 1}]}, 
+       Dynamic[Typeset`open$$], ImageSize -> Automatic]},
+     "SummaryPanel"],
+    DynamicModuleValues:>{}], "]"}],
+  ByteArray[{1, 2, 3, 4}],
+  Editable->False,
+  SelectWithContents->True,
+  Selectable->False]], "Print",
+ CellChangeTimes->{
+  3.8989207287971277`*^9, {3.89892082545362*^9, 3.8989208549099035`*^9}, {
+   3.898920910566554*^9, 3.8989209186236477`*^9}, 3.898921008936601*^9, 
+   3.8989210904988794`*^9, {3.8989213175067534`*^9, 3.8989213313993306`*^9}, 
+   3.898921489450879*^9, 3.898921667196698*^9, 3.898921706601656*^9, 
+   3.8989217574835443`*^9, 3.8989221525013714`*^9, {3.8989221906117907`*^9, 
+   3.898922209101673*^9}, 3.8989410204300833`*^9, 3.898941371504446*^9, 
+   3.89894142274177*^9, 3.898941506689535*^9, 3.8989415609124775`*^9, 
+   3.898941637358757*^9, 3.898941833106981*^9},
+ CellLabel->
+  "During evaluation of \
+In[73]:=",ExpressionUUID->"a4e2648a-b108-4f79-9b70-26c77607da4c"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"BinParse", "=", 
+   RowBox[{"LibraryFunctionLoad", "[", 
+    RowBox[{
+    "\"\<D:\\\\Projects.github\\\\cpp_projects\\\\wfwkb\\\\cmake-build-debug\\\
+\\libwfwkb.dll\>\"", ",", " ", "\"\<BinParse\>\"", ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"ByteArray", ",", " ", "Integer", ",", " ", "Integer"}], "}"}], 
+     ",", " ", "ByteArray"}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.8989441155727363`*^9, 
+  3.898944141964567*^9}},ExpressionUUID->"f25dda18-fa79-4fcd-8d8f-\
+47ec3bc68938"]
+},
+WindowSize->{859, 639},
+WindowMargins->{{Automatic, 372}, {139, Automatic}},
+FrontEndVersion->"13.3 for Microsoft Windows (64-bit) (June 3, 2023)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"aa2c4e48-cd5a-4ce9-a4e7-add094683f45"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 990, 23, 150, "Input",ExpressionUUID->"a0a05b7f-1fe8-445e-86fc-e4fa4ec7983f"],
+Cell[1573, 47, 2745, 56, 41, "Print",ExpressionUUID->"a4e2648a-b108-4f79-9b70-26c77607da4c"]
+}, Open  ]],
+Cell[4333, 106, 528, 12, 70, "Input",ExpressionUUID->"f25dda18-fa79-4fcd-8d8f-47ec3bc68938"]
+}
+]
+*)
+
