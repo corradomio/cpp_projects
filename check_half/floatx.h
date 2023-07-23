@@ -12,18 +12,46 @@
 // float        4
 // double       8
 
+//
+// FP64    E11F53  s eeeeeeeeeee mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+// FP32    E8M23   s eeeeeeee    mmmmmmmmmmmmmmmmmmmmmmm
+// FP24    E8M15   s eeeeeeee    mmmmmmmmmmmmmmm
+// FP16    E5M10   s eeeee       mmmmmmmmmm
+// BF16    E8M7    s eeeeeeee    mmmmmmm
+// FP8     E4M3    s eeee        mmm
+//         E5M2    s eeeee       mm
+// TF32    E8M10   s eeeeeeee    mmmmmmmmmm
+
 namespace numeric {
 
+    // E5M10
     struct float16_t {
+        char c[2];
+        struct { unsigned m: 10; unsigned e:5; unsigned s: 1; } parts;
         short i16;
     };
 
+    // E8M7
     struct bfloat16_t {
+        char c[2];
+        struct { unsigned m: 7; unsigned e:8; unsigned s: 1; } parts;
         short i16;
     };
 
+    // E11F53
+    union float64_t {
+        char c[8];
+        struct { unsigned long long m: 53; unsigned e:11; unsigned s: 1; } parts;
+        float r64;
+        long long i64;
+    };
+
+    // E8M23
     union float32_t {
-        float r32; long i32;
+        char c[4];
+        struct { unsigned m: 23; unsigned e:8; unsigned s: 1; } parts;
+        float r32;
+        long  i32;
 
         inline float32_t() {}
         inline float32_t(float f) { r32=f; }
@@ -55,10 +83,6 @@ namespace numeric {
 
         inline long to_bits() const { return i32; }
 
-    };
-
-    struct float64_t {
-        union { double r64; long long i64; } value;
     };
 
 }

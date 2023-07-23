@@ -8,15 +8,28 @@
 #include <cstdint>
 
 namespace stdx {
-
     typedef bool     bool_t;
-    typedef char     char_t;
-    typedef char_t   char8_t;
-    typedef uint8_t  byte_t;
-    typedef uint16_t word_t;
-    typedef uint32_t dword_t;
-    typedef uint64_t qword_t;
 
+    typedef signed char  int8_t;
+    typedef signed short int16_t;
+    typedef signed long  int32_t;
+    typedef signed long long int64_t;
+
+    typedef unsigned char  uint8_t;
+    typedef unsigned short uint16_t;
+    typedef unsigned long  uint32_t;
+    typedef unsigned long long uint64_t;
+
+    typedef float  float32_t;
+    typedef double float64_t;
+
+    typedef unsigned char  byte_t;
+    typedef unsigned short word_t;
+    typedef unsigned long  dword_t;
+    typedef unsigned long long qword_t;
+
+    typedef float  real32_t;
+    typedef double real64_t;
 }
 
 #endif // STDX_INTTYPES_H
