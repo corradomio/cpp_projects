@@ -1,3 +1,12 @@
+https://github.com/intheswim/float24/blob/master/float24.h
+https://github.com/biovault/biovault_bfloat16
+https://github.com/oprecomp/FloatX
+https://github.com/oprecomp/flexfloat
+https://github.com/ivanfv/scrimp-flexfloat
+https://iis-git.ee.ethz.ch/pulp-sw/softFloat
+https://github.com/openhwgroup/cv32e40p
+
+
 stdint.h
 stdint-gcc.h
 
