@@ -69,13 +69,16 @@ namespace stdx {
 
     public:
         /// costruttore usato nella macro '_try'
-        try_t(const char* fi, int l, const char* fu);
-       ~try_t();
+        try_t(const char* fi, int l, const char* fu): block_t(fi, l, fu), _is_finally(false) {}
         /// costruttori usati nella creazione del callstack
-        try_t();
-        try_t(const block_t& t);
+        try_t() : block_t(), _is_finally(false) {}
+        try_t(const block_t& t): block_t(t),_is_finally(false) {}
 
-        void finalize();
+        /// distruttore (ripristina il top dello stack)
+        ~try_t() { }
+
+        void finalize() { _is_finally = true; throw (*this); }
+
         bool is_finally() const { return _is_finally; }
     };
 };

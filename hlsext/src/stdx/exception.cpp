@@ -19,43 +19,40 @@ static block_t* BLOCK_END = nullptr; // reinterpret_cast<block_t*>(0xFFFFFFFFFFF
 thread_local block_t* block_t::_top = BLOCK_END;
 
 
-block_t::block_t(const char* fi, int l, const char* fu)
-        : _file(fi), _line(l), _function(fu),
-          _prev(_top)
-{
-    _top = this;
-}
+// block_t::block_t(const char* fi, int l, const char* fu)
+//         : _file(fi), _line(l), _function(fu), _prev(_top)
+// {
+//     _top = this;
+// }
 
 
-block_t::~block_t()
-{
-    if (_prev) _top = _prev;
-}
+// block_t::~block_t()
+// {
+//     _top = _prev;
+// }
 
 
-/// costructtori usati nella creazione del callstack
-block_t::block_t()
-        : _file(nullptr), _line(0), _function(nullptr),
-          _prev(nullptr)
-{
+// /// costructtori usati nella creazione del callstack
+// block_t::block_t()
+//         : _file(nullptr), _line(0), _function(nullptr), _prev(nullptr)
+// {
+//
+// }
 
-}
-
-block_t::block_t(const block_t& b)
-        : _file(b._file), _line(b._line), _function(b._function),
-          _prev(nullptr)
-{
-
-}
+// block_t::block_t(const block_t& t)
+//         : _file(t._file), _line(t._line), _function(t._function), _prev(nullptr)
+// {
+//
+// }
 
 
-block_t& block_t::operator =(const block_t& b)
-{
-    _file = b._file;
-    _line = b._line;
-    _function = b._function;
-    return *this;
-}
+// block_t& block_t::operator =(const block_t& t)
+// {
+//     _file = t._file;
+//     _line = t._line;
+//     _function = t._function;
+//     return *this;
+// }
 
 
 // --------------------------------------------------------------------------

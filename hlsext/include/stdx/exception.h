@@ -55,18 +55,26 @@ namespace stdx {
 
     public:
         /// costruttore usato nella macro '_try'
-        block_t(const char* fi, int l, const char* fu);
-       ~block_t();
+        block_t(const char* fi, int l, const char* fu)
+        : _file(fi), _line(l), _function(fu), _prev(_top)
+        { _top = this; }
+       ~block_t() { if(_prev) _top = _prev; }
 
         /// costructtori usati nella creazione del callstack
-        block_t();
-        block_t(const block_t& t);
+        block_t(): _file(nullptr), _line(0), _function(nullptr), _prev(nullptr) { }
+        block_t(const block_t& t)
+        : _file(t._file), _line(t._line), _function(t._function), _prev(nullptr) {}
 
 //        const char* file()     const { return _file; }
 //        int         line()     const { return _line; }
 //        const char* function() const { return _function; }
 
-        block_t& operator =(const block_t& t);
+        block_t& operator =(const block_t& t) {
+            _file = t._file;
+            _line = t._line;
+            _function = t._function;
+            return *this;
+        }
     };
 
 

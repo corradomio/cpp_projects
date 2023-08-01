@@ -1,3 +1,5 @@
+_downloads
+_libraries
 cmake-build*
 .idea
 .git
@@ -7,4 +9,5 @@ cmake-build*
 *.lib
 *.a
 *.bin
-
+*.zip
+*.pdf
