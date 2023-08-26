@@ -1,4 +1,3 @@
-#include "library.h"
 #include <WolframLibrary.h>
 #include <WolframCompileLibrary.h>
 #include <LLU/LLU.h>
@@ -162,52 +161,3 @@ LLU_LIBRARY_FUNCTION(bin_parse) {
             mngr.set("Error");
     }
 }
-
-// void impl_wkb_parser(LLU::MArgumentManager&);
-// LIBRARY_LINK_FUNCTION(wkb_parser) {
-//     // auto err = LLU::ErrorCode::NoError;
-//     // try {
-//     //     logger->info("wkb_parser: 1");
-//     //     LLU::MArgumentManager mngr {libData, Argc, Args, Res};
-//     //     logger->info("wkb_parser: 2");
-//     //     impl_wkb_parser(mngr);
-//     //     logger->info("wkb_parser: 3");
-//     // } catch (const LLU::LibraryLinkError& e) {
-//     //     logger->error("wkb_parser: 4");
-//     //     err = e.which();
-//     // } catch (...) {
-//     //     logger->error("wkb_parser: 5");
-//     //     err = LLU::ErrorCode::FunctionError;
-//     // }
-//     // logger->info("wkb_parser: 6");
-//     // return err;
-//
-//     logger->info("wkb_parser: 1");
-//     return LLU::ErrorCode::NoError;
-// }
-//
-// void impl_wkb_parser(LLU::MArgumentManager& mngr) {
-//     logger->info("wkb_parser: 7");
-//     MNumericArray na = mngr.getMNumericArray(0);
-//     mngr.setMNumericArray(na);
-//     logger->info("wkb_parser: 8");
-// }
-
-// EXTERN_C DLLEXPORT int LogDemo(WolframLibraryData libData, mint argc, MArgument* args, MArgument res) {
-//     LLU_DEBUG("Library function entered with ", argc, " arguments.");
-//     auto err = LLU::ErrorCode::NoError;
-//     try {
-//         LLU::MArgumentManager mngr(libData, argc, args, res);
-//         auto index = mngr.getInteger<mint>(0);
-//         if (index >= argc) {
-//             LLU_WARNING("Index ", index, " is too big for the number of arguments: ", argc, ". Changing to ", argc - 1);
-//             index = argc - 1;
-//         }
-//         auto value = mngr.getInteger<mint>(index);
-//         mngr.setInteger(value);
-//     } catch (const LLU::LibraryLinkError& e) {
-//         LLU_ERROR("Caught LLU exception ", e.what(), ": ", e.debug());
-//         err = e.which();
-//     }
-//     return err;
-// }
