@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <stdio.h>
-#include <gc.h>
+#include <gc/gc.h>
+#include <gc/gc_cpp.h>
+
 
 int main(void)
 {

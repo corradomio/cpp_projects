@@ -5,21 +5,25 @@
 #include <math.h>
 
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#
+// https://gcc.gnu.org/onlinedocs/gcc/x86-Built-in-Functions.html
 
 int main() {
     const char* fea = "fma";
 
     __builtin_cpu_init();
+    printf("cmov    %d\n", __builtin_cpu_supports("cmov"));
     printf("mmx     %d\n", __builtin_cpu_supports("mmx"));
+    printf("popcnt  %d\n", __builtin_cpu_supports("popcnt"));
     printf("sse     %d\n", __builtin_cpu_supports("sse"));
     printf("sse2    %d\n", __builtin_cpu_supports("sse2"));
     printf("sse3    %d\n", __builtin_cpu_supports("sse3"));
     printf("ssse3   %d\n", __builtin_cpu_supports("ssse3"));
-    printf("sse41   %d\n", __builtin_cpu_supports("sse4.1"));
-    printf("sse42   %d\n", __builtin_cpu_supports("sse4.2"));
+    printf("sse4.1  %d\n", __builtin_cpu_supports("sse4.1"));
+    printf("sse4.2  %d\n", __builtin_cpu_supports("sse4.2"));
+    printf("sse4a   %d\n", __builtin_cpu_supports("sse4a"));
     printf("avx     %d\n", __builtin_cpu_supports("avx"));
     printf("avx2    %d\n", __builtin_cpu_supports("avx2"));
-//    printf("avx512  %d\n", __builtin_cpu_supports("avx512"));
+
 /*
     AVX
         AVX2
@@ -56,13 +60,21 @@ int main() {
 //    printf("avx512fp16 %d\n", __builtin_cpu_supports("avx512fp16"));
 
     printf("fma     %d\n", __builtin_cpu_supports("fma"));
+    printf("fma4    %d\n", __builtin_cpu_supports("fma4"));
 
     printf("aes     %d\n", __builtin_cpu_supports("aes"));
-    printf("sha     %d\n", __builtin_cpu_supports("sha"));
+    printf("xop     %d\n", __builtin_cpu_supports("xop"));
 
-//    printf("%d\n", __builtin_cpu_supports ("sse"));
-//    printf("%d\n", __builtin_cpu_supports ("avx"));
-//    printf("%d\n", __builtin_cpu_supports ("mmx"));
+    printf("bmi     %d\n", __builtin_cpu_supports("bmi"));
+    printf("bmi2    %d\n", __builtin_cpu_supports("bmi2"));
+    printf("pclmul  %d\n", __builtin_cpu_supports("pclmul"));
+    printf("gfni    %d\n", __builtin_cpu_supports("gfni"));
+    printf("vpclmulqdq  %d\n", __builtin_cpu_supports("vpclmulqdq"));
+
+    printf("x86-64  %d\n", __builtin_cpu_supports("x86-64"));
+    printf("x86-64-v2  %d\n", __builtin_cpu_supports("x86-64-v2"));
+    printf("x86-64-v3  %d\n", __builtin_cpu_supports("x86-64-v3"));
+    printf("x86-64-v4  %d\n", __builtin_cpu_supports("x86-64-v4"));
 
     return (0);
 }
