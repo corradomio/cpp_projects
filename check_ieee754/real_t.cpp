@@ -5,4 +5,5 @@
 #include "real_t.h"
 
 namespace ieee754 {
+
 } // ieee754

@@ -11,8 +11,9 @@ namespace ieee754 {
 
     template<int E, int M, typename T>
     union real_t {
-        struct {uint8_t s:1; uint16_t e:E; uint32_t m; };
+        struct {uint8_t s:1; uint16_t e:E; T m:M; };
         T data;
+        static const T EBIAS = ((1<<(E-1))-1);
 
         real_t() { };
         real_t(const real_t& r): data(r.data) { }
@@ -24,9 +25,8 @@ namespace ieee754 {
     typedef real_t<8, 23,  uint32_t> float32_t;
     typedef real_t<8, 7,   uint16_t> bfloat16_t;
     typedef real_t<5, 10,  uint16_t> float16_t;
-    typedef real_t<4, 3,   uint8_t>  minifloat_t;
+    typedef real_t<4, 3,   uint8_t>  bfloat8_t;
     typedef real_t<5, 2,   uint8_t>  float8_t;
-
 
     /*
      * Conversions float/double <--> integer/{s, e, m}

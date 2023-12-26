@@ -3,12 +3,12 @@ project(check_mkl)
 
 include_directories(
     "D:\\MinGW\\libs\\include"
-    "D:\\MinGW\\libs.3rd\\mkl\\include"
+    "D:\\MinGW\\libs\\mkl\\include"
 )
 
 link_directories(
     "D:\\MinGW\\libs\\lib"
-    "D:\\MinGW\\libs.3rd\\mkl\\lib"
+    "D:\\MinGW\\libs\\mkl\\lib"
 )
 
 set(CMAKE_CXX_STANDARD 14)
