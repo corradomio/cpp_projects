@@ -8,8 +8,8 @@
 namespace c10 {
 
     enum class DeviceType : int8_t {
-        CPU = 0,
-        CUDA = 1, // CUDA.
+        CPU    = 0,
+        CUDA   = 1, // CUDA.
         MKLDNN = 2, // Reserved for explicit MKLDNN
         OPENGL = 3, // OpenGL
     };

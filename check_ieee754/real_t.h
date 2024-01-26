@@ -11,7 +11,7 @@ namespace ieee754 {
 
     template<int E, int M, typename T>
     union real_t {
-        struct {uint8_t s:1; uint16_t e:E; T m:M; };
+        struct {T s:1; T e:E; T m:M; };
         T data;
         static const T EBIAS = ((1<<(E-1))-1);
 
@@ -34,7 +34,7 @@ namespace ieee754 {
 
     template<typename T, typename U> T from_bits(bool s, uint16_t e, U m);
     template<typename T, typename U> T from_bits(U u);
-    template<typename T, typename U> U to_bits(T u);
+    template<typename T, typename U> U   to_bits(T u);
 
     // float
     template<> inline float from_bits<float>(bool s, uint16_t e, uint32_t m) {

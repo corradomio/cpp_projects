@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_block.h>
+#include "gsl_cpp.h"
+
 
 int main (void)
 {
