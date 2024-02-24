@@ -5,6 +5,9 @@ project(check_linalg)
 #
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(check_linalg main.cpp
-        linalg.h
-        refcount.h)
+add_executable(check_linalg
+    main.cpp
+    linalg.h
+    vec.cpp
+    mat.cpp
+)

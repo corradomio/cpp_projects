@@ -1,57 +1,40 @@
-#include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include "linalg.h"
 
 using namespace std;
-using namespace stdx;
 using namespace stdx::linalg;
 
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    std::cout << "sizeof(int)    " << sizeof(int)    << std::endl;
-    std::cout << "sizeof(size_t) " << sizeof(size_t) << std::endl;
+    vector v = ones(3);
+    matrix m = stdx::linalg::identity(3);
+    vector r = m.dot(v);
+    // matrix a = m.dot(2*ones(3,3));
 
-    // std::cout << INT32_MAX << std::endl;
-    // std::cout << (INT32_MAX+1) << std::endl;
+    // float x = v.at(2);
+    // float y = m.at(1);
+    // float z = m.at(0, 1);
 
-    tensor<float> s;
-    tensor<float> v{10};
-    tensor<float> m{10, 20};
-    tensor<float> t{30,20,10};
-    tensor<float> u{5,4,30,20,10};
+    // v.print();
+    // m.print();
+    // r.print();
+    // a.print();
 
-    tensor<float> r0 = v[{3}];
-    tensor<float> r1 = v[{all, 3}];
-    tensor<float> r2 = v[{3, all}];
+    matrix m23 = range(2, 3);
+    matrix m32 = m23.reshape(3, 2);
+
+    // matrix d = c.transpose();
+
+    // b.print();
+    // c.print();
+    // d.print();
+
+    vector v2(2);
+    vector v3(3);
+
+    r = m23.dot(v3);
+    r = v2.dot(m23);
 
     return 0;
 }
 
-
-
-
-//struct A : public stdx::refc_t {
-//    virtual void say() {
-//        std::cout << "I am A\n";
-//    }
-//};
-//struct B : public A {
-//    void say() override {
-//        std::cout << "I am B\n";
-//    }
-//};
-//
-//int main1() {
-//    std::cout << "Hello, World!" << std::endl;
-//
-//    ref_ptr<A> pa = new B();
-//    ref_ptr<B> pb;
-//
-//    pb = ref_cast<B>(pa);
-//    pa = ref_cast<A>(pb);
-//
-//    pa->say();
-//
-//    return 0;
-//}

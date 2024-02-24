@@ -9,6 +9,21 @@
 
 namespace ieee754 {
 
+    union ieee754_t {
+        struct {uint64_t s:1; uint64_t e:10; uint64_t m:53; } f64;  // double
+        struct {uint32_t s:1; uint32_t e:8;  uint32_t m:23; } f32;  // float
+        struct {uint8_t  s:1; uint8_t  e:8;  uint8_t  m:7;  } bf16;
+        struct {uint16_t s:1; uint16_t e:5;  uint16_t m:10; } f16;
+        struct {uint8_t  s:1; uint8_t  e:4;  uint8_t  m:3;  } bf8;
+        struct {uint8_t  s:1; uint8_t  e:5;  uint8_t  m:2;  } f8;
+        uint64_t u64;
+        uint32_t u32;
+        uint16_t u16;
+        uint8_t  u8;
+        double   d;
+        float    f;
+    };
+
     template<int E, int M, typename T>
     union real_t {
         struct {T s:1; T e:E; T m:M; };
@@ -17,8 +32,15 @@ namespace ieee754 {
 
         real_t() { };
         real_t(const real_t& r): data(r.data) { }
+        real_t(int i);
+        real_t(float f);
+        real_t(double d);
 
         real_t& operator =(const real_t& r) { data=r.data; return *this; }
+
+        real_t& operator =(int i);
+        real_t& operator =(float f);
+        real_t& operator =(double d);
     };
 
     typedef real_t<10, 53, uint64_t> float64_t;
