@@ -5,8 +5,8 @@
 #ifndef CHECK_STRUCTURES_OCTREE_H
 #define CHECK_STRUCTURES_OCTREE_H
 
-#include "array.h"
-#include "v3d.h"
+#include "_suspended/array.h"
+#include "_suspended/v3d.h"
 
 namespace stdx::octree {
 

@@ -15,7 +15,6 @@
 // (u)int_fast(8|16|32|64)_t
 // (u)intmax_t
 #include <stdint.h>
-
 #include <initializer_list>
 #include "refcount.h"
 
@@ -70,7 +69,7 @@ namespace stdx::linalg {
     template<typename T>
     struct data_t: refc_t {
         size_t size;
-        T data[1];
+        T data[0];
 
         explicit data_t(size_t sz): size(sz) { }
     };

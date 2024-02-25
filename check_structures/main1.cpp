@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 // #include "octree.h"
-#include "array.h"
+#include "_suspended/array.h"
 #include "list.h"
 
 using namespace stdx;
@@ -10,14 +10,21 @@ using namespace stdx;
 
 struct B {
     int m(int i) { return i+1; }
+    // virtual ~B(){}
 };
 
 struct D : public B {
+    int m(int i) { return B::m(i); }
     int m(int i, int j) { return B::m(i+j+1); }
 };
 
 
-int main() {
+int main1() {
+
+    D d;
+
+    printf("%d\n", d.m(1));
+    printf("%d\n", d.m(1,2));
 
 
     // std::cout << "Hello, World!" << std::endl;

@@ -6,12 +6,17 @@
 #define CHECK_LINALG_LINALG_H
 
 #include <cstddef>
+#include <cmath>
 #include <exception>
 #include <stdexcept>
 
 #define self (*this)
 
 namespace stdx::linalg {
+
+    struct data_p;
+    struct vector;
+    struct matrix;
 
     // ----------------------------------------------------------------------
     // exceptions
@@ -20,6 +25,13 @@ namespace stdx::linalg {
     struct bad_dimensions : public std::runtime_error {
         bad_dimensions() : runtime_error("") { }
     };
+
+    void check(const data_p& u, const data_p& v);       // u.size() == v.size()
+    void check(const vector& u, const vector& v);       // m.size() == v.size()
+    void check(const matrix& m, const vector& v);       // m.cols() == v.size()
+    void check(const vector& u, const matrix& m);       // u.size() == m.rows()
+    void check(const matrix& a, const matrix& b);       // a.rows() == b.rows() && a.cols() == b.cols()
+    void check_dot(const matrix& a, const matrix& b);   // a.cols() == b.rows()
 
     // ----------------------------------------------------------------------
     // data_t
@@ -48,9 +60,8 @@ namespace stdx::linalg {
         // operations
 
         void alloc(size_t n);
-        void init(float s);
-        void init(const data_p& o);
-        void check(const data_p& o) const;
+        void init(float s);             // fill with s
+        void init(const data_p& o);     // copy the content
 
         // -------------------------------------------------------------------
         // properties
@@ -59,11 +70,30 @@ namespace stdx::linalg {
         [[nodiscard]] inline float* data() const { return p->data; }
 
         // -------------------------------------------------------------------
-        // operations
+        // accessors
 
-        [[nodiscard]] inline float& at(size_t i)       { return p->data[i]; }
-        [[nodiscard]] inline float  at(size_t i) const { return p->data[i]; }
+        [[nodiscard]] inline float& at(size_t i)       { return p->data[i]; }   // write
+        [[nodiscard]] inline float  at(size_t i) const { return p->data[i]; }   // read
 
+        // -------------------------------------------------------------------
+        // assignments element-wise
+
+        void assign(const data_p& o);           // assign by reference count
+        void add_eq(float s);                   // +=
+        void sub_eq(float s);                   // -=
+        void mul_eq(float s);                   // *=
+        void div_eq(float s);                   // /=
+        void neg_eq();                          // *= (-1)
+
+        void add_eq(const data_p& v);           // +=
+        void sub_eq(const data_p& v);           // -=
+        void mul_eq(const data_p& v);           // *=
+        void div_eq(const data_p& v);           // /=
+        void lin_eq(float a, const data_p& o);  // += a*o
+
+        void apply_eq(float (*f)(float));
+        void apply_eq(float (*f)(float, float), float b);
+        void apply_eq(float (*f)(float, float), const data_p& o);
     };
 
     // ----------------------------------------------------------------------
@@ -76,17 +106,8 @@ namespace stdx::linalg {
     // ----------------------------------------------------------------------
     // vector
     // ----------------------------------------------------------------------
-    // r = c
-    // r = u+v u-v u*v u/v      element-wise
-    // r = s*u u*s u/s          scalar
-    // s = u.v                  (dot) scalar
-    // r = v.M                  (dot) vector / matrix
-    // r = u + s*v              linear
 
     struct vector: public data_p {
-
-        void check(const vector& v) const;
-        void check(const matrix& m) const;
 
         // -------------------------------------------------------------------
         // constructor & destructor
@@ -94,31 +115,19 @@ namespace stdx::linalg {
         vector();
         explicit vector(size_t n);
         vector(float s, size_t n);
-        vector(const vector& v);
+        vector(const vector& v, bool clone=false);
         ~vector() { release(); }
 
-        [[nodiscard]] vector clone() const;
+        [[nodiscard]] vector clone() const { return vector(self, true); }
 
         // -------------------------------------------------------------------
         // access
 
+        [[nodiscard]] inline float& at(size_t i)       { return p->data[i]; }
+        [[nodiscard]] inline float  at(size_t i) const { return p->data[i]; }
+
         float& operator[](size_t i)       { return at(i); }
         float  operator[](size_t i) const { return at(i); }
-
-        // -------------------------------------------------------------------
-        // operations
-
-        void add_eq(float s);
-        void sub_eq(float s);
-        void mul_eq(float s);
-        void div_eq(float s);
-        void neg_eq();
-
-        void add_eq(const vector& o);
-        void sub_eq(const vector& o);
-        void mul_eq(const vector& o);
-        void div_eq(const vector& o);
-        void lin_eq(float a, const vector& o);
 
         // -------------------------------------------------------------------
         // assignment
@@ -129,7 +138,7 @@ namespace stdx::linalg {
         vector& operator *= (float s) { mul_eq(s); return self; }
         vector& operator /= (float s) { div_eq(s); return self; }
 
-        vector& operator  = (const vector& v);
+        vector& operator  = (const vector& v) { assign(v); return self; }
         vector& operator += (const vector& v) { add_eq(v); return self; }
         vector& operator -= (const vector& v) { sub_eq(v); return self; }
         vector& operator *= (const vector& v) { mul_eq(v); return self; }
@@ -138,47 +147,55 @@ namespace stdx::linalg {
         vector& linear_eq (float a, const vector& v) { lin_eq(a, v); return self; }
 
         // -------------------------------------------------------------------
-        // operations
+        // operators
 
-        vector operator +() const { vector r(self);             return r; }
-        vector operator -() const { vector r(self); r.neg_eq(); return r; }
+        vector operator +() const { vector r(self); return r; }
+        vector operator -() const { vector r(self, true); r.neg_eq(); return r; }
 
-        vector  operator +(const vector& v) const { vector r(self); r.add_eq(v); return r; }
-        vector  operator -(const vector& v) const { vector r(self); r.sub_eq(v); return r; }
-        vector  operator *(const vector& v) const { vector r(self); r.mul_eq(v); return r; }
-        vector  operator /(const vector& v) const { vector r(self); r.div_eq(v); return r; }
+        vector  operator +(const vector& v) const { vector r(self, true); r.add_eq(v); return r; }
+        vector  operator -(const vector& v) const { vector r(self, true); r.sub_eq(v); return r; }
+        vector  operator *(const vector& v) const { vector r(self, true); r.mul_eq(v); return r; }
+        vector  operator /(const vector& v) const { vector r(self, true); r.div_eq(v); return r; }
 
-        [[nodiscard]] vector linear(float a, const vector& v) const { vector r(self); r.lin_eq(a, v); return self; }
+        [[nodiscard]] vector linear(float a, const vector& v) const {
+            vector r(self, true);
+            r.lin_eq(a, v);
+            return self;
+        }
 
-        [[nodiscard]] float  dot (const vector& v) const;
+        [[nodiscard]] float  dot(const vector& v) const;
         [[nodiscard]] vector dot(const matrix& m) const;
         [[nodiscard]] matrix cross(const vector& v) const;
 
+        // -------------------------------------------------------------------
+        // other
 
-        void print();
+        [[nodiscard]] const vector& print() const;
     };
+
+    // ----------------------------------------------------------------------
 
     inline vector zeros(size_t n) { return vector{0, n}; }
     inline vector  ones(size_t n) { return vector{1, n}; }
     vector range(size_t n);
 
     // ----------------------------------------------------------------------
-    // operations
+    // operators
 
-    vector operator +(float s, const vector& v);// { vector r(s, v.size()); r.add_eq(v); return r; }
-    vector operator -(float s, const vector& v);// { vector r(s, v.size()); r.sub_eq(v); return r; }
-    vector operator *(float s, const vector& v);// { vector r(s, v.size()); r.mul_eq(v); return r; }
-    vector operator /(float s, const vector& v);// { vector r(s, v.size()); r.div_eq(v); return r; }
+    vector operator +(float s, const vector& v);
+    vector operator -(float s, const vector& v);
+    vector operator *(float s, const vector& v);
+    vector operator /(float s, const vector& v);
 
     // ----------------------------------------------------------------------
     // functions
 
     vector abs(const vector& v);
-    vector log(const vector& v);    // base e
-    vector exp(const vector& v);    // e^v
-    vector power(const vector& v, float e); // v^e
-    vector sq(const vector& v);     // v^2
-    vector sqrt(const vector& v);   // square root
+    vector log(const vector& v);
+    vector exp(const vector& v);
+    vector pow(const vector& v, float e);
+    vector sq( const vector& v);
+    vector sqrt(const vector& v);
 
     vector  sin(const vector& v);
     vector  cos(const vector& v);
@@ -201,11 +218,6 @@ namespace stdx::linalg {
     struct matrix : public data_p {
         size_t c; // n of columns
 
-        void check  (const matrix& m) const;
-        void check_m(const matrix& m) const;
-        void check_v(const vector& v) const;
-        void check_u(const vector& v) const;
-
         // ----------------------------------------------------------------------
         // constructor
 
@@ -213,9 +225,9 @@ namespace stdx::linalg {
         explicit matrix(size_t n);
         matrix(size_t n, size_t m);
         matrix(float s, size_t n, size_t m);
-        matrix(const matrix& m);
+        matrix(const matrix& m, bool clone=false);
 
-        [[nodiscard]] matrix clone() const;
+        [[nodiscard]] matrix clone() const { return matrix(self, true); }
         [[nodiscard]] matrix reshape(size_t n, size_t m) const;
         [[nodiscard]] matrix transpose() const;
 
@@ -235,21 +247,6 @@ namespace stdx::linalg {
 
         [[nodiscard]] inline float& operator[](size_t i, size_t j)       { return at(i, j); }
         [[nodiscard]] inline float  operator[](size_t i, size_t j) const { return at(i, j); }
-
-        // -------------------------------------------------------------------
-        // operations
-
-        void add_eq(float s);
-        void sub_eq(float s);
-        void mul_eq(float s);
-        void div_eq(float s);
-        void neg_eq();
-
-        void add_eq(const matrix& m);
-        void sub_eq(const matrix& m);
-        void mul_eq(const matrix& m);
-        void div_eq(const matrix& m);
-        void lin_eq(float a, const matrix& m);
 
         // ----------------------------------------------------------------------
         // assignment
@@ -272,15 +269,15 @@ namespace stdx::linalg {
         // operations
 
         matrix operator +()                 const { matrix r(self);              return r;}
-        matrix operator -()                 const { matrix r(self); r.neg_eq( ); return r; }
+        matrix operator -()                 const { matrix r(self, true); r.neg_eq( ); return r; }
 
-        matrix  operator +(const matrix& m) const { matrix r(self); r.add_eq(m); return r; }
-        matrix  operator -(const matrix& m) const { matrix r(self); r.sub_eq(m); return r; }
-        matrix  operator *(const matrix& m) const { matrix r(self); r.mul_eq(m); return r; }
-        matrix  operator /(const matrix& m) const { matrix r(self); r.div_eq(m); return r; }
+        matrix  operator +(const matrix& m) const { matrix r(self, true); r.add_eq(m); return r; }
+        matrix  operator -(const matrix& m) const { matrix r(self, true); r.sub_eq(m); return r; }
+        matrix  operator *(const matrix& m) const { matrix r(self, true); r.mul_eq(m); return r; }
+        matrix  operator /(const matrix& m) const { matrix r(self, true); r.div_eq(m); return r; }
 
         [[nodiscard]] matrix linear(float a, const matrix& m) const {
-            matrix r(self);
+            matrix r(self, true);
             r.lin_eq(a, m);
             return r;
         }
@@ -288,8 +285,13 @@ namespace stdx::linalg {
         [[nodiscard]] matrix dot(const matrix& m) const;
         [[nodiscard]] vector dot(const vector& v) const;
 
-        void print();
+        // -------------------------------------------------------------------
+        // other
+
+        [[nodiscard]] const matrix& print() const;
     };
+
+    // ----------------------------------------------------------------------
 
     matrix identity(size_t n);
     inline matrix zeros(size_t n, size_t m) { return matrix{0, n, m}; }
@@ -297,12 +299,12 @@ namespace stdx::linalg {
     matrix range(size_t n, size_t m);
 
     // ----------------------------------------------------------------------
-    // operations
+    // operators
 
-    matrix operator +(float s, const matrix& m);// { matrix r(s); r.add_eq(m); return r; }
-    matrix operator -(float s, const matrix& m);// { matrix r(s); r.sub_eq(m); return r; }
-    matrix operator *(float s, const matrix& m);// { matrix r(s); r.mul_eq(m); return r; }
-    matrix operator /(float s, const matrix& m);// { matrix r(s); r.div_eq(m); return r; }
+    matrix operator +(float s, const matrix& m);
+    matrix operator -(float s, const matrix& m);
+    matrix operator *(float s, const matrix& m);
+    matrix operator /(float s, const matrix& m);
 
 }
 

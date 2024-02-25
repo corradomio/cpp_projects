@@ -33,17 +33,19 @@ matrix::matrix(float s, size_t n, size_t m) {
     init(s);
 }
 
-matrix::matrix(const matrix& m) {
-    self.p = m.p;
-    self.c = m.c;
-    add_ref();
+matrix::matrix(const matrix& m, bool clone) {
+    if (clone) {
+        alloc(m.size());
+        c = m.c;
+        init(m);
+    }
+    else {
+        self.p = m.p;
+        self.c = m.c;
+        add_ref();
+    }
 }
 
-matrix matrix::clone() const {
-    matrix r(rows(), cols());
-    r.init(self);
-    return r;
-}
 
 matrix matrix::reshape(size_t n, size_t m) const {
     size_t sz = size();
@@ -72,120 +74,119 @@ matrix matrix::transpose() const {
 // -------------------------------------------------------------------
 // check
 
-void matrix::check(const matrix& m) const {
-    if (cols() != m.cols())
-        throw bad_dimensions();
-    if (size() != m.size())
-        throw bad_dimensions();
-}
-
-void matrix::check_m(const matrix& m) const {
-    if (cols() != m.rows())
-        throw bad_dimensions();
-}
-
-void matrix::check_v(const vector& v) const {
-    if (cols() != v.size())
-        throw bad_dimensions();
-}
-
-void matrix::check_u(const vector& v) const {
-    if (v.size() != rows())
-        throw bad_dimensions();
-}
+// void matrix::check(const matrix& m) const {
+//     if (cols() != m.cols())
+//         throw bad_dimensions();
+//     if (size() != m.size())
+//         throw bad_dimensions();
+// }
+//
+// void matrix::check_m(const matrix& m) const {
+//     if (cols() != m.rows())
+//         throw bad_dimensions();
+// }
+//
+// void matrix::check_v(const vector& v) const {
+//     if (cols() != v.size())
+//         throw bad_dimensions();
+// }
+//
+// void matrix::check_u(const vector& v) const {
+//     if (v.size() != rows())
+//         throw bad_dimensions();
+// }
 
 // -------------------------------------------------------------------
 
-void matrix::add_eq(float s) {
-    size_t n = size();
-    float *d = data();
-    for (int i=0; i<n; ++i)
-        d[i] += s;
-}
-
-
-void matrix::sub_eq(float s) {
-    size_t n = size();
-    float *d = data();
-    for (int i=0; i<n; ++i)
-        d[i] -= s;
-}
-
-
-void matrix::mul_eq(float s) {
-    size_t n = size();
-    float *d = data();
-    for (int i=0; i<n; ++i)
-        d[i] *= s;
-}
-
-
-void matrix::div_eq(float s) {
-    size_t n = size();
-    float *d = data();
-    for (int i=0; i<n; ++i)
-        d[i] /= s;
-}
-
-
-void matrix::neg_eq() {
-    size_t n = size();
-    float *d = data();
-    for (int i=0; i<n; ++i)
-        d[i] = -d[i];
-}
-
-
-
-void matrix::add_eq(const matrix& m) {
-    check(m);
-    size_t n = size();
-    float *s = m.data();
-    float *d =  data();
-    for (int i=0; i<n; ++i)
-        d[i] += s[i];
-}
-
-
-void matrix::sub_eq(const matrix& m) {
-    check(m);
-    size_t n = size();
-    float *s = m.data();
-    float *d =  data();
-    for (int i=0; i<n; ++i)
-        d[i] -= s[i];
-}
-
-
-void matrix::mul_eq(const matrix& m) {
-    check(m);
-    size_t n = size();
-    float *s = m.data();
-    float *d =  data();
-    for (int i=0; i<n; ++i)
-        d[i] *= s[i];
-}
-
-
-void matrix::div_eq(const matrix& m) {
-    check(m);
-    size_t n = size();
-    float *s = m.data();
-    float *d =  data();
-    for (int i=0; i<n; ++i)
-        d[i] /= s[i];
-}
-
-
-void matrix::lin_eq(float a, const matrix& m) {
-    check(m);
-    size_t n = size();
-    float *s = m.data();
-    float *d =  data();
-    for (int i=0; i<n; ++i)
-        d[i] += a*s[i];
-}
-
+// void matrix::add_eq(float s) {
+//     size_t n = size();
+//     float *d = data();
+//     for (int i=0; i<n; ++i)
+//         d[i] += s;
+// }
+//
+//
+// void matrix::sub_eq(float s) {
+//     size_t n = size();
+//     float *d = data();
+//     for (int i=0; i<n; ++i)
+//         d[i] -= s;
+// }
+//
+//
+// void matrix::mul_eq(float s) {
+//     size_t n = size();
+//     float *d = data();
+//     for (int i=0; i<n; ++i)
+//         d[i] *= s;
+// }
+//
+//
+// void matrix::div_eq(float s) {
+//     size_t n = size();
+//     float *d = data();
+//     for (int i=0; i<n; ++i)
+//         d[i] /= s;
+// }
+//
+//
+// void matrix::neg_eq() {
+//     size_t n = size();
+//     float *d = data();
+//     for (int i=0; i<n; ++i)
+//         d[i] = -d[i];
+// }
+//
+//
+//
+// void matrix::add_eq(const matrix& m) {
+//     check(m);
+//     size_t n = size();
+//     float *s = m.data();
+//     float *d =  data();
+//     for (int i=0; i<n; ++i)
+//         d[i] += s[i];
+// }
+//
+//
+// void matrix::sub_eq(const matrix& m) {
+//     check(m);
+//     size_t n = size();
+//     float *s = m.data();
+//     float *d =  data();
+//     for (int i=0; i<n; ++i)
+//         d[i] -= s[i];
+// }
+//
+//
+// void matrix::mul_eq(const matrix& m) {
+//     check(m);
+//     size_t n = size();
+//     float *s = m.data();
+//     float *d =  data();
+//     for (int i=0; i<n; ++i)
+//         d[i] *= s[i];
+// }
+//
+//
+// void matrix::div_eq(const matrix& m) {
+//     check(m);
+//     size_t n = size();
+//     float *s = m.data();
+//     float *d =  data();
+//     for (int i=0; i<n; ++i)
+//         d[i] /= s[i];
+// }
+//
+//
+// void matrix::lin_eq(float a, const matrix& m) {
+//     check(m);
+//     size_t n = size();
+//     float *s = m.data();
+//     float *d =  data();
+//     for (int i=0; i<n; ++i)
+//         d[i] += a*s[i];
+// }
 
 
 // -------------------------------------------------------------------
@@ -203,7 +204,7 @@ matrix& matrix::operator =(const matrix& m) {
 // operations
 
 matrix matrix::dot(const matrix& m) const {
-    check_m(m);
+    check_dot(self, m);
     size_t rows = this->rows();
     size_t cross = this->cols();
     size_t cols = m.cols();
@@ -221,7 +222,7 @@ matrix matrix::dot(const matrix& m) const {
 }
 
 vector matrix::dot(const vector& v) const {
-    check_v(v);
+    check(self, v);
     size_t rows = this->rows();
     size_t cols = this->cols();
     vector r(rows);
@@ -262,12 +263,12 @@ matrix stdx::linalg::operator /(float s, const matrix& m) { matrix r(s, m.rows()
 // -------------------------------------------------------------------
 // debug
 
-void matrix::print() {
+const matrix& matrix::print() const {
     size_t rows = self.rows();
     size_t cols = self.cols();
     if (rows == 0) {
         printf("[]\n");
-        return;
+        return self;
     }
     printf("[\n");
     for (int i=0; i<rows; ++i) {
@@ -281,6 +282,7 @@ void matrix::print() {
         }
     }
     printf("]\n");
+    return self;
 }
 
 

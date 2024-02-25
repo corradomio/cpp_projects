@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "linalg.h"
+#include "linalg/linalg.h"
 
 using namespace std;
 using namespace stdx::linalg;
@@ -32,8 +32,8 @@ int main() {
     vector v2(2);
     vector v3(3);
 
-    r = m23.dot(v3);
-    r = v2.dot(m23);
+    r = m23.dot(v3).print();
+    r = v2.dot(m23).print();
 
     return 0;
 }

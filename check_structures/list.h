@@ -25,8 +25,8 @@ namespace stdx {
         /// Destructor
         ~list_t() { clear(); }
 
-        [[nodiscard]] bool  empty() const { return n == 0; }
-        [[nodiscard]] size_t size() const { return n; }
+        [[nodiscard]] bool    empty() const { return n == 0; }
+        [[nodiscard]] size_t  size() const { return n; }
         [[nodiscard]] node_t* first() const { return head; }
 
         /// Add a new element at the head of the list and return its pointer
