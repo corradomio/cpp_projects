@@ -22,15 +22,16 @@ register_class(diagonal_matrix, matrix);
 declare_method(string, to_json, (virtual_<const matrix&>));
 
 define_method(string, to_json, (const dense_matrix& m)) {
-return "json for dense matrix...";
+    return "json for dense matrix...";
 }
 
 define_method(string, to_json, (const diagonal_matrix& m)) {
-return "json for diagonal matrix...";
+    return "json for diagonal matrix...";
 }
 
 int main() {
-    yorel::yomm2::update_methods();
+    // yorel::yomm2::update_methods();
+    yorel::yomm2::update();
 
     shared_ptr<const matrix> a = make_shared<dense_matrix>();
     shared_ptr<const matrix> b = make_shared<diagonal_matrix>();

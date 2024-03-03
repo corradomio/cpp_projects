@@ -5,23 +5,27 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include <catch2/catch_all.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include "../linalg/linalg.h"
+#include "../vector_op.h"
+#include "../matrix_op.h"
 
-using namespace stdx::linalg;
+using namespace stdx;
 
 TEST_CASE( "constructor", "[vector]" ) {
-    REQUIRE( vector().size() == 0 );
-    REQUIRE( vector(10).size() == 10 );
+    REQUIRE( vector_t<float>().size() == 0 );
+    REQUIRE( vector_t<float>(10).size() == 10 );
 
-    vector v(3, 5);
+    vector_t<float> v(5);
+    v = 3;
     REQUIRE( v.size() == 5 );
     REQUIRE( v[0] == 3 );
     REQUIRE( v[4] == 3 );
 }
 
 TEST_CASE( "assignment", "[vector]" ) {
-    vector v(3, 5);
-    vector u = v;
+
+    vector_t<float> v(5);
+    v = 3;
+    vector_t<float> u = v;
 
     REQUIRE( u.size() == 5 );
     REQUIRE( u[0] == 3 );
@@ -31,5 +35,5 @@ TEST_CASE( "assignment", "[vector]" ) {
     REQUIRE( v[1] == 1 );
     REQUIRE( u[1] == 1 );
 
-    REQUIRE( u.p->refc == 2 );
+    REQUIRE( u._info->refc == 2 );
 }

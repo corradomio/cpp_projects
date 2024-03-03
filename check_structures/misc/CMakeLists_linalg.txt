@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 project(check_linalg)
 
 include_directories("D:/MinGW/libs/include")
-link_directories("D:/MinGW//libs/lib")
+link_directories("D:/MinGW/libs/lib")
 
 # C++23 accepts operator[](int, int)
 #
@@ -12,7 +12,10 @@ add_library(linalg
     linalg/linalg.h
     linalg/vec.cpp
     linalg/mat.cpp
-    linalg/check.cpp
+    linalg/utils.cpp
+    linalg/linalg.cpp
+        linalg/linalg_op.h
+        linalg/linalg_op.cpp
 )
 
 add_library(catch2v3
@@ -21,6 +24,7 @@ add_library(catch2v3
 
 add_executable(check_linalg
     main.cpp
+        _suspended/linalg2.h
 )
 
 target_link_libraries(check_linalg
@@ -28,7 +32,6 @@ target_link_libraries(check_linalg
 )
 
 add_executable(test_linalg
-    tests_run.cpp
     tests/test_vec.cpp
 #    catch_amalgamated.cpp
 )

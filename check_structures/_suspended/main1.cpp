@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 // #include "octree.h"
-#include "_suspended/array.h"
+#include "array.h"
 #include "list.h"
 
 using namespace stdx;

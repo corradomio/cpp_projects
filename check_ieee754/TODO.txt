@@ -1,0 +1,134 @@
+float
+
+1)
+s = {unsigned int} 0
+e = {unsigned int} 0
+m = {unsigned int} 2080768
+
+2)
+s = {unsigned int} 0
+e = {unsigned int} 0
+m = {unsigned int} 2097152
+
+.5)
+s = {unsigned int} 0
+e = {unsigned int} 0
+m = {unsigned int} 2064384
+
+double
+
+1.)
+ s = {unsigned long long} 0
+ e = {unsigned long long} 0
+ m = {unsigned long long} 1124800395214848
+
+2.)
+s = {unsigned long long} 0
+e = {unsigned long long} 0
+m = {unsigned long long} 1125899906842624
+
+.5)
+s = {unsigned long long} 0
+e = {unsigned long long} 0
+m = {unsigned long long} 1123700883587072
+
+
+
+
+
+
+    // template<typename T, typename U> T from_bits(bool s, uint16_t e, U m);
+    // template<typename T, typename U> T from_bits(U u);
+    // template<typename T, typename U> U   to_bits(T u);
+
+    // float
+    // template<> inline float from_bits<float>(bool s, uint16_t e, uint32_t m) {
+    //     union {
+    //         struct {uint32_t m:23; uint32_t e:8; uint32_t s:1; };
+    //         float f;
+    //     } u;
+    //     u.s = s;
+    //     u.e = e;
+    //     u.m = m;
+    //     return u.f;
+    // }
+
+    // template<> inline float from_bits<float>(uint32_t l) {
+    //     union {
+    //         uint32_t l;
+    //         float f;
+    //     } u;
+    //     u.l = l;
+    //     return u.f;
+    // }
+
+    // template<> inline unsigned long to_bits<float>(float f) {
+    //     union {
+    //         uint32_t l;
+    //         float f;
+    //     } u;
+    //     u.f = f;
+    //     return u.l;
+    // }
+
+    // double
+    // template<> inline double from_bits<double>(bool s, uint16_t e, uint64_t m) {
+    //     union {
+    //         struct {uint64_t m:52; uint32_t e:11; uint32_t s:1; };
+    //         double f;
+    //     } u;
+    //     u.s = s;
+    //     u.e = e;
+    //     u.m = m;
+    //     return u.f;
+    // }
+
+    // template<> inline double from_bits<double>(uint64_t l) {
+    //     union {
+    //         uint64_t l;
+    //         double f;
+    //     } u;
+    //     u.l = l;
+    //     return u.f;
+    // }
+
+    // template<> inline unsigned long long to_bits<double>(double f) {
+    //     union {
+    //         unsigned long l;
+    //         double f;
+    //     } u;
+    //     u.f = f;
+    //     return u.l;
+    // }
+
+
+
+template<> float64_t to_real(double dbl) {
+        ieee754_t s;
+        s.dbl = dbl;
+        return s.f64;
+    }
+
+    template<> float64_t to_real(float flt) {
+        ieee754_t s, t;
+        s.flt = flt;
+
+        if (isinvalid(s.f32)) {
+            t.f64.s = s.f32.s;
+            t.f64.e = t.f64.EMAX;
+            t.f64.m = s.f32.m;
+        }
+        else if (islarger<10, 53, uint64_t>(s.f32.e)) {
+            t.f64.s = s.f32.s;
+            t.f64.e = t.f64.EMAX;
+            t.f64.m = 0;
+        }
+        else {
+            t.f64.s = s.f32.s;
+            t.f64.e = s.f32.e;
+            t.f64.m = s.f32.m;
+        }
+
+        return t.f64;
+    }
+

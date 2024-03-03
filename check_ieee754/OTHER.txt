@@ -1,0 +1,83 @@
+    __int8 i8;
+    __int16 i16;
+    __int32 i32;
+    __int64 i64;
+    // __int80 i80;        // NON compila
+    __int128 i128;
+    // __int256 i256;      // NON compila
+    long double f128;    // compila
+    // __float80 f80;      // compila
+    // _Float64x f64x;     // compila
+    // __fp16 f16;         // NON compila E non puo' essere ridefinito
+    // __float16 f16;      // NON compila MA puo essere usato
+    _Float16 f16;       // compila
+    __bf16 bf16;        // compila
+
+    std::cout << "- long double " << sizeof(long double) << std::endl;   // 16
+    std::cout << "-- long double " << sizeof(long double) << std::endl;   // 16
+    // std::cout << "--  __float80 " << sizeof(__float80) << std::endl;    // 16
+    // std::cout << "--  _Float64x " << sizeof(_Float64x) << std::endl;    // 16
+    std::cout << "--   _Float16 " << sizeof(_Float16) << std::endl;     // 2
+    std::cout << "--     __bf16 " << sizeof(__bf16) << std::endl;       // 2
+
+
+int main() {
+
+    printf("sizeof(float128_u)=%d\n", sizeof(float128_u));
+
+    float128_u u;
+    u.dbl = std::numeric_limits<long double>::min();
+    printf("%016llx%016llx\n", u.hi, u.lo); fflush(stdout);
+
+    float128_u v;
+    v.f128.s = 0;
+    v.f128.e = 1;
+    v.f128.m = 0;
+    printf("%016llx%016llx\n", v.hi, v.lo); fflush(stdout);
+
+    return 0;
+}
+
+
+
+int main2() {
+
+    ieee754_u u;
+
+    u.f32 = float32_t(0, 128, 0);
+    printf("%1d, %3d, %llx -> %.7g\n", u.f32.s, u.f32.e, u.f32.m, u.flt); ::fflush(stdout);
+
+    ieee754_u r;
+
+    printf("\n---\n");
+
+    float f = 1;
+    float e = 1;
+    float s = f+e;
+
+    while (s != 1) {
+        r.flt = s;
+        // printf("%x, %x, %llx -> %.16f\n", r.f32.s, r.f32.e, r.f32.m, s-1); ::fflush(stdout);
+        printf("%1x, %3x, %llx -> %.7f\n", r.f32.s, r.f32.e, r.f32.m, s); ::fflush(stdout);
+        e /= 2;
+        s = f+e;
+    }
+
+    printf("\n---\n\n");
+
+    f = 0;
+    e = 1;
+    s = f + e;
+
+    while (s != 0) {
+        r.flt = s;
+        // printf("%x, %x, %llx -> %.16f\n", r.f32.s, r.f32.e, r.f32.m, s-1); ::fflush(stdout);
+        printf("%1x, %3x, %llx -> %.7g\n", r.f32.s, r.f32.e, r.f32.m, s); ::fflush(stdout);
+        e /= 2;
+        s = f+e;
+    }
+
+    printf("\n---\n");
+
+    return 0;
+}

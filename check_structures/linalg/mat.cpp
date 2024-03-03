@@ -18,19 +18,13 @@ matrix::matrix() {
 matrix::matrix(size_t n) {
     alloc(n*n);
     c = n;
-    init(0);
+    fill(0);
 }
 
-matrix::matrix(size_t n, size_t m) {
+matrix::matrix(size_t n, size_t m, float s) {
     alloc(n*m);
     c = m;
-    init(0);
-}
-
-matrix::matrix(float s, size_t n, size_t m) {
-    alloc(n*m);
-    c = m;
-    init(s);
+    fill(s);
 }
 
 matrix::matrix(const matrix& m, bool clone) {
@@ -69,124 +63,6 @@ matrix matrix::transpose() const {
             r.at(j,i) = self.at(i,j);
     return r;
 }
-
-
-// -------------------------------------------------------------------
-// check
-
-// void matrix::check(const matrix& m) const {
-//     if (cols() != m.cols())
-//         throw bad_dimensions();
-//     if (size() != m.size())
-//         throw bad_dimensions();
-// }
-//
-// void matrix::check_m(const matrix& m) const {
-//     if (cols() != m.rows())
-//         throw bad_dimensions();
-// }
-//
-// void matrix::check_v(const vector& v) const {
-//     if (cols() != v.size())
-//         throw bad_dimensions();
-// }
-//
-// void matrix::check_u(const vector& v) const {
-//     if (v.size() != rows())
-//         throw bad_dimensions();
-// }
-
-// -------------------------------------------------------------------
-
-// void matrix::add_eq(float s) {
-//     size_t n = size();
-//     float *d = data();
-//     for (int i=0; i<n; ++i)
-//         d[i] += s;
-// }
-//
-//
-// void matrix::sub_eq(float s) {
-//     size_t n = size();
-//     float *d = data();
-//     for (int i=0; i<n; ++i)
-//         d[i] -= s;
-// }
-//
-//
-// void matrix::mul_eq(float s) {
-//     size_t n = size();
-//     float *d = data();
-//     for (int i=0; i<n; ++i)
-//         d[i] *= s;
-// }
-//
-//
-// void matrix::div_eq(float s) {
-//     size_t n = size();
-//     float *d = data();
-//     for (int i=0; i<n; ++i)
-//         d[i] /= s;
-// }
-//
-//
-// void matrix::neg_eq() {
-//     size_t n = size();
-//     float *d = data();
-//     for (int i=0; i<n; ++i)
-//         d[i] = -d[i];
-// }
-//
-//
-//
-// void matrix::add_eq(const matrix& m) {
-//     check(m);
-//     size_t n = size();
-//     float *s = m.data();
-//     float *d =  data();
-//     for (int i=0; i<n; ++i)
-//         d[i] += s[i];
-// }
-//
-//
-// void matrix::sub_eq(const matrix& m) {
-//     check(m);
-//     size_t n = size();
-//     float *s = m.data();
-//     float *d =  data();
-//     for (int i=0; i<n; ++i)
-//         d[i] -= s[i];
-// }
-//
-//
-// void matrix::mul_eq(const matrix& m) {
-//     check(m);
-//     size_t n = size();
-//     float *s = m.data();
-//     float *d =  data();
-//     for (int i=0; i<n; ++i)
-//         d[i] *= s[i];
-// }
-//
-//
-// void matrix::div_eq(const matrix& m) {
-//     check(m);
-//     size_t n = size();
-//     float *s = m.data();
-//     float *d =  data();
-//     for (int i=0; i<n; ++i)
-//         d[i] /= s[i];
-// }
-//
-//
-// void matrix::lin_eq(float a, const matrix& m) {
-//     check(m);
-//     size_t n = size();
-//     float *s = m.data();
-//     float *d =  data();
-//     for (int i=0; i<n; ++i)
-//         d[i] += a*s[i];
-// }
 
 
 // -------------------------------------------------------------------
@@ -255,10 +131,30 @@ matrix stdx::linalg::range(size_t n, size_t m) {
 
 // -------------------------------------------------------------------
 
-matrix stdx::linalg::operator +(float s, const matrix& m) { matrix r(s, m.rows(), m.cols()); r.add_eq(m); return r; }
-matrix stdx::linalg::operator -(float s, const matrix& m) { matrix r(s, m.rows(), m.cols()); r.sub_eq(m); return r; }
-matrix stdx::linalg::operator *(float s, const matrix& m) { matrix r(s, m.rows(), m.cols()); r.mul_eq(m); return r; }
-matrix stdx::linalg::operator /(float s, const matrix& m) { matrix r(s, m.rows(), m.cols()); r.div_eq(m); return r; }
+matrix stdx::linalg::operator +(float s, const matrix& m) {
+    matrix r(s, m.rows(), m.cols());
+    r.apply_eq(add, m);
+    return r;
+}
+
+matrix stdx::linalg::operator -(float s, const matrix& m) {
+    matrix r(s, m.rows(), m.cols());
+    r.apply_eq(sub, m);
+    return r;
+}
+
+matrix stdx::linalg::operator *(float s, const matrix& m) {
+    matrix r(s, m.rows(), m.cols());
+    r.apply_eq(mul, m);
+    return r;
+}
+
+matrix stdx::linalg::operator /(float s, const matrix& m) {
+    matrix r(s, m.rows(), m.cols());
+    r.apply_eq(div, m);
+    return r;
+}
+
 
 // -------------------------------------------------------------------
 // debug
@@ -296,7 +192,7 @@ matrix vector::cross(const vector& v) const {
 
     for(int i=0; i<rows; ++i)
         for(int j=0; j<cols; ++j)
-            r.at(i,j) = at(i)*v.at(j);
+            r.at(i,j) = at(i) * v.at(j);
     return r;
 }
 
