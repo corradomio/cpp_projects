@@ -1,15 +1,37 @@
 //
 // Created by Corrado Mio on 26/02/2024.
 //
+#include <iostream>
 #include <stdio.h>
 // #include "array.h"
+#include "vector.h"
+#include "matrix.h"
 #include "vector_op.h"
 #include "matrix_op.h"
+#include "dot_op.h"
+
 
 using namespace stdx;
 
-
 int main() {
+
+    vector_t<float> v1 = ones<float>(10);
+    vector_t<float> v2 = ones<float>(10);
+    matrix_t<float> m1 = ones<float>(10, 5);
+    matrix_t<float> m2 = ones<float>(5, 10);
+    matrix_t<float> m3;
+
+    std::cout << dot(v1, v2) << std::endl;
+    std::cout << v1.dot(v2) << std::endl;
+
+    v2 = m1.dot(v1);
+    v2 = v1.dot(m1);
+    m3 = m1.dot(m2);
+
+}
+
+
+int main2() {
     printf("Hello Cruel World\n");
 
     vector_t<float> v(3);
@@ -84,35 +106,6 @@ int main() {
 
     return 0;
 }
-
-
-// int main() {
-//     array_t<float> x = zeros<float>(5);
-//     array_t<float> y = ones<float>(5);
-//     array_t<float> z = zeros<float>(5);
-//
-//     printf("-- z:\n");
-//
-//     z += y;
-//     z += z;
-//
-//     for (int i=0; i<z.size(); ++i) {
-//         printf("  %.3f\n", z[i]);
-//         // fflush(stdout);
-//     }
-//
-//     printf("-- x:\n");
-//
-//     x = y + z;
-//
-//     for (int i=0; i<z.size(); ++i) {
-//         printf("  %.3f\n", x[i]);
-//         // fflush(stdout);
-//     }
-//
-//     printf("end\n");
-//
-// }
 
 int main1() {
 

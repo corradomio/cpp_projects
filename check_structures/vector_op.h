@@ -11,25 +11,18 @@
 
 namespace stdx {
 
-    template<typename T>
-    T neg(T x) { return -x; }
+    // ----------------------------------------------------------------------
+    // check
 
     template<typename T>
-    T sq(T x) { return x * x; }
-
-    template<typename T>
-    T sum(T x, T y) { return x + y; }
-
-    template<typename T>
-    T sub(T x, T y) { return x - y; }
-
-    template<typename T>
-    T mul(T x, T y) { return x * y; }
-
-    template<typename T>
-    T div(T x, T y) { return x / y; }
+    void check(const vector_t<T> &a, const vector_t<T> &b) {
+        if (a.size() != b.size())
+            throw std::range_error("Incompatible dimensions");
+    }
 
     // ----------------------------------------------------------------------
+    // zeros
+    // ones
 
     template<typename T>
     vector_t<T> zeros(size_t n) {
@@ -46,10 +39,10 @@ namespace stdx {
     }
 
     // ----------------------------------------------------------------------
-    // v += v
-    // v -= v
-    // v *= v
-    // v /= v
+    // v += u
+    // v -= u
+    // v *= u
+    // v /= u
 
     template<typename T>
     vector_t<T> &operator+=(vector_t<T> &a, const vector_t<T> &b) {
@@ -106,40 +99,45 @@ namespace stdx {
     }
 
     // ----------------------------------------------------------------------
-    // v + v
-    // v - v
-    // v * v
-    // v / v
+    // v + u
+    // v - u
+    // v * u
+    // v / u
 
     template<typename T>
     vector_t<T> operator-(const vector_t<T> &a) {
         vector_t<T> r = a.clone();
-        return apply_eq(r, neg);
+        apply_eq(r, neg);
+        return r;
     }
 
 
     template<typename T>
     vector_t<T> operator+(const vector_t<T> &a, const vector_t<T> &b) {
         vector_t<T> r = a.clone();
-        return apply_eq(sum, r, b);
+        apply_eq(sum, r, b);
+        return r;
     }
 
     template<typename T>
     vector_t<T> operator-(const vector_t<T> &a, const vector_t<T> &b) {
         vector_t<T> r = a.clone();
-        return apply_eq(sub, r, b);
+        apply_eq(sub, r, b);
+        return r;
     }
 
     template<typename T>
     vector_t<T> operator*(const vector_t<T> &a, const vector_t<T> &b) {
         vector_t<T> r = a.clone();
-        return apply_eq(mul, r, b);
+        apply_eq(mul, r, b);
+        return r;
     }
 
     template<typename T>
     vector_t<T> operator/(const vector_t<T> &a, const vector_t<T> &b) {
         vector_t<T> r = a.clone();
-        return apply_eq(div, r, b);
+        apply_eq(div, r, b);
+        return r;
     }
 
     // ----------------------------------------------------------------------
@@ -151,25 +149,29 @@ namespace stdx {
     template<typename T>
     vector_t<T> operator+(const vector_t<T> &a, T b) {
         vector_t<T> r = a.clone();
-        return apply_eq(sum, r, T(b));
+        apply_eq(sum, r, T(b));
+        return r;
     }
 
     template<typename T>
     vector_t<T> operator-(const vector_t<T> &a, T b) {
         vector_t<T> r = a.clone();
-        return apply_eq(sub, r, T(b));
+        apply_eq(sub, r, T(b));
+        return r;
     }
 
     template<typename T>
     vector_t<T> operator*(const vector_t<T> &a, T b) {
         vector_t<T> r = a.clone();
-        return apply_eq(mul, r, T(b));
+        apply_eq(mul, r, T(b));
+        return r;
     }
 
     template<typename T>
     vector_t<T> operator/(const vector_t<T> &a, T b) {
         vector_t<T> r = a.clone();
-        return apply_eq(div, r, T(b));
+        apply_eq(div, r, T(b));
+        return r;
     }
 
     // ----------------------------------------------------------------------
@@ -178,48 +180,40 @@ namespace stdx {
     // s * v
     // s / v
 
-    template<typename V, typename T>
-    vector_t<T> operator+(V a, const vector_t<T> & b) {
+    template<typename T>
+    vector_t<T> operator+(T a, const vector_t<T> & b) {
         vector_t<T> r(b.size());
         r = a;
-        return apply_eq(sum, r, b);
+        apply_eq(sum, r, b);
+        return r;
     }
 
-    template<typename V, typename T>
-    vector_t<T> operator-(V a, const vector_t<T> & b) {
+    template<typename T>
+    vector_t<T> operator-(T a, const vector_t<T> & b) {
         vector_t<T> r(b.size());
         r = a;
-        return apply_eq(sub, r, b);
+        apply_eq(sub, r, b);
+        return r;
     }
 
-    template<typename V, typename T>
-    vector_t<T> operator*(V a, const vector_t<T> & b) {
+    template<typename T>
+    vector_t<T> operator*(T a, const vector_t<T> & b) {
         vector_t<T> r(b.size());
         r = a;
-        return apply_eq(mul, r, b);
+        apply_eq(mul, r, b);
+        return r;
     }
 
-    template<typename V, typename T>
-    vector_t<T> operator/(V a, const vector_t<T> & b) {
+    template<typename T>
+    vector_t<T> operator/(T a, const vector_t<T> & b) {
         vector_t<T> r(b.size());
         r = a;
-        return apply_eq(div, r, b);
+        apply_eq(div, r, b);
+        return r;
     }
 
     // ----------------------------------------------------------------------
     // dot(u,v)
-
-    template<typename T>
-    T dot(const vector_t<T> & a, const vector_t<T> & b) {
-        check(a, b);
-        T s = 0;
-        size_t n = a.size();
-        T* x = a.data();
-        T* y = b.data();
-        for (int i=0; i<n; ++i)
-            s += x[i]*y[i];
-        return s;
-    }
 
 }
 

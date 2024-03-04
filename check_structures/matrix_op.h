@@ -15,6 +15,9 @@
 
 namespace stdx {
 
+    // ----------------------------------------------------------------------
+    // check
+
     template<typename T>
     void check(const matrix_t<T> &a, const matrix_t<T> &b) {
         if (a.rows() != b.cols() or a.cols() != b.cols())
@@ -197,32 +200,32 @@ namespace stdx {
     // v * m
     // v / m
 
-    template<typename V, typename T>
-    matrix_t<T> operator+(V a, const matrix_t<T>  &b) {
+    template<typename T>
+    matrix_t<T> operator+(T a, const matrix_t<T>  &b) {
         matrix_t<T> r(b.rows(), b.cols());
         r = a;
         apply_eq(sum, r, b);
         return r;
     }
 
-    template<typename V, typename T>
-    matrix_t<T> operator-(V a, const matrix_t<T>  &b) {
+    template<typename T>
+    matrix_t<T> operator-(T a, const matrix_t<T>  &b) {
         matrix_t<T> r(b.rows(), b.cols());
         r = a;
         apply_eq(sub, r, b);
         return r;
     }
 
-    template<typename V, typename T>
-    matrix_t<T> operator*(V a, const matrix_t<T>  &b) {
+    template<typename T>
+    matrix_t<T> operator*(T a, const matrix_t<T>  &b) {
         matrix_t<T> r(b.rows(), b.cols());
         r = a;
         apply_eq(mul, r, b);
         return r;
     }
 
-    template<typename V, typename T>
-    matrix_t<T> operator/(V a, const matrix_t<T>  &b) {
+    template<typename T>
+    matrix_t<T> operator/(T a, const matrix_t<T>  &b) {
         matrix_t<T> r(b.rows(), b.cols());
         r = a;
         apply_eq(div, r, b);
@@ -230,7 +233,6 @@ namespace stdx {
     }
 
     // ----------------------------------------------------------------------
-
 
 }
 

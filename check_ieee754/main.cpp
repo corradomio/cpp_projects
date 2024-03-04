@@ -10,7 +10,19 @@ typedef real_t<3,4, uint8_t>  f34_t;
 typedef real_t<2,5, uint8_t>  f25_t;
 typedef real_t<4,3, uint8_t>  f43_t;
 
-int main(){
+
+int main() {
+    float64_u  u;
+    u.f64 = float64_t(0,0,0-1);
+
+    float32_u v;
+    v.f32 = u.f64;
+
+    return 0;
+}
+
+
+int main6(){
     float32_u f32,  g32;
     float64_u f64;
 

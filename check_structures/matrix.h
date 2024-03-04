@@ -5,9 +5,13 @@
 #ifndef STDX_MATRIX_H
 #define STDX_MATRIX_H
 
+#include "vector.h"
 #include "array.h"
 
 namespace stdx {
+
+    template<typename T> struct vector_t;
+    template<typename T> struct matrix_t;
 
     template<typename T>
     struct matrix_t : public array_t<T> {
@@ -23,6 +27,7 @@ namespace stdx {
         }
 
         // ------------------------------------------------------------------
+        // constructor
 
         matrix_t() : matrix_t(0, 0) {}
 
@@ -33,6 +38,29 @@ namespace stdx {
         matrix_t(const matrix_t &m, bool clone) : array_t<T>(m, clone), ncols(m.cols()) {}
 
         // ------------------------------------------------------------------
+        // properties
+
+        [[nodiscard]] size_t rows() const { return self.size() / ncols; }
+        [[nodiscard]] size_t cols() const { return ncols; }
+
+        // ------------------------------------------------------------------
+        // accessors
+        // at(i) supports negative indices
+
+        // T& at(size_t i)       { return self._data[i]; }
+        // T  at(size_t i) const { return self._data[i]; }
+
+        // T& at(size_t i, size_t j)       { return self._data[i*self.ncols+j]; }
+        // T  at(size_t i, size_t j) const { return self._data[i*self.ncols+j]; }
+
+        T& operator[](size_t i)       { return self._data[i]; }
+        T  operator[](size_t i) const { return self._data[i]; }
+
+        T& operator[](size_t i, size_t j)       { return self._data[i*self.ncols+j]; }
+        T  operator[](size_t i, size_t j) const { return self._data[i*self.ncols+j]; }
+
+        // ------------------------------------------------------------------
+        // assignment
 
         matrix_t &operator=(const matrix_t &m) {
             assign(m);
@@ -40,15 +68,15 @@ namespace stdx {
         }
 
         matrix_t &operator=(T s) {
-            array_t<T>::fill(s);
+            self.fill(s);
             return self;
         }
 
         // ------------------------------------------------------------------
+        // dot
 
-        [[nodiscard]] size_t rows() const { return self.size() / ncols; }
-
-        [[nodiscard]] size_t cols() const { return ncols; }
+        vector_t<T> dot(const vector_t<T>& v) const;
+        matrix_t<T> dot(const matrix_t<T>& v) const;
 
     };
 

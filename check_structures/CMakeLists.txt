@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 project(check_structures)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 
 add_executable(check_structures
 array.h
@@ -10,6 +10,7 @@ main3.cpp
         vector_op.h
         matrix_op.h
     matrix.h
+    dot_op.h
 )
 
 add_executable(test_structures

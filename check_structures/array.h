@@ -56,6 +56,23 @@ std::array           template < class T, size_t N > class array;
 
 namespace stdx {
 
+    // ----------------------------------------------------------------------
+    // operations
+
+    template<typename T> T neg(T x)      { return -x;    }
+    template<typename T> T sq(T x)       { return x * x; }
+    template<typename T> T sum(T x, T y) { return x + y; }
+    template<typename T> T sub(T x, T y) { return x - y; }
+    template<typename T> T mul(T x, T y) { return x * y; }
+    template<typename T> T div(T x, T y) { return x / y; }
+
+    // end
+    // ----------------------------------------------------------------------
+
+}
+
+namespace stdx {
+
     namespace detail {
 
         struct info_t {
@@ -254,27 +271,24 @@ namespace stdx {
     // apply_eq functions
 
     template<typename T>
-     array_t<T>& apply_eq(T (*fun)(T),  array_t<T>& a) {
+     void apply_eq(T (*fun)(T),  array_t<T>& a) {
         T* d = a.data();
         size_t n = a.size();
 
         for (int i=0; i<n; ++i)
             d[i] = fun(d[i]);
-
-        return a;
     }
 
     template<typename T>
-     array_t<T>& apply_eq(T (*fun)(T, T),  array_t<T>& a, T s) {
+     void apply_eq(T (*fun)(T, T),  array_t<T>& a, T s) {
         T* y = a.data();
         size_t n = a.size();
         for (int i=0; i<n; ++i)
             y[i] = fun(y[i], s);
-        return a;
     }
 
     template<typename T>
-     array_t<T>& apply_eq(T (*fun)(T, T),  array_t<T>& a, const  array_t<T>& b) {
+     void apply_eq(T (*fun)(T, T),  array_t<T>& a, const  array_t<T>& b) {
         check(a, b);
 
         T* y = a.data();
@@ -282,12 +296,10 @@ namespace stdx {
         size_t n = a.size();
         for (int i=0; i<n; ++i)
             y[i] = fun(y[i], x[i]);
-
-        return a;
     }
 
     template<typename T>
-     array_t<T>& apply_eq(T (*fun)(T, T, T),  array_t<T>& a, T s, const  array_t<T>& b) {
+     void apply_eq(T (*fun)(T, T, T),  array_t<T>& a, T s, const  array_t<T>& b) {
         check(a, b);
 
         T* y = a.data();
@@ -295,8 +307,6 @@ namespace stdx {
         size_t n = a.size();
         for (int i=0; i<n; ++i)
             y[i] = fun(y[i], s, x[i]);
-
-        return a;
     }
 
     // apply functions
@@ -304,28 +314,30 @@ namespace stdx {
     template<typename T>
     array_t<T> apply(T (*fun)(T),  array_t<T>& a) {
         array_t<T> r = a.clone();
-        return apply_eq(fun, r);
+        apply_eq(fun, r);
+        return r;
     }
 
     template<typename T>
     array_t<T> apply(T (*fun)(T, T),  array_t<T>& a, T s) {
         array_t<T> r = a.clone();
-        return apply_eq(fun, r, s);
+        apply_eq(fun, r, s);
+        return r;
     }
 
     template<typename T>
     array_t<T> apply(T (*fun)(T, T),  array_t<T>& a, const  array_t<T>& b) {
         array_t<T> r = a.clone();
-        return apply_eq(fun, r, b);
+        apply_eq(fun, r, b);
+        return r;
     }
 
     template<typename T>
     array_t<T> apply(T (*fun)(T, T, T),  array_t<T>& a, T s, const  array_t<T>& b) {
         array_t<T> r = a.clone();
-        return apply_eq(fun, r, s, b);
+        apply_eq(fun, r, s, b);
+        return r;
     }
-
-
 }
 
 #endif // STDX_ARRAY_H

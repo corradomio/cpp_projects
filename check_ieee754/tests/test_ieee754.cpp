@@ -161,6 +161,13 @@ TEST_CASE( "float conversions", "[float64_t]" ) {
     REQUIRE(float64_u(128.16).dbl == double(float64_t(128.16)));
 }
 
+TEST_CASE( "double subnormal", "[float64_t]" ) {
+    float64_t f64(0,0,-1);
+    float32_t f32{f64};
+
+    REQUIRE(float(f32) == 0.);
+}
+
 // unsupported  [float16_t]
 // unsupported  [float128_t]
 

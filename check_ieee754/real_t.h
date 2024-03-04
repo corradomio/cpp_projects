@@ -351,9 +351,6 @@ namespace ieee754 {
             else {
                 // the are NOT ENOUGH zero bits
                 // the subnormal became normal
-                // zm += 1;
-                // t.e = e - zm;
-                // t.m  <<=  zm;
 
                 t.e = e - zm;
                 t.m <<= (zm+1);
@@ -363,13 +360,12 @@ namespace ieee754 {
         elif ( de < 0) {
             // subnormal remain subnormal
             if (s.e == 0) {
-                // e = s.e - s.EBIAS + t.EBIAS
-                // s.e == 0 AND s.EBIAS > t.EBIAS
+                // because e = s.e - s.EBIAS + t.EBIAS
+                // and s.e == 0 AND s.EBIAS > t.EBIAS
                 // e is NEGATIVE
                 int f = -e;
 
                 // int hibit = _bit_scan_reverse(t.m);
-                //
                 // if (f > hibit) {
                 //     // shift right outside the right side
                 //     t.e = 0;
@@ -381,32 +377,44 @@ namespace ieee754 {
                 //     t.m >>= f;
                 // }
 
-                t.e = 0;
-                t.m >>= f;
+                if (f >= Target::MLEN) {
+                    // shift right outside the right side
+                    t.e = 0;
+                    t.m = 0;
+                }
+                else {
+                    // shift right inside the mantissa
+                    t.e = 0;
+                    t.m >>= f;
+                }
+
+                // WARNING: it doesn't work. It is used the previous code
+                // t.e = 0;
+                // t.m >>= f;
             }
             // normal became subnormal
             elif (e < 0) {
                 typename Target::field_type ONE = 1;
                 int f = -e;
 
-                // if (f > Target::MLEN) {
-                //     // shift the mantissa right outside the right side
-                //     t.e = 0;
-                //     t.m = 0;
-                // }
+                if (f > Target::MLEN) {
+                    // shift the mantissa right outside the right side
+                    t.e = 0;
+                    t.m = 0;
+                }
                 // elif (f == Target::MLEN) {
                 //     // shift the mantissa right outside the right side
                 //     // BUT the implicit '1' in the last positions
                 //     t.e = 0;
                 //     t.m = 1;
                 // }
-                // else {
-                //     t.e = 0;
-                //     t.m = (t.m | (ONE << Target::MLEN)) >> (f+1);
-                // };
+                else {
+                    t.e = 0;
+                    t.m = (t.m | (ONE << Target::MLEN)) >> (f+1);
+                };
 
-                t.e = 0;
-                t.m = (t.m | (ONE << Target::MLEN)) >> (f+1);
+                // t.e = 0;
+                // t.m = (t.m | (ONE << Target::MLEN)) >> (f+1);
             }
         }
         else {
