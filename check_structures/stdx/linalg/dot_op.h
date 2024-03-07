@@ -8,11 +8,50 @@
 #include "vector.h"
 #include "matrix.h"
 
-namespace stdx {
+//
+// Check for dot operation
+//
+
+namespace stdx::linalg {
+
+    template<typename T>
+    void check_dot(const vector_t<T> &u, const vector_t<T> &v) {
+        if (u.size() != v.size())
+            throw bad_dimensions();
+    }
+
+    template<typename T>
+    void check_dot(const matrix_t<T> &m, const vector_t<T> &v) {
+        if (m.cols() != v.size())
+            throw bad_dimensions();
+    }
+
+    template<typename T>
+    void check_dot(const vector_t<T> &v, const matrix_t<T> &m) {
+        if (v.size() != m.rows())
+            throw bad_dimensions();
+    }
+
+    template<typename T>
+    void check_dot(const matrix_t<T> &m1, const matrix_t<T> &m2) {
+        if (m1.cols() != m2.rows())
+            throw bad_dimensions();
+    }
+
+}
+
+
+//
+// vector_t
+//
+//      dot(u, v)
+//
+
+namespace stdx::linalg {
 
     template<typename T>
     T dot(const vector_t<T>& v1, const vector_t<T>& v2) {
-        check(v1, v2);
+        check_dot(v1, v2);
         T s = 0;
         size_t n = v1.size();
         T* x = v1.data();
@@ -24,11 +63,20 @@ namespace stdx {
 
 }
 
-namespace stdx {
+
+//
+// matrix_t/vector_t
+//
+//      dot(m, m)
+//      dot(m, v)
+//      dot(v, m)
+//
+
+namespace stdx::linalg {
 
     template<typename T>
     vector_t<T> dot(const matrix_t<T>& m, const vector_t<T>& v) {
-        check(m, v);
+        check_dot(m, v);
         size_t nr = m.rows();
         size_t nc = m.cols();
         vector_t<T> r(m.rows());
@@ -46,7 +94,7 @@ namespace stdx {
 
     template<typename T>
     vector_t<T> dot(const vector_t<T>& v, const matrix_t<T>& m) {
-        check(v, m);
+        check_dot(v, m);
         size_t nr = m.rows();
         size_t nc = m.cols();
         vector_t<T> r(m.cols());
@@ -84,30 +132,47 @@ namespace stdx {
 
 }
 
-namespace stdx {
+
+//
+// vector_t dot methods
+//
+//      u.dot(v)
+//      u.dot(m)
+//
+
+namespace stdx::linalg {
 
     template<typename T>
     T vector_t<T>::dot(const vector_t& b) const {
-        return stdx::dot(self, b);
+        return stdx::linalg::dot(self, b);
     }
 
     template<typename T>
     vector_t<T> vector_t<T>::dot(const matrix_t<T>& m) const {
-        return stdx::dot(self, m);
+        return stdx::linalg::dot(self, m);
     }
 
 }
 
-namespace stdx {
+
+
+//
+// matrix_t dot methods
+//
+//      m.dot(m)
+//      m.dot(v)
+//
+
+namespace stdx::linalg {
 
     template<typename T>
     vector_t<T> matrix_t<T>::dot(const vector_t<T>& b) const {
-        return stdx::dot(self, b);
+        return stdx::linalg::dot(self, b);
     }
 
     template<typename T>
     matrix_t<T> matrix_t<T>::dot(const matrix_t& m) const {
-        return stdx::dot(self, m);
+        return stdx::linalg::dot(self, m);
     }
 
 }

@@ -46,6 +46,7 @@ std::array           template < class T, size_t N > class array;
 #ifndef STDX_ARRAY_H
 #define STDX_ARRAY_H
 
+#include <stdexcept>
 #include <cstddef>
 
 #ifndef self
@@ -55,6 +56,14 @@ std::array           template < class T, size_t N > class array;
 #define MIN_ALLOC 16
 
 namespace stdx {
+
+    // ----------------------------------------------------------------------
+    // exceptions
+
+    struct bad_dimensions : public std::runtime_error {
+        bad_dimensions(): std::runtime_error("Incompatible dimensions") {}
+    };
+
 
     // ----------------------------------------------------------------------
     // operations
@@ -117,18 +126,10 @@ namespace stdx {
         }
 
         void init(const array_t &that) {
-            // assign by refcount
-            _info = that._info;
-            _data = that._data;
-            add_ref();
-        }
-
-        void assign(const array_t &that) {
-            // assign by refcount
-            that.add_ref();
-            release();
-            _info = that._info;
-            _data = that._data;
+            // initi by refcount
+            self._info = that._info;
+            self._data = that._data;
+            self.add_ref();
         }
 
         void insert(const T &s, size_t i) {
@@ -151,6 +152,14 @@ namespace stdx {
             // THIS array can be shorter than 'a' NEVER longer
             size_t n=size();
             for (int i=0; i<n; ++i) _data[i] = a._data[i];
+        }
+
+        void assign(const array_t &that) {
+            // assign by refcount
+            that.add_ref();
+            self.release();
+            self._info = that._info;
+            self._data = that._data;
         }
 
     public:
@@ -196,12 +205,15 @@ namespace stdx {
 
         ~array_t(){ release(); }
 
+        // ------------------------------------------------------------------
+        // operations
+
         /// Clone the current array
         array_t clone() const { return array_t(self, true); }
 
         /// Ensure that the array has a single reference.
         /// If it has multiple references, it is cloned
-        array_t norefs() { return (_info->refc == 1) ? self : self.clone(); }
+        array_t norefs() const { return (_info->refc == 1) ? self : self.clone(); }
 
         // ------------------------------------------------------------------
         // properties
@@ -213,7 +225,40 @@ namespace stdx {
         /// if the array is empty (size == 0)
         [[nodiscard]] bool   empty()    const { return _info->n == 0; }
 
+        /// return the pointer to the internal data
         [[nodiscard]] T* data() const { return _data; }
+
+        /// return a standalone pointer to the internal data.
+        /// the data is clones if this object has a refc > 1
+        /// otherwise it is removed from this object
+        T* detach() {
+            T* data;
+
+            // 0) it is possible to detach the T[] from THIS object
+            //    ONLY if it has a single reference
+            if (self._info->refc == 1) {
+                data = self._data;
+                self._info->n = 0;
+                self._info->c = 0;
+                self._data = new T[0];
+            }
+            else {
+                // 1) ensure an object with a single reference
+                array_t cloned = self.clone();
+                // 2) retrieve the data pointer
+                data = cloned._data;
+                // 3) replace the data pointer with an empty array
+                //    to maintain the data structure 'consistent'
+                cloned._data = new T[0];
+                // 4) update the interla data structure consistency
+                //    In theory it is not necessary, but it is better
+                //    to be safe
+                cloned._info->n = 0;
+                cloned._info->c = 0;
+            }
+            // 5) return the data
+            return data;
+        }
 
         // ------------------------------------------------------------------
         // accessors

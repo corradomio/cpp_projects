@@ -28,14 +28,24 @@
  *      +-+---+--------+
  *
  *
+ * Special values
+ * --------------
+ *
  *      s | e  | m  | desc
  *      --+----+----+------------
- *        |  0 |  0 | zero
+ *        |  0 |  0 | zero (0)
+ *        |  0 |  1 | min subnormal
  *        |  0 | ++ | subnormal     v = (-1)^s 0.m * 2^(e-bias)
+ *        |  0 | FFF| max subnormal
+ *        |  1 |  0 | min normalized
  *        | >0 | ++ | normalized    v = (-1)^s 1.m * 2^(e-bias)     '1' implicit
- *        | 11 |  0 | infinity      v = (-1)^s infinity
- *        | 11 | ++ | NaN           v = Not a Number, s&m specify which type
+ *        |BIAS|  0 | one (1)
+ *        |1000|  0 | two (2)
+ *        | FFE| FFF| max normalized
+ *        | FFF|  0 | infinity      v = (-1)^s infinity
+ *        | FFF| ++ | NaN           v = Not a Number, s&m specify which type
  *      --+----+----+------------
+ *
  *
  * Checks
  * ------

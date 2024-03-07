@@ -5,10 +5,10 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include <catch2/catch_all.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include "../vector_op.h"
-#include "../matrix_op.h"
+#include "../stdx/linalg/vector_op.h"
+#include "../stdx/linalg/matrix_op.h"
 
-using namespace stdx;
+using namespace stdx::linalg;
 
 TEST_CASE( "constructor", "[vector]" ) {
     REQUIRE( vector_t<float>().size() == 0 );

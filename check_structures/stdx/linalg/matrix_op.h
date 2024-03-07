@@ -11,35 +11,18 @@
 #ifndef STDX_MATRIX_OP_H
 #define STDX_MATRIX_OP_H
 
+#include "../array.h"
 #include "matrix.h"
 
-namespace stdx {
+namespace stdx::linalg {
 
     // ----------------------------------------------------------------------
     // check
 
     template<typename T>
-    void check(const matrix_t<T> &a, const matrix_t<T> &b) {
-        if (a.rows() != b.cols() or a.cols() != b.cols())
-            throw std::range_error("Incompatible dimensions");
-    }
-
-    template<typename T>
-    void check(const matrix_t<T> &a, const vector_t<T> &b) {
-        if (a.cols() != b.size())
-            throw std::range_error("Incompatible dimensions");
-    }
-
-    template<typename T>
-    void check(const vector_t<T> &a, const matrix_t<T> &b) {
-        if (a.size() != b.rows())
-            throw std::range_error("Incompatible dimensions");
-    }
-
-    template<typename T>
-    void check_dot(const matrix_t<T> &a, const matrix_t<T> &b) {
-        if (a.cols() != b.rows())
-            throw std::range_error("Incompatible dimensions");
+    void check(const matrix_t<T> &m1, const matrix_t<T> &m2) {
+        if (m1.rows() != m2.cols() or m1.cols() != m2.cols())
+            throw bad_dimensions();
     }
 
     // ----------------------------------------------------------------------
@@ -54,7 +37,17 @@ namespace stdx {
     template<typename T>
     matrix_t<T> ones(size_t rows, size_t cols) {
         matrix_t<T> m(rows, cols);
-        m = T(1);
+        m = 1;
+        return m;
+    }
+
+    template<typename T>
+    matrix_t<T> identity(size_t rows, size_t cols=-1) {
+        if (cols == -1) cols = rows;
+        size_t n = std::min(rows, cols);
+        matrix_t<T> m(rows, cols);
+        for (int i=0; i<n; ++i)
+            m [i,i]= 1;
         return m;
     }
 

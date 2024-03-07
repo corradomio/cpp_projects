@@ -5,23 +5,19 @@
 #ifndef STDX_VECTOR_H
 #define STDX_VECTOR_H
 
-#include "array.h"
+#include "../array.h"
 
-namespace stdx {
+namespace stdx::linalg {
 
     template<typename T> struct vector_t;
     template<typename T> struct matrix_t;
 
 
     template<typename T>
-    struct vector_t : public array_t<T> {
+    struct vector_t : public stdx::array_t<T> {
 
         void assign(const vector_t &that) {
             array_t<T>::assign(that);
-        }
-
-        vector_t clone() const {
-            return vector_t(self, true);
         }
 
         // ------------------------------------------------------------------
@@ -35,6 +31,14 @@ namespace stdx {
 
         // implicit conversion
         vector_t(const array_t<T> &v, bool clone): array_t<T>(v, clone){ }
+
+
+        // ------------------------------------------------------------------
+        // operations
+
+        vector_t clone() const { return vector_t(self, true); }
+
+        vector_t norefs() const { return  (self._info->refc == 1) ? self : self.clone(); }
 
         // ------------------------------------------------------------------
         // accessors

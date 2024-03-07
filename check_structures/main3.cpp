@@ -3,30 +3,35 @@
 //
 #include <iostream>
 #include <stdio.h>
-// #include "array.h"
-#include "vector.h"
-#include "matrix.h"
-#include "vector_op.h"
-#include "matrix_op.h"
-#include "dot_op.h"
-
+#include "stdx/linalg/vector.h"
+#include "stdx/linalg/matrix.h"
+#include "stdx/linalg/vector_op.h"
+#include "stdx/linalg/matrix_op.h"
+#include "stdx/linalg/dot_op.h"
+#include "stdx/linalg/print_op.h"
 
 using namespace stdx;
+using namespace stdx::linalg;
 
 int main() {
 
     vector_t<float> v1 = ones<float>(10);
     vector_t<float> v2 = ones<float>(10);
+    vector_t<float> v3 = ones<float>(5);
+    vector_t<float> v;
     matrix_t<float> m1 = ones<float>(10, 5);
     matrix_t<float> m2 = ones<float>(5, 10);
-    matrix_t<float> m3;
+    matrix_t<float> m;
 
-    std::cout << dot(v1, v2) << std::endl;
+    std::cout << stdx::linalg::dot<float>(v1, v2) << std::endl;
     std::cout << v1.dot(v2) << std::endl;
 
-    v2 = m1.dot(v1);
-    v2 = v1.dot(m1);
-    m3 = m1.dot(m2);
+    print(identity<float>(3));
+    print(identity<float>(3, 5));
+    print(identity<float>(5, 3));
+    v = m1.dot(v3); print(v);
+    v = v1.dot(m1); print(v);
+    m = m1.dot(m2); print(m);
 
 }
 

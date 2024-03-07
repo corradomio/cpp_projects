@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include "vector.h"
 
-namespace stdx {
+namespace stdx::linalg {
 
     // ----------------------------------------------------------------------
     // check

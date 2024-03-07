@@ -13,10 +13,18 @@ typedef real_t<4,3, uint8_t>  f43_t;
 
 int main() {
     float64_u  u;
-    u.f64 = float64_t(0,0,0-1);
+    u.f64 = float64_t(0,0,-1);
 
     float32_u v;
     v.f32 = u.f64;
+
+    v.flt = 1;
+
+    u.f64 = float64_t(0,float64_t::EBIAS, 0);
+    printf("%f\n", u.dbl);
+
+    u.f64 = float64_t(0,float64_t::EBIAS+1, 0);
+    printf("%f\n", u.dbl);
 
     return 0;
 }

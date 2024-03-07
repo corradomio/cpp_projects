@@ -3,23 +3,32 @@ project(check_structures)
 
 set(CMAKE_CXX_STANDARD 23)
 
+include_directories(
+    /libs/include
+)
+
+link_directories(
+    /libs/lib
+)
+
 add_executable(check_structures
-array.h
+        stdx/array.h
 main3.cpp
-        vector.h
-        vector_op.h
-        matrix_op.h
-    matrix.h
-    dot_op.h
+        stdx/linalg/vector.h
+        stdx/linalg/vector_op.h
+        stdx/linalg/matrix_op.h
+        stdx/linalg/matrix.h
+        stdx/linalg/dot_op.h
+        stdx/linalg/print_op.h
 )
 
 add_executable(test_structures
     tests/test_vec.cpp
-    array.h
-    vector.h
-    vector_op.h
-    matrix.h
-    matrix_op.h
+        stdx/array.h
+        stdx/linalg/vector.h
+        stdx/linalg/vector_op.h
+        stdx/linalg/matrix.h
+        stdx/linalg/matrix_op.h
 )
 
 
