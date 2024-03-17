@@ -13,7 +13,7 @@
 using namespace stdx;
 using namespace stdx::linalg;
 
-int main() {
+int main3() {
 
     vector_t<float> v1 = ones<float>(10);
     vector_t<float> v2 = ones<float>(10);
@@ -33,6 +33,7 @@ int main() {
     v = v1.dot(m1); print(v);
     m = m1.dot(m2); print(m);
 
+    return 0;
 }
 
 

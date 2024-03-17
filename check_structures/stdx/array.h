@@ -48,10 +48,8 @@ std::array           template < class T, size_t N > class array;
 
 #include <stdexcept>
 #include <cstddef>
-
-#ifndef self
-#define self (*this)
-# endif
+#include "language.h"
+#include "exceptions.h"
 
 #define MIN_ALLOC 16
 
@@ -59,11 +57,6 @@ namespace stdx {
 
     // ----------------------------------------------------------------------
     // exceptions
-
-    struct bad_dimensions : public std::runtime_error {
-        bad_dimensions(): std::runtime_error("Incompatible dimensions") {}
-    };
-
 
     // ----------------------------------------------------------------------
     // operations
@@ -126,20 +119,28 @@ namespace stdx {
         }
 
         void init(const array_t &that) {
-            // initi by refcount
+            // init by refcount
             self._info = that._info;
             self._data = that._data;
             self.add_ref();
         }
 
-        void insert(const T &s, size_t i) {
-            size_t n = _info->n;
-            if (i < 0) i = n+i;
-            for (size_t j=n; j>i; --j)
-                _data[j] = _data[j-1];
-            _data[i] = s;
-            _info->n++;
+        void assign(const array_t &that) {
+            // assign by refcount
+            that.add_ref();
+            self.release();
+            self._info = that._info;
+            self._data = that._data;
         }
+
+        // void insert(const T &s, size_t i) {
+        //     size_t n = _info->n;
+        //     if (i < 0) i = n+i;
+        //     for (size_t j=n; j>i; --j)
+        //         _data[j] = _data[j-1];
+        //     _data[i] = s;
+        //     _info->n++;
+        // }
 
         void fill(const T &s) {
             // init _data with s
@@ -152,14 +153,6 @@ namespace stdx {
             // THIS array can be shorter than 'a' NEVER longer
             size_t n=size();
             for (int i=0; i<n; ++i) _data[i] = a._data[i];
-        }
-
-        void assign(const array_t &that) {
-            // assign by refcount
-            that.add_ref();
-            self.release();
-            self._info = that._info;
-            self._data = that._data;
         }
 
     public:
@@ -186,7 +179,7 @@ namespace stdx {
         explicit array_t(size_t n): array_t(n, n) {}
         array_t(int c, int n) {
             alloc(c, n);
-            fill(T());
+            // fill(T());
         }
 
         /// Create an array by reference
@@ -231,7 +224,7 @@ namespace stdx {
         /// return a standalone pointer to the internal data.
         /// the data is clones if this object has a refc > 1
         /// otherwise it is removed from this object
-        T* detach() {
+        [[maybe_unused]] T* detach() {
             T* data;
 
             // 0) it is possible to detach the T[] from THIS object

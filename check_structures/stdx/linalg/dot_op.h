@@ -38,6 +38,12 @@ namespace stdx::linalg {
             throw bad_dimensions();
     }
 
+    template<typename T>
+    void check_trdot(const matrix_t<T> &m1, const matrix_t<T> &m2) {
+        if (m1.cols() != m1.cols())
+            throw bad_dimensions();
+    }
+
 }
 
 
@@ -67,9 +73,10 @@ namespace stdx::linalg {
 //
 // matrix_t/vector_t
 //
-//      dot(m, m)
-//      dot(m, v)
-//      dot(v, m)
+//      trdot(A, V) A^T.B
+//      dot(A, B)   A.B
+//      dot(M, v)   M.v
+//      dot(u, M)   u.M == M^T.u
 //
 
 namespace stdx::linalg {
@@ -128,6 +135,15 @@ namespace stdx::linalg {
             }
         }
         return r;
+    }
+
+    template<typename T>
+    matrix_t<T> trdot(const matrix_t<T>& m1, const matrix_t<T>& m2) {
+        check_trdot(m1, m2);
+        size_t nr = m1.rows();
+        size_t nc = m2.cols();
+        size_t nh = m1.cols();
+        matrix_t<T> r(nr, nc);
     }
 
 }

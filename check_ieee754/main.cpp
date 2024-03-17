@@ -10,8 +10,19 @@ typedef real_t<3,4, uint8_t>  f34_t;
 typedef real_t<2,5, uint8_t>  f25_t;
 typedef real_t<4,3, uint8_t>  f43_t;
 
-
 int main() {
+    float64_u f64, g64;
+
+    f64.f64 = float64_t{0,float64_t::EBIAS, 0};
+    g64.f64 = float64_t{0,float64_t::EBIAS, 1};
+
+    std::cout << g64.dbl - f64.dbl << std::endl;
+
+    return 0;
+}
+
+
+int main7() {
     float64_u  u;
     u.f64 = float64_t(0,0,-1);
 
@@ -31,8 +42,8 @@ int main() {
 
 
 int main6(){
-    float32_u f32,  g32;
-    float64_u f64;
+    float32_u f32, g32;
+    float64_u f64, g64;
 
     // f32 = float32_t(0,-1,0);
     // f64 = f32;
@@ -42,7 +53,12 @@ int main6(){
     f64.f64 = f32.f32;
     g32.f32 = f64.f64;
 
-    float64_u g64(1.40129846e-045);
+    g64.dbl = 1.40129846e-045;
+
+    f64.f64 = float64_t{0,float64_t::EBIAS, 0};
+    g64.f64 = float64_t{0,float64_t::EBIAS, 1};
+
+    std::cout << g64.dbl - f64.dbl << std::endl;
 
     return 0;
 }

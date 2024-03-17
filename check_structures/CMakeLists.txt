@@ -12,23 +12,48 @@ link_directories(
 )
 
 add_executable(check_structures
-        stdx/array.h
-main3.cpp
-        stdx/linalg/vector.h
-        stdx/linalg/vector_op.h
-        stdx/linalg/matrix_op.h
-        stdx/linalg/matrix.h
-        stdx/linalg/dot_op.h
-        stdx/linalg/print_op.h
+    main3.cpp
+    main4.cpp
+    stdx/array.h
+    stdx/exceptions.h
+    stdx/float64/vector.h
+    stdx/float64/vector.cpp
+    stdx/float64/vector_op.h
+    stdx/float64/vector_op.cpp
+    stdx/arith.h
+    stdx/float64/matrix.h
+    stdx/float64/array.cpp
+    stdx/float64/array.h
+    stdx/float64/array_op.cpp
+    stdx/float64/array_op.h
+    stdx/float64/matrix.cpp
+    stdx/float64/dot_op.h
+    stdx/float64/dot_op.cpp
+    stdx/float64/matrix_op.h
+    stdx/float64/matrix_op.cpp
+    stdx/float64/transpose.h
+    stdx/float64/transpose.cpp
 )
 
 add_executable(test_structures
-    tests/test_vec.cpp
-        stdx/array.h
-        stdx/linalg/vector.h
-        stdx/linalg/vector_op.h
-        stdx/linalg/matrix.h
-        stdx/linalg/matrix_op.h
+    stdx/array.h
+    stdx/exceptions.h
+    stdx/float64/vector.h
+    stdx/float64/vector.cpp
+    stdx/float64/vector_op.h
+    stdx/float64/vector_op.cpp
+    stdx/arith.h
+    stdx/float64/matrix.h
+    stdx/float64/array.cpp
+    stdx/float64/array.h
+    stdx/float64/array_op.cpp
+    stdx/float64/array_op.h
+    stdx/float64/matrix.cpp
+    stdx/float64/dot_op.h
+    stdx/float64/dot_op.cpp
+    stdx/float64/matrix_op.h
+    stdx/float64/matrix_op.cpp
+    tests/test_float64.cpp
 )
 
 
