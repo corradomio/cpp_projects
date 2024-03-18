@@ -13,18 +13,13 @@ namespace stdx::float64 {
     real_t   dot(const vector_t& u, const vector_t& v);       // u.v
     vector_t dot(const matrix_t& m, const vector_t& v);       // M.v
     vector_t dot(const vector_t& u, const matrix_t& m);       // u.M
-    matrix_t dot(const matrix_t& a, const matrix_t& b);       // A.B
 
-    // R = A.B
-    // R = A^T.B
-    // R = A.B^T
-    // R = A^T.B^T  not supported
+    // R = A.B | A^T.B | A.B^T | A^T.B^T  not supported
     void dot_eq(matrix_t& r, const matrix_t& a, const matrix_t& b, bool tra=false, bool trb=false);
+    void dot_eq(matrix_t& r, const matrix_t& a, const matrix_t& b, const matrix_t& c, bool tra=false, bool trb=false, bool trc=false);
+    matrix_t dot(const matrix_t& a, const matrix_t& b, bool tra=false, bool trb=false);
+    matrix_t dot(const matrix_t& a, const matrix_t& b, const matrix_t& c, bool tra, bool trb, bool trc);
 
-    // A^T.B
-    matrix_t tdot(const matrix_t& a, const matrix_t& b);
-    // A.B^T
-    matrix_t dott(const matrix_t& a, const matrix_t& b);
 
     // u x v
     matrix_t cross(const vector_t& u, const vector_t& v);

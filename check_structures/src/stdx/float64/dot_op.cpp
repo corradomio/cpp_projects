@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 08/03/2024.
 //
 
-#include "../exceptions.h"
-#include "dot_op.h"
+#include "stdx/exceptions.h"
+#include "stdx/float64/dot_op.h"
 
 namespace stdx::float64 {
 
@@ -56,47 +56,6 @@ namespace stdx::float64 {
     }
 
     // ----------------------------------------------------------------------
-
-    // A.B
-    matrix_t dot(const matrix_t& a, const matrix_t& b) {
-        // check_dot(a, b);
-        // if (a.cols() != b.rows()) throw bad_dimensions();
-        size_t nr = a.rows();
-        size_t nc = b.cols();
-        matrix_t res(nr, nc);
-        // size_t nk = a.cols();
-        //
-        // for(size_t i=0; i<nr; ++i) {
-        //     for (size_t j=0; j<nc; ++j) {
-        //         Float s=0;
-        //         size_t ik=i*nk;
-        //         size_t kj=j;
-        //         for(size_t k=0; k<nk; ++k) {
-        //             s += a[ik]*b[kj];
-        //             ik += 1;
-        //             kj += nc;
-        //         }
-        //         res[i, j] = s;
-        //     }
-        // }
-        // return res;
-        dot_eq(res, a, b, false, false);
-        return res;
-    }
-
-    // A^T.B
-    matrix_t tdot(const matrix_t& a, const matrix_t& b) {
-        matrix_t res(a.cols(), b.cols());
-        dot_eq(res, a, b, true, false);
-        return res;
-    }
-
-    // A.B^T
-    matrix_t dott(const matrix_t& a, const matrix_t& b) {
-        matrix_t res(a.rows(), b.rows());
-        dot_eq(res, a, b, false, true);
-        return res;
-    }
 
     // R = A.B | A^T.B | A.B^T
     void dot_eq(matrix_t& r, const matrix_t& a, const matrix_t& b, bool tra, bool trb) {
@@ -166,6 +125,30 @@ namespace stdx::float64 {
                 }
             }
         }
+    }
+
+    void dot_eq(matrix_t& r, const matrix_t& a, const matrix_t& b, const matrix_t& c, bool tra, bool trb, bool trc) {
+        matrix_t t = dot(b, c, trb, trc);
+        dot_eq(r, a, t, tra, false);
+    }
+
+    // A.B | A^T.B | A.B^T
+    matrix_t dot(const matrix_t& a, const matrix_t& b, bool tra, bool trb) {
+        size_t nr = tra ? a.cols() : a.rows();
+        size_t nc = trb ? b.rows() : b.cols();
+        matrix_t res(nr, nc);
+
+        dot_eq(res, a, b, tra, trb);
+        return res;
+    }
+
+    matrix_t dot(const matrix_t& a, const matrix_t& b, const matrix_t& c, bool tra, bool trb, bool trc) {
+        size_t nr = tra ? a.cols() : a.rows();
+        size_t nc = trc ? c.rows() : c.cols();
+        matrix_t res(nr, nc);
+
+        dot_eq(res, a, b, c, tra, trb, trc);
+        return res;
     }
 
     // ----------------------------------------------------------------------

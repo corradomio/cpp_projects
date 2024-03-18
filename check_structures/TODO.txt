@@ -1,0 +1,21 @@
+
+
+int main() {
+
+    stdx::ref::map<std::string, long> dict;
+
+    dict["ciccio"] = 10;
+    printf("%d\n", dict["ciccio"]);
+
+
+}
+
+
+int main32() {
+    options_t opts;
+    opts.set("iter", 1000L);
+    printf("%d\n", opts.get("iter", 10L));
+    printf("%g\n", opts.get("eps", 1.e-3));
+
+    return 0;
+}

@@ -6,7 +6,6 @@
 #define REFC_H
 
 #include <cstddef>
-#include <exception>
 
 namespace stdx {
 

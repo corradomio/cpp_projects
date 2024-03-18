@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 
 include_directories(
     /libs/include
+    ./include
 )
 
 link_directories(
@@ -12,47 +13,52 @@ link_directories(
 )
 
 add_executable(check_structures
-    main3.cpp
-    main4.cpp
-    stdx/array.h
-    stdx/exceptions.h
-    stdx/float64/vector.h
-    stdx/float64/vector.cpp
-    stdx/float64/vector_op.h
-    stdx/float64/vector_op.cpp
-    stdx/arith.h
-    stdx/float64/matrix.h
-    stdx/float64/array.cpp
-    stdx/float64/array.h
-    stdx/float64/array_op.cpp
-    stdx/float64/array_op.h
-    stdx/float64/matrix.cpp
-    stdx/float64/dot_op.h
-    stdx/float64/dot_op.cpp
-    stdx/float64/matrix_op.h
-    stdx/float64/matrix_op.cpp
-    stdx/float64/transpose.h
-    stdx/float64/transpose.cpp
+        include/stdx//exceptions.h
+        include/stdx//options.h
+        src/stdx/options.cpp
+        include/stdx//float64/vector.h
+        src/stdx/float64/vector.cpp
+        include/stdx//float64/vector_op.h
+        src/stdx/float64/vector_op.cpp
+        include/stdx//arith/arith.h
+        include/stdx//float64/matrix.h
+        src/stdx/float64/array.cpp
+        include/stdx//float64/array.h
+        src/stdx/float64/array_op.cpp
+        include/stdx//float64/array_op.h
+        src/stdx/float64/matrix.cpp
+        include/stdx//float64/dot_op.h
+        src/stdx/float64/dot_op.cpp
+        include/stdx//float64/matrix_op.h
+        src/stdx/float64/matrix_op.cpp
+        include/stdx//float64/transpose.h
+        src/stdx/float64/transpose.cpp
+        include/stdx//float64/matrix_factorization.h
+        src/stdx/float64/matrix_factorization.cpp
+        src/main5.cpp
+        include/stdx//ref/map.h
 )
 
 add_executable(test_structures
-    stdx/array.h
-    stdx/exceptions.h
-    stdx/float64/vector.h
-    stdx/float64/vector.cpp
-    stdx/float64/vector_op.h
-    stdx/float64/vector_op.cpp
-    stdx/arith.h
-    stdx/float64/matrix.h
-    stdx/float64/array.cpp
-    stdx/float64/array.h
-    stdx/float64/array_op.cpp
-    stdx/float64/array_op.h
-    stdx/float64/matrix.cpp
-    stdx/float64/dot_op.h
-    stdx/float64/dot_op.cpp
-    stdx/float64/matrix_op.h
-    stdx/float64/matrix_op.cpp
+        include/stdx//array.h
+        include/stdx//exceptions.h
+        include/stdx//options.h
+        src/stdx/options.cpp
+        include/stdx//float64/vector.h
+        src/stdx/float64/vector.cpp
+        include/stdx//float64/vector_op.h
+        src/stdx/float64/vector_op.cpp
+        include/stdx//arith/arith.h
+        include/stdx//float64/matrix.h
+        src/stdx/float64/array.cpp
+        include/stdx//float64/array.h
+        src/stdx/float64/array_op.cpp
+        include/stdx//float64/array_op.h
+        src/stdx/float64/matrix.cpp
+        include/stdx/float64/dot_op.h
+        src/stdx/float64/dot_op.cpp
+        include/stdx/float64/matrix_op.h
+        src/stdx/float64/matrix_op.cpp
     tests/test_float64.cpp
 )
 
@@ -60,6 +66,7 @@ add_executable(test_structures
 add_library(catch2_local
     catch2/catch_amalgamated.hpp
     catch2/catch_amalgamated.cpp
+        include/stdx/ref/map.h
 )
 
 

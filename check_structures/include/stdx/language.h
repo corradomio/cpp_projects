@@ -17,8 +17,8 @@
 #define elif else if
 #endif
 
-#ifndef raise
-#define raise throw
-# endif
+// #ifndef raise
+// #define raise throw
+// #endif
 
 #endif //STDX_LANGUAGE_H

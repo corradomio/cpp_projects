@@ -2,10 +2,10 @@
 // Created by Corrado Mio on 07/03/2024.
 //
 #include <iostream>
-#include "stdx/float64/vector_op.h"
-#include "stdx/float64/matrix_op.h"
-#include "stdx/float64/dot_op.h"
-#include "stdx/float64/transpose.h"
+#include "../include/stdx/float64/vector_op.h"
+#include "../include/stdx/float64/matrix_op.h"
+#include "../include/stdx/float64/dot_op.h"
+#include "../include/stdx/float64/transpose.h"
 
 #include <cmath>
 #include <iomanip>
@@ -14,7 +14,7 @@
 #include <random>
 #include <string>
 
-int main() {
+int main14() {
     std::random_device r;
     // initialize the seed
     std::default_random_engine e1(r());

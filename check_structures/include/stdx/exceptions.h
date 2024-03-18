@@ -9,6 +9,10 @@
 
 namespace stdx {
 
+    struct not_implemented: public std::runtime_error {
+        not_implemented(const std::string what): std::runtime_error(what) {}
+    };
+
     struct bad_dimensions : public std::runtime_error {
         bad_dimensions(): std::runtime_error("Incompatible dimensions") {}
     };

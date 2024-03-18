@@ -2,7 +2,7 @@
 // Created by Corrado Mio on 08/03/2024.
 //
 
-#include "array.h"
+#include "stdx/float64/array.h"
 
 namespace stdx::float64 {
 

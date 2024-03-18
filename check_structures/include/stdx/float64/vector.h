@@ -12,23 +12,6 @@ namespace stdx::float64 {
 
     struct vector_t;
 
-    // struct vector_it {
-    //     using iterator_category = std::forward_iterator_tag;
-    //     using difference_type   = std::ptrdiff_t;
-    //     using value_type        = Float;
-    //     using pointer           = Float*;  // or also value_type*
-    //     using reference         = Float&;  // or also value_type&
-    //
-    //     const vector_t& v;
-    //     size_t at;
-    //
-    //     vector_it(const vector_t& v, size_t at): v(v), at(at) { };
-    //     bool operator==(const vector_it& it) const { return self.at == it.at; }
-    //     bool operator!=(const vector_it& it) const { return self.at != it.at; }
-    //     vector_it& operator++() { ++at; return self; }
-    //     reference operator *() const; // { return v[at]; }
-    // };
-
     struct vector_t : public array_t {
         using super = array_t;
 
@@ -61,11 +44,7 @@ namespace stdx::float64 {
         // ------------------------------------------------------------------
         // Accessors
 
-        // Float& operator[](size_t i)       { return self.data[i]; }
-        real_t& operator[](size_t i) const {
-            // assert(i < self.size());
-            return self.data[i];
-        }
+        real_t& operator[](size_t i) const { return self.data[i]; }
 
         // ------------------------------------------------------------------
         // Iterator
