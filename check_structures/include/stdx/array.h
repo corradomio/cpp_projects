@@ -56,9 +56,6 @@ std::array           template < class T, size_t N > class array;
 namespace stdx {
 
     // ----------------------------------------------------------------------
-    // exceptions
-
-    // ----------------------------------------------------------------------
     // operations
 
     template<typename T> T neg(T x)      { return -x;    }

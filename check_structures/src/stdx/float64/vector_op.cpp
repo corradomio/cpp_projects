@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 08/03/2024.
 //
 #include <iostream>
-#include "stdx//float64/array_op.h"
-#include "stdx//float64/vector_op.h"
+#include "stdx/float64/array_op.h"
+#include "stdx/float64/vector_op.h"
 
 namespace stdx::float64 {
 

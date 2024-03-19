@@ -6,15 +6,19 @@
 #ifndef STDX_FLOAT64_ARITH_H
 #define STDX_FLOAT64_ARITH_H
 
-namespace stdx::arith {
+namespace stdx::float64 {
 
-    inline double neg(double x)           { return -x;    }
-    inline double  sq(double x)           { return x * x; }
-    inline double sum(double x, double y) { return x + y; }
-    inline double sub(double x, double y) { return x - y; }
-    inline double mul(double x, double y) { return x * y; }
-    inline double div(double x, double y) { return x / y; }
-    inline double eps(double x, int n=3) { return x*std::pow(2.,-16+n); }
+    typedef double real_t;
+
+    inline real_t neg(real_t x)             { return -x;    }
+    inline real_t  sq(real_t x)             { return x * x; }
+    inline real_t sum(real_t x, real_t y)   { return x + y; }
+    inline real_t sub(real_t x, real_t y)   { return x - y; }
+    inline real_t mul(real_t x, real_t y)   { return x * y; }
+    inline real_t div(real_t x, real_t y)   { return x / y; }
+    inline real_t sqsub(real_t x, real_t y) { return sq(x-y); }
+    inline real_t eps(real_t x, int n=3)    { return x*std::pow(2.,-16+n); }
+
 }
 
 #endif //STDX_FLOAT64_ARITH_H

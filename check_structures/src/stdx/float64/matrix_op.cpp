@@ -4,10 +4,10 @@
 #include <stdexcept>
 #include <iostream>
 #include <random>
-#include "stdx//exceptions.h"
+#include "stdx/exceptions.h"
 #include "stdx/float64/arith.h"
-#include "stdx//float64/array_op.h"
-#include "stdx//float64/matrix_op.h"
+#include "stdx/float64/array_op.h"
+#include "stdx/float64/matrix_op.h"
 
 namespace stdx::float64 {
 
@@ -113,7 +113,7 @@ namespace stdx::float64 {
             case 2:
                 // for (size_t i=0; i<n; ++i)
                 //     res += sq(m[i]);
-                res = reduce((array_t&)m, stdx::arith::sq);
+                res = reduce((array_t&)m, sq);
                 res = sqrt(res);
                 break;
             case -1:
@@ -128,18 +128,14 @@ namespace stdx::float64 {
     }
 
     real_t frobenius(const matrix_t& m) {
-        real_t frob = reduce((array_t&)m, stdx::arith::sq);
+        real_t frob = reduce((array_t&)m, sq);
         return std::sqrt(frob);
     }
 
     // ----------------------------------------------------------------------
 
-    real_t sqsum(real_t x, real_t y) {
-        return stdx::arith::sq(x-y);
-    }
-
     real_t frobenius(const matrix_t& a, const matrix_t& b) {
-        real_t frob = reduce((array_t&)a, sqsum, b);
+        real_t frob = reduce((array_t&)a, sqsub, b);
         return std::sqrt(frob);
     }
 
@@ -148,25 +144,25 @@ namespace stdx::float64 {
     void sum_eq(matrix_t& r, const matrix_t& a, const matrix_t& b) {
         check(r, a, b);
         apply_eq(static_cast<array_t&>(r),
-                 stdx::arith::sum, static_cast<const array_t&>(a), static_cast<const array_t&>(b));
+                 sum, static_cast<const array_t&>(a), static_cast<const array_t&>(b));
     }
 
     void sub_eq(matrix_t& r, const matrix_t& a, const matrix_t& b) {
         check(r, a, b);
         apply_eq(static_cast<array_t&>(r),
-                 stdx::arith::sub, static_cast<const array_t&>(a), static_cast<const array_t&>(b));
+                 sub, static_cast<const array_t&>(a), static_cast<const array_t&>(b));
     }
 
     void mul_eq(matrix_t& r, const matrix_t& a, const matrix_t& b) {
         check(r, a, b);
         apply_eq(static_cast<array_t&>(r),
-                 stdx::arith::mul, static_cast<const array_t&>(a), static_cast<const array_t&>(b));
+                 mul, static_cast<const array_t&>(a), static_cast<const array_t&>(b));
     }
 
     void div_eq(matrix_t& r, const matrix_t& a, const matrix_t& b) {
         check(r, a, b);
         apply_eq(static_cast<array_t&>(r),
-                 stdx::arith::div, static_cast<const array_t&>(a), static_cast<const array_t&>(b));
+                 div, static_cast<const array_t&>(a), static_cast<const array_t&>(b));
     }
 
     // ----------------------------------------------------------------------

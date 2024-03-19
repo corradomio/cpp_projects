@@ -8,11 +8,10 @@
 #include <cassert>
 #include "../language.h"
 #include "../exceptions.h"
+#include "arith.h"
 
 
 namespace stdx::float64 {
-
-    typedef double real_t;
 
     struct array_t {
 

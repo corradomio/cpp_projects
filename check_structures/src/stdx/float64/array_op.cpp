@@ -1,7 +1,7 @@
 //
 // Created by Corrado Mio on 08/03/2024.
 //
-#include "stdx//float64/array_op.h"
+#include "stdx/float64/array_op.h"
 
 namespace stdx::float64 {
 

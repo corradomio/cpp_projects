@@ -2,11 +2,11 @@
 // Created by Corrado Mio on 17/03/2024.
 //
 #include <cmath>
-#include "stdx//float64/dot_op.h"
-#include "stdx//float64/array_op.h"
-#include "stdx//float64/matrix_op.h"
+#include "stdx/float64/dot_op.h"
+#include "stdx/float64/array_op.h"
+#include "stdx/float64/matrix_op.h"
 #include "../../../_suspended/transpose.h"
-#include "stdx//float64/matrix_factorization.h"
+#include "stdx/float64/matrix_factorization.h"
 
 namespace stdx::float64 {
 
@@ -72,12 +72,12 @@ namespace stdx::float64 {
             div_eq(HQ, VHt, WHHt);
             mul_eq(W, W, HQ);
 
-            // err = frob(V - W.H)
-            dot_eq(WH, W, H);
-
             pre = err;
-            err = frobenius(V, WH);
             it += 1;
+
+            // err = frobenius(V - W.H)
+            dot_eq(WH, W, H);
+            err = frobenius(V, WH);
 
             if (verbose && it%10000 == 0)
                 printf("[%5zu] %.5g\n", it, err);
