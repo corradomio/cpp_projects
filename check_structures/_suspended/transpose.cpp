@@ -2,7 +2,7 @@
 // Created by Corrado Mio on 09/03/2024.
 //
 #include <iostream>
-#include "stdx//float64/transpose.h"
+#include "transpose.h"
 
 namespace stdx::float64 {
 

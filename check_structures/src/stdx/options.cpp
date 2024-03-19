@@ -66,36 +66,6 @@ namespace stdx {
 
     // ----------------------------------------------------------------------
 
-    // options_t& options_t::set(const std::string& name, bool value) {
-    //    auto* pv = new bool_value(value);
-    //    self.opts[name] = pv;
-    //    return self;
-    // }
-    //
-    // options_t& options_t::set(const std::string& name, int value) {
-    //     auto* pv = new long_value(value);
-    //     self.opts[name] = pv;
-    //     return self;
-    // }
-    //
-    // options_t& options_t::set(const std::string& name, long value) {
-    //     auto* pv = new long_value(value);
-    //     self.opts[name] = pv;
-    //     return self;
-    // }
-    //
-    // options_t& options_t::set(const std::string& name, double value) {
-    //     auto* pv = new double_value(value);
-    //     self.opts[name] = pv;
-    //     return self;
-    // }
-    //
-    // options_t& options_t::set(const std::string& name, const std::string& value) {
-    //     auto* pv = new string_value(value);
-    //     self.opts[name] = pv;
-    //     return self;
-    // }
-
     template<> options_t& options_t::set(const std::string& name, bool value) {
         auto* pv = new bool_value(value);
         self.opts[name] = pv;
@@ -134,40 +104,6 @@ namespace stdx {
 
     // --
 
-    // bool options_t::get(const std::string& name, bool defvalue) const {
-    //     if (!contains<std::string, value_t*>(self.opts, name))
-    //         return defvalue;
-    //     return self.opts.at(name)->get_bool();
-    // }
-    //
-    // int options_t::get(const std::string& name, int defvalue) const {
-    //     if (!contains<std::string, value_t*>(self.opts, name))
-    //         return defvalue;
-    //
-    //     return self.opts.at(name)->get_long();
-    // }
-    //
-    // long options_t::get(const std::string& name, long defvalue) const {
-    //     if (!contains<std::string, value_t*>(self.opts, name))
-    //         return defvalue;
-    //
-    //     return self.opts.at(name)->get_long();
-    // }
-    //
-    // double options_t::get(const std::string& name, double defvalue) const {
-    //     if (!contains<std::string, value_t*>(self.opts, name))
-    //         return defvalue;
-    //
-    //     return self.opts.at(name)->get_double();
-    // }
-    //
-    // const std::string& options_t::get(const std::string& name, const std::string& defvalue) const {
-    //     if (!contains<std::string, value_t*>(self.opts, name))
-    //         return defvalue;
-    //
-    //     return self.opts.at(name)->get_string();
-    // }
-
     template<> bool options_t::get(const std::string& name, bool defvalue) const {
         if (!contains<std::string, value_t*>(self.opts, name))
             return defvalue;
@@ -181,6 +117,12 @@ namespace stdx {
     }
 
     template<> long options_t::get(const std::string& name, long defvalue) const {
+        if (!contains<std::string, value_t*>(self.opts, name))
+            return defvalue;
+        return self.opts.at(name)->get_long();
+    }
+
+    template<> size_t options_t::get<size_t>(const std::string& name, size_t defvalue) const {
         if (!contains<std::string, value_t*>(self.opts, name))
             return defvalue;
         return self.opts.at(name)->get_long();
@@ -229,32 +171,6 @@ namespace stdx {
         std::string defval = defaults.get(name, std::string());
         return self.get(name, defval);
     }
-
-
-    // bool options_t::get_bool(const std::string& name, const options_t& defaults) const {
-    //     bool defval = defaults.get(name, false);
-    //     return self.get(name, defval);
-    // }
-    //
-    // long options_t::get_long(const std::string& name, const options_t& defaults) const {
-    //     long defval = defaults.get(name, 0L);
-    //     return self.get(name, defval);
-    // }
-    //
-    // int options_t::get_int(const std::string& name, const options_t& defaults) const {
-    //     long defval = defaults.get(name, 0L);
-    //     return self.get(name, defval);
-    // }
-    //
-    // double options_t::get_double(const std::string& name, const options_t& defaults) const {
-    //     double defval = defaults.get(name, 0.);
-    //     return self.get(name, defval);
-    // }
-    //
-    // const std::string& options_t::get_string(const std::string& name, const options_t& defaults) const {
-    //     const std::string& defval = defaults.get(name, std::string());
-    //     return self.get(name, defval);
-    // }
 
     // ----------------------------------------------------------------------
 

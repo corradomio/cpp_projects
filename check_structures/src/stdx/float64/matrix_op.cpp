@@ -5,7 +5,7 @@
 #include <iostream>
 #include <random>
 #include "stdx//exceptions.h"
-#include "stdx//arith/arith.h"
+#include "stdx/float64/arith.h"
 #include "stdx//float64/array_op.h"
 #include "stdx//float64/matrix_op.h"
 
@@ -192,6 +192,18 @@ namespace stdx::float64 {
     matrix_t div(const matrix_t& a, const matrix_t& b) {
         matrix_t r = matrix_t::like(a);
         div_eq(r, a, b);
+        return r;
+    }
+
+    // ----------------------------------------------------------------------
+
+    real_t chopf(real_t x, real_t eps) {
+        return (-eps <= x && x <= eps) ? 0. : x;
+    }
+
+    matrix_t chop(const matrix_t& m, real_t eps) {
+        matrix_t r(m, true);
+        apply_eq(r, chopf, eps);
         return r;
     }
 

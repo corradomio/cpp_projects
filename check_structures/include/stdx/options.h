@@ -30,7 +30,17 @@ namespace stdx {
 
     /// Options for complex functions
     /// Each option has a name and a primitive type.
-    /// Supported types are: bool, int, long, double, string
+    /// Supported types:
+    ///
+    ///     bool, int, long, double, string, size_t
+    ///
+    /// Initialization:
+    ///
+    ///     options_t().set(name1, value1).set(name2, vale2). ...
+    ///
+    /// or
+    ///
+    ///     options_t()(name1, value1)(name2, vale2) ...
     ///
     class options_t {
     public:
@@ -42,36 +52,24 @@ namespace stdx {
         void clear();
         void assign(const options_t& opts);
     public:
-        options_t(){ }
+        options_t() = default;
         options_t(const options_t& opts) { assign(opts); }
         ~options_t() { clear(); }
-
-        // options_t& set(const std::string& name, bool value);
-        // options_t& set(const std::string& name, int value);
-        // options_t& set(const std::string& name, long value);
-        // options_t& set(const std::string& name, double value);
-        // options_t& set(const std::string& name, const std::string& value);
 
         template<typename T>
         options_t& set(const std::string& name, T value);
 
-        // bool       get(const std::string& name, bool defvalue) const;
-        // int        get(const std::string& name, int defvalue) const;
-        // long       get(const std::string& name, long defvalue) const;
-        // double     get(const std::string& name, double defvalue) const;
-        // const std::string& get(const std::string& name, const std::string& defvalue) const;
-
         template<typename T>
         T get(const std::string& name, T defvalue) const;
 
-        // bool        get_bool(  const std::string& name, const options_t& defaults) const;
-        // int         get_int(const std::string& name, const options_t& defaults) const;
-        // long        get_long(  const std::string& name, const options_t& defaults) const;
-        // double      get_double(const std::string& name, const options_t& defaults) const;
-        // const std::string& get_string(const std::string& name, const options_t& defaults) const;
-
         template<typename T>
         T get(const std::string& name, const options_t& defaults) const;
+
+        template<typename T>
+        options_t& operator()(const std::string& name, T value) {
+            set(name, value);
+            return self;
+        }
 
         options_t& operator =(const options_t& other) {
             clear();

@@ -41,6 +41,7 @@ namespace stdx::float64 {
     inline matrix_t operator * (const matrix_t& a, const matrix_t& b) { return mul(a, b); }
     inline matrix_t operator / (const matrix_t& a, const matrix_t& b) { return div(a, b); }
 
+    matrix_t chop(const matrix_t& m, real_t eps=1.e-8);
 
     void print(const matrix_t& m);
     void print_dim(const char* name, const matrix_t& m);

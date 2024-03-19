@@ -23,7 +23,7 @@ namespace stdx::float64 {
         };
 
         info_t* info;
-        real_t* data;
+        real_t* data;   // same as info->data
 
         void alloc(size_t n);
         void add_ref() const { self.info->refc++; }
@@ -40,9 +40,8 @@ namespace stdx::float64 {
         // ------------------------------------------------------------------
         // Constructors
 
-        array_t(size_t n);
+        explicit array_t(size_t n);
         array_t(const array_t& that, bool clone=false);
-
         ~array_t() { release(); }
 
         // ------------------------------------------------------------------
@@ -53,11 +52,7 @@ namespace stdx::float64 {
         // ------------------------------------------------------------------
         // Accessors
 
-        // Float& operator[](size_t i)       { return self.data[i]; }
-        real_t& operator[](size_t i) const {
-            // assert(i < self.size());
-            return self.data[i];
-        }
+        real_t& operator[](size_t i) const { return self.data[i]; }
 
     };
 

@@ -25,7 +25,7 @@ namespace stdx::float64 {
         // Constructors
 
         matrix_t(): matrix_t(0,0) { };
-        matrix_t(size_t n, size_t m, bool clone=false): super(n*m, clone), ncols(m) { };
+        matrix_t(size_t n, size_t m): super(n*m), ncols(m) { };
         // create by ref/copy
         matrix_t(const matrix_t& that, bool clone=false): super(that, clone), ncols(that.ncols) { }
         // create by ref + reshape
@@ -58,16 +58,9 @@ namespace stdx::float64 {
         // accessors
         // single index supported by 'array_t'
 
-        // Float& operator[](size_t i)       { return self.data[i]; }
-        real_t& operator[](size_t i) const {
-            // assert(i < self.size());
-            return self.data[i];
-        }
+        real_t& operator[](size_t i) const   { return self.data[i]; }
 
-        // Float& operator[](size_t i, size_t j)       { return self.data[i*self.ncols+j]; }
         real_t& operator[](size_t i, size_t j) const {
-            // assert(i < self.rows());
-            // assert(j < self.cols());
             return self.data[i*self.ncols+j];
         }
 

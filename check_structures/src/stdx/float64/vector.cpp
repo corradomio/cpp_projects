@@ -17,9 +17,9 @@ namespace stdx::float64 {
         array_t::fill(that);
     }
 
-    void vector_t::fill(real_t s) {
-        array_t::fill(s);
-    }
+    // void vector_t::fill(real_t s) {
+    //     array_t::fill(s);
+    // }
 
     vector_t& vector_t::operator=(const vector_t& that) {
         if (this == &that) {}
@@ -28,7 +28,7 @@ namespace stdx::float64 {
     }
 
     vector_t& vector_t::operator=(real_t s) {
-        fill(s);
+        super::fill(s);
         return self;
     }
 

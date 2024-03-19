@@ -56,6 +56,7 @@ namespace stdx::float64 {
     }
 
     // ----------------------------------------------------------------------
+    // A.B
 
     // R = A.B | A^T.B | A.B^T
     void dot_eq(matrix_t& r, const matrix_t& a, const matrix_t& b, bool tra, bool trb) {
@@ -127,11 +128,6 @@ namespace stdx::float64 {
         }
     }
 
-    void dot_eq(matrix_t& r, const matrix_t& a, const matrix_t& b, const matrix_t& c, bool tra, bool trb, bool trc) {
-        matrix_t t = dot(b, c, trb, trc);
-        dot_eq(r, a, t, tra, false);
-    }
-
     // A.B | A^T.B | A.B^T
     matrix_t dot(const matrix_t& a, const matrix_t& b, bool tra, bool trb) {
         size_t nr = tra ? a.cols() : a.rows();
@@ -142,14 +138,22 @@ namespace stdx::float64 {
         return res;
     }
 
-    matrix_t dot(const matrix_t& a, const matrix_t& b, const matrix_t& c, bool tra, bool trb, bool trc) {
-        size_t nr = tra ? a.cols() : a.rows();
-        size_t nc = trc ? c.rows() : c.cols();
-        matrix_t res(nr, nc);
+    // ----------------------------------------------------------------------
+    // A.B.C
 
-        dot_eq(res, a, b, c, tra, trb, trc);
-        return res;
-    }
+    // void dot_eq(matrix_t& r, const matrix_t& a, const matrix_t& b, const matrix_t& c, bool tra, bool trb, bool trc) {
+    //     matrix_t t = dot(b, c, trb, trc);
+    //     dot_eq(r, a, t, tra, false);
+    // }
+    //
+    // matrix_t dot(const matrix_t& a, const matrix_t& b, const matrix_t& c, bool tra, bool trb, bool trc) {
+    //     size_t nr = tra ? a.cols() : a.rows();
+    //     size_t nc = trc ? c.rows() : c.cols();
+    //     matrix_t res(nr, nc);
+    //
+    //     dot_eq(res, a, b, c, tra, trb, trc);
+    //     return res;
+    // }
 
     // ----------------------------------------------------------------------
 

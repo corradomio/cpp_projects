@@ -37,7 +37,7 @@ namespace stdx::float64 {
     }
 
     matrix_t& matrix_t::operator=(real_t s) {
-        array_t::fill(s);
+        super::fill(s);
         return self;
     }
 

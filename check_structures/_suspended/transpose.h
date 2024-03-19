@@ -5,7 +5,7 @@
 #ifndef STDX_FLOAT64_TRANSPOSE_H
 #define STDX_FLOAT64_TRANSPOSE_H
 
-#include "matrix.h"
+#include "stdx/float64/matrix.h"
 
 namespace stdx::float64 {
 

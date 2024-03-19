@@ -8,13 +8,13 @@
 #ifndef STDX_FLOA64_ARRAY_OP_H
 #define STDX_FLOA64_ARRAY_OP_H
 
-#include "../arith/arith.h"
+#include "arith.h"
 
 namespace stdx::float64 {
 
     void check(const array_t& u, const array_t& v);
 
-    //u = f(u)
+    // u = f(u)
     void apply_eq(array_t& u, real_t (*f)(real_t));
     // u = f(u, s)
     void apply_eq(array_t& u, real_t (*f)(real_t, real_t), real_t s);

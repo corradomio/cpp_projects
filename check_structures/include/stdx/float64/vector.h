@@ -2,10 +2,10 @@
 // Created by Corrado Mio on 07/03/2024.
 //
 
-#include "array.h"
-
 #ifndef STDX_FLOAT64_VECTOR_H
 #define STDX_FLOAT64_VECTOR_H
+
+#include "array.h"
 
 
 namespace stdx::float64 {
@@ -20,7 +20,7 @@ namespace stdx::float64 {
         // assign by ref
         void assign(const vector_t& that);
         // copy the content
-        void fill(real_t s);
+        // void fill(real_t s);
         void fill(const vector_t& that);
 
         // ------------------------------------------------------------------
