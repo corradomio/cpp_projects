@@ -48,7 +48,7 @@ namespace stdx::float64 {
 
     // ----------------------------------------------------------------------
 
-    real_t reduce(array_t& u, real_t (*f)(real_t)) {
+    real_t reduce(const array_t& u, real_t (*f)(real_t)) {
         real_t s = 0;
 
         size_t n = u.size();
@@ -57,7 +57,7 @@ namespace stdx::float64 {
         return s;
     }
 
-    real_t reduce(array_t& u, real_t (*f)(real_t, real_t), real_t s) {
+    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), real_t s) {
         real_t res = 0;
 
         size_t n = u.size();
@@ -66,14 +66,48 @@ namespace stdx::float64 {
         return res;
     }
 
-    real_t reduce(array_t& u, real_t (*f)(real_t, real_t), const array_t& v) {
-        check(u,v);
-        real_t res = 0;
+    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), const array_t& v,
+                  size_t n,
+                  size_t ou, size_t su,     // offset/skip u
+                  size_t ov, size_t sv) {   // offset/skip v
 
-        size_t n = u.size();
-        for(size_t i=0; i<n; ++i)
-            res += f(u[i], v[i]);
+        if ((ou+n*su-su) >= u.size() || (ov+n*sv-sv) >= v.size())
+            throw bad_dimensions();
+
+        real_t res = 0;
+        if (ou == 0 && su == 1 && ov == 0 && sv == 1) {
+            for(size_t i=0; i<n; ++i)
+                res += f(u[i], v[i]);
+        }
+        elif (su == 1 && sv == 1) {
+            for (size_t i=0,iu=ou,iv=ov; i<n; ++i,++iu,++iv)
+                res += f(u[iu], v[iv]);
+        }
+        elif (su == 1) {
+            for (size_t i=0,iu=ou,iv=ov; i<n; ++i,++iu,iv+=sv)
+                res += f(u[iu], v[iv]);
+        }
+        elif (sv == 1) {
+            for (size_t i=0,iu=ou,iv=ov; i<n; ++i,iu+=su,++iv)
+                res += f(u[iu], v[iv]);
+        }
+        else {
+            for (size_t i=0,iu=ou,iv=ov; i<n; ++i,iu+=su,iv+=sv)
+                res += f(u[iu], v[iv]);
+        }
+
         return res;
+    }
+
+    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), const array_t& v) {
+        // check(u,v);
+        // real_t res = 0;
+        //
+        // size_t n = u.size();
+        // for(size_t i=0; i<n; ++i)
+        //     res += f(u[i], v[i]);
+        // return res;
+        return reduce(u, f, v, u.size(), 0, 1, 0, 1);
     }
 
     // ----------------------------------------------------------------------

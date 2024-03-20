@@ -34,7 +34,9 @@ namespace stdx {
         bool value;
         bool_value(bool value): super(options_t::value_type::BOOL), value(value) { }
 
-        virtual bool get_bool() override { return self.value; }
+        virtual bool   get_bool()   override { return self.value; }
+        virtual long   get_long()   override { return self.value ? 1 : 0; }
+        virtual double get_double() override { return self.value ? 1. : 0.; }
     };
 
     struct long_value: public options_t::value_t {
@@ -44,6 +46,8 @@ namespace stdx {
         long_value(long value): super(options_t::value_type::LONG), value(value) { }
 
         virtual long get_long() override { return self.value; }
+        virtual bool get_bool() override { return self.value != 0; }
+
     };
 
     struct double_value: public options_t::value_t {
@@ -53,6 +57,8 @@ namespace stdx {
         double_value(double value): super(options_t::value_type::DOUBLE), value(value) { }
 
         virtual double get_double() override { return self.value; }
+        virtual bool   get_bool()   override { return self.value != 0; }
+
     };
 
     struct string_value: public options_t::value_t {

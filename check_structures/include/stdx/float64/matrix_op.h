@@ -43,6 +43,9 @@ namespace stdx::float64 {
 
     matrix_t chop(const matrix_t& m, real_t eps=1.e-8);
 
+    // transpose
+    matrix_t tr(const matrix_t& m);
+
     void print(const matrix_t& m);
     void print_dim(const char* name, const matrix_t& m);
 }

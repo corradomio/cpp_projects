@@ -13,7 +13,7 @@
 using namespace stdx;
 using namespace stdx::linalg;
 
-int main3() {
+int main31() {
 
     vector_t<float> v1 = ones<float>(10);
     vector_t<float> v2 = ones<float>(10);
@@ -37,7 +37,7 @@ int main3() {
 }
 
 
-int main2() {
+int main32() {
     printf("Hello Cruel World\n");
 
     vector_t<float> v(3);
@@ -113,7 +113,7 @@ int main2() {
     return 0;
 }
 
-int main1() {
+int main33() {
 
     array_t<float> a(100);
 

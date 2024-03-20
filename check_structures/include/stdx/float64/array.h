@@ -46,7 +46,10 @@ namespace stdx::float64 {
         // ------------------------------------------------------------------
         // Properties
 
+        /// n of elements in the array
         [[nodiscard]] size_t size() const { return self.info->n; }
+        /// pointer to the first element of the array
+        [[nodiscard]] real_t* values() const { return self.data; }
 
         // ------------------------------------------------------------------
         // Accessors

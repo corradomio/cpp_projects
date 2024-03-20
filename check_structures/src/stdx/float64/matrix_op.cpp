@@ -102,21 +102,20 @@ namespace stdx::float64 {
         size_t n = m.size();
         switch (p){
             case 0:
-                for (size_t i=0; i<n; ++i)
-                    if (m[i] != 0) res += 1;
+                // ||v||_0
+                res = reduce((array_t&)m, nozero);
                 break;
             case 1:
-                // for (size_t i=0; i<n; ++i)
-                //     res += abs(m[i]);
+                // ||v||_1
                 res = reduce((array_t&)m, abs);
                 break;
             case 2:
-                // for (size_t i=0; i<n; ++i)
-                //     res += sq(m[i]);
+                // ||v||_2
                 res = reduce((array_t&)m, sq);
                 res = sqrt(res);
                 break;
             case -1:
+                // ||v||_infinity
                 res = abs(m[0]);
                 for (size_t i=0; i<n; ++i)
                     if (abs(m[i]) > res) res = abs(m[i]);
@@ -127,12 +126,12 @@ namespace stdx::float64 {
         return res;
     }
 
+    // ----------------------------------------------------------------------
+
     real_t frobenius(const matrix_t& m) {
         real_t frob = reduce((array_t&)m, sq);
         return std::sqrt(frob);
     }
-
-    // ----------------------------------------------------------------------
 
     real_t frobenius(const matrix_t& a, const matrix_t& b) {
         real_t frob = reduce((array_t&)a, sqsub, b);
@@ -193,6 +192,28 @@ namespace stdx::float64 {
 
     // ----------------------------------------------------------------------
 
+    matrix_t tr(const matrix_t& m) {
+        size_t nr = m.rows();
+        size_t nc = m.cols();
+        matrix_t r(nc, nr);
+
+        size_t ri;
+        size_t mi = 0;
+        for (size_t i=0; i<nr; ++i) {
+            ri = i;
+            for (size_t j = 0; j < nc; ++j) {
+                // r[j, i] = m[i, j];
+                r[ri] = m[mi];
+                ri += nr;
+                mi += 1;
+            }
+        }
+
+        return r;
+    }
+
+    // ----------------------------------------------------------------------
+
     real_t chopf(real_t x, real_t eps) {
         return (-eps <= x && x <= eps) ? 0. : x;
     }
@@ -203,7 +224,7 @@ namespace stdx::float64 {
         return r;
     }
 
-    // ----------------------------------------------------------------------
+    // -----------------------------
 
     void print(const matrix_t& m) {
         size_t nr = m.rows();

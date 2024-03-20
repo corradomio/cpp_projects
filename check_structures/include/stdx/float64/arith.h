@@ -18,6 +18,7 @@ namespace stdx::float64 {
     inline real_t div(real_t x, real_t y)   { return x / y; }
     inline real_t sqsub(real_t x, real_t y) { return sq(x-y); }
     inline real_t eps(real_t x, int n=3)    { return x*std::pow(2.,-16+n); }
+    inline real_t nozero(real_t x)          { return (x != 0.) ? 1. : 0.; }
 
 }
 

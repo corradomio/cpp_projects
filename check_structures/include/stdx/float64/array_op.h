@@ -14,20 +14,29 @@ namespace stdx::float64 {
 
     void check(const array_t& u, const array_t& v);
 
-    // u = f(u)
+    // u[i] = f(u[i])
     void apply_eq(array_t& u, real_t (*f)(real_t));
-    // u = f(u, s)
+    // u[i] = f(u[i], s)
     void apply_eq(array_t& u, real_t (*f)(real_t, real_t), real_t s);
-    // u = f(u, v)
+    // u[i] = f(u[i], v[i])
     void apply_eq(array_t& u, real_t (*f)(real_t, real_t), const array_t& v);
-    // u = f(u, s, v)
+    // u[i] = f(u[i], s, v[i])
     void apply_eq(array_t& u, real_t (*f)(real_t, real_t, real_t), real_t s, const array_t& v);
-    // u = f(v, w);
+    // u[i] = f(v[i], w[i]);
     void apply_eq(array_t& u, real_t (*f)(real_t, real_t), const array_t& v, const array_t& w);
 
-    real_t reduce(array_t& u, real_t (*f)(real_t));
-    real_t reduce(array_t& u, real_t (*f)(real_t, real_t), real_t s);
-    real_t reduce(array_t& u, real_t (*f)(real_t, real_t), const array_t& v);
+    // sum(i, f(u[i]))
+    real_t reduce(const array_t& u, real_t (*f)(real_t));
+    // sum(i, f(u[i],s)
+    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), real_t s);
+    // sum(i, f(u[i],v[i]))
+    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), const array_t& v);
+
+    // sum(i, f(u[ou+i*su],v[ov+i*sv])
+    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), const array_t& v,
+                  size_t n,
+                  size_t ou, size_t su,     // offset/skip u
+                  size_t ov, size_t sv);    // offset/skip v
 
     real_t min(const array_t& v);
     real_t max(const array_t& v);

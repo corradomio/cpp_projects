@@ -14,7 +14,7 @@
 #include <random>
 #include <string>
 
-int main14() {
+int main41() {
     std::random_device r;
     // initialize the seed
     std::default_random_engine e1(r());
@@ -28,7 +28,7 @@ int main14() {
     return 0;
 }
 
-int main13()
+int main42()
 {
     // Seed with a real random value, if available
     std::random_device r;
@@ -58,7 +58,7 @@ int main13()
 
 using namespace stdx::float64;
 
-int main12() {
+int main143() {
     matrix_t A = range(5, 3);
     tr_t T = tr(A);
 
@@ -114,7 +114,7 @@ int main12() {
     return 0;
 }
 
-int main11() {
+int main44() {
     // vector_t u{10};
     vector_t v = range(10);
     matrix_t m{5,10};

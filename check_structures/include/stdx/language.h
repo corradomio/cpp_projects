@@ -21,4 +21,23 @@
 // #define raise throw
 // #endif
 
+
+/// cast the object of type 'T' to 'T::super&'
+/// where 'super' is defined as
+///
+///     class D : public A {
+///     public:
+///         using super = A;
+///         ...
+///     }
+///
+/// \tparam T
+/// \param object
+/// \return
+template<typename T>
+typename T::super& up_cast(T& elem) {
+    return reinterpret_cast<typename T::super&>(elem);
+}
+
+
 #endif //STDX_LANGUAGE_H

@@ -1,14 +1,18 @@
-#include <iostream>
-#include "cerebras.h"
+extern "C" int printf (const char *, ...);
 
-using namespace cerebras;
+class a {
+public:
+    void sub (int i)
+    {
+        printf ("__FUNCTION__ = %s\n", __FUNCTION__);
+        printf ("__PRETTY_FUNCTION__ = %s\n", __PRETTY_FUNCTION__);
+    }
+};
 
-int main() {
-    color red = get_color(7);
-    data_task_id red_task_id = get_data_task_id(red);
-
-    f32 result = 0.0;
-
-    std::cout << "Hello, World!" << std::endl;
+int
+main (void)
+{
+    a ax;
+    ax.sub (0);
     return 0;
 }
