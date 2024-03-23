@@ -2,10 +2,10 @@
 // Created by Corrado Mio on 07/03/2024.
 //
 #include <iostream>
-#include "../include/stdx/float64/vector_op.h"
-#include "../include/stdx/float64/matrix_op.h"
-#include "../include/stdx/float64/dot_op.h"
-#include "../_suspended/transpose.h"
+#include "stdx/float64/vector_op.h"
+#include "stdx/float64/matrix_op.h"
+#include "stdx/float64/dot_op.h"
+#include "transpose.h"
 
 #include <cmath>
 #include <iomanip>

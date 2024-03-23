@@ -53,7 +53,6 @@ namespace stdx {
         bad_dimensions(): std::runtime_error("Incompatible dimensions") {}
     };
 
-
 }
 
 #endif //STDX_EXCEPTIONS_H

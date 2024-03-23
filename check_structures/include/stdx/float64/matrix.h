@@ -45,7 +45,7 @@ namespace stdx::float64 {
         // References
 
         [[nodiscard]] matrix_t  clone() const { return {self, true}; }
-        [[nodiscard]] matrix_t norefs() const { return self.info->refc==1 ? self : self.clone(); }
+        [[nodiscard]] matrix_t norefs() const { return self._info->refc == 1 ? self : self.clone(); }
         [[nodiscard]] matrix_t reshape(size_t n, size_t m);
 
         // ------------------------------------------------------------------
@@ -58,10 +58,10 @@ namespace stdx::float64 {
         // accessors
         // single index supported by 'array_t'
 
-        real_t& operator[](size_t i) const   { return self.data[i]; }
+        real_t& operator[](size_t i) const   { return self._data[i]; }
 
         real_t& operator[](size_t i, size_t j) const {
-            return self.data[i*self.ncols+j];
+            return self._data[i * self.ncols + j];
         }
 
         // ------------------------------------------------------------------

@@ -9,33 +9,33 @@ namespace stdx::float64 {
     // ----------------------------------------------------------------------
 
     void array_t::alloc(size_t n) {
-        self.info = (info_t*)new char[sizeof(info_t) + n*sizeof(real_t)];
-        self.info->refc = 1;
-        self.info->n = n;
-        self.data = self.info->data;
+        self._info = (info_t*)new char[sizeof(info_t) + n * sizeof(real_t)];
+        self._info->refc = 1;
+        self._info->n = n;
+        self._data = self._info->data;
     }
 
     void array_t::fill(real_t s) {
         size_t n=self.size();
-        for(size_t i=0; i<n; ++i) self.data[i] = s;
+        for(size_t i=0; i<n; ++i) self._data[i] = s;
     }
 
     void array_t::init(const array_t& that) {
-        self.info = that.info;
-        self.data = that.data;
+        self._info = that._info;
+        self._data = that._data;
         self.add_ref();
     }
 
     void array_t::assign(const array_t& that) {
         that.add_ref();
         self.release();
-        self.info = that.info;
-        self.data = that.data;
+        self._info = that._info;
+        self._data = that._data;
     }
 
     void array_t::fill(const array_t& that) {
         size_t n = self.size();
-        for(size_t i=0; i<n; ++i) self.data[i] = that.data[i];
+        for(size_t i=0; i<n; ++i) self._data[i] = that._data[i];
     }
 
     // ----------------------------------------------------------------------

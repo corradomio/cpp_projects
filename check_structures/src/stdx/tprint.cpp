@@ -3,11 +3,11 @@
 //
 #include <stdio.h>
 #include <time.h>
-#include "stdx/tprintf.h"
+#include "stdx/tprint.h"
 
 namespace stdx {
 
-    void tprintf() {
+    void tprint() {
         time_t t = time(nullptr);
         tm *lt = localtime(&t);
         printf("[%02d:%02d:%02d] ", lt->tm_hour, lt->tm_min, lt->tm_sec);

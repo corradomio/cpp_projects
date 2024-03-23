@@ -33,7 +33,7 @@ namespace stdx::float64 {
         // References
 
         [[nodiscard]] vector_t  clone() const { return {self, true}; }
-        [[nodiscard]] vector_t norefs() const { return self.info->refc==1 ? self : self.clone(); }
+        [[nodiscard]] vector_t norefs() const { return self._info->refc == 1 ? self : self.clone(); }
 
         // ------------------------------------------------------------------
         // Assignment
@@ -44,7 +44,7 @@ namespace stdx::float64 {
         // ------------------------------------------------------------------
         // Accessors
 
-        real_t& operator[](size_t i) const { return self.data[i]; }
+        real_t& operator[](size_t i) const { return self._data[i]; }
 
         // ------------------------------------------------------------------
         // Iterator

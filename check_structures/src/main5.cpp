@@ -3,12 +3,7 @@
 //
 #include <tuple>
 #include "stdx/options.h"
-#include "stdx/float64/vector.h"
-#include "stdx/float64/vector_op.h"
-#include "stdx/float64/matrix.h"
-#include "stdx/float64/matrix_op.h"
-#include "stdx/float64/dot_op.h"
-#include "stdx/float64/nmf.h"
+#include "stdx/float64/linalg.h"
 
 using namespace stdx;
 using namespace stdx::float64;
@@ -38,7 +33,7 @@ int main52() {
 }
 
 
-int main() {
+int main51() {
 
     // matrix_t V = uniform(10, 5, 0., 10.);
     // print(V);

@@ -9,7 +9,6 @@ include_directories(
 link_directories(
     "/libs/lib"
     "D:/Programming/mkl/lib"
-    "D:/Programming/mkl/bin"
 )
 
 set(CMAKE_CXX_STANDARD 14)

@@ -65,9 +65,11 @@ namespace stdx::float64 {
 
     void print(const vector_t& v) {
         size_t n = v.size();
-        std::cout << "[ ";
-        for(int i=0; i<n; ++i)
-            std::cout << v[i] << " ";
-        std::cout << "]" << std::endl;
+        std::cout << "{ ";
+        if (n>0)
+            std::cout << v[0];
+        for(int i=1; i<n; ++i)
+            std::cout << ", " << v[i];
+        std::cout << " }" << std::endl;
     }
 }

@@ -230,14 +230,16 @@ namespace stdx::float64 {
         size_t nr = m.rows();
         size_t nc = m.cols();
 
-        std::cout << "[" << std::endl;
+        std::cout << "{" << std::endl;
         for(int i=0; i<nr; ++i) {
-            std::cout << "  [ ";
-            for(int j=0; j<nc; ++j)
-                std::cout << m[i, j] << " ";
-            std::cout << "]" << std::endl;
+            std::cout << "  { ";
+            if (nc > 0)
+                std::cout << m[i, 0];
+            for(int j=1; j<nc; ++j)
+                std::cout << ", " << m[i, j];
+            std::cout << " }," << std::endl;
         }
-        std::cout << "]" << std::endl;
+        std::cout << "}" << std::endl;
     }
 
     void print_dim(const char* name, const matrix_t& m) {

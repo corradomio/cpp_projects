@@ -21,12 +21,12 @@ namespace stdx::float64 {
             real_t data[0];
         };
 
-        info_t* info;
-        real_t* data;   // same as info->data
+        info_t* _info;
+        real_t* _data;   // same as info->data
 
         void alloc(size_t n);
-        void add_ref() const { self.info->refc++; }
-        void release() const { if (0 == --self.info->refc) delete (char*)self.info; }
+        void add_ref() const { self._info->refc++; }
+        void release() const { if (0 == --self._info->refc) delete (char*)self._info; }
 
         // create by ref
         void init(const array_t& that);
@@ -47,14 +47,14 @@ namespace stdx::float64 {
         // Properties
 
         /// n of elements in the array
-        [[nodiscard]] size_t size() const { return self.info->n; }
+        [[nodiscard]] size_t size() const { return self._info->n; }
         /// pointer to the first element of the array
-        [[nodiscard]] real_t* values() const { return self.data; }
+        [[nodiscard]] real_t* data() const { return self._data; }
 
         // ------------------------------------------------------------------
         // Accessors
 
-        real_t& operator[](size_t i) const { return self.data[i]; }
+        real_t& operator[](size_t i) const { return self._data[i]; }
 
     };
 
