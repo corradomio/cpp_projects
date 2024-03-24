@@ -31,10 +31,6 @@ namespace stdx::float64 {
         // create by ref + reshape
         matrix_t(const matrix_t& that, size_t ncols): super(that, false), ncols(ncols) { }
 
-        static inline matrix_t like(const matrix_t& m) {
-            return { m.rows(), m.cols() };
-        }
-
         // ------------------------------------------------------------------
         // Properties
 

@@ -24,7 +24,9 @@ add_executable(check_cublas main1.cpp
     cuda/array.cpp
     cuda/cublaserr.cpp
     cuda/dot_op.h
-    cuda/dot_op.cpp)
+    cuda/dot_op.cpp
+    cuda/nmf.h
+    cuda/nmf.cpp)
 
 target_link_libraries(check_cublas
     cublas64_12

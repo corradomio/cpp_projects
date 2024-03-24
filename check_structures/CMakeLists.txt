@@ -14,6 +14,7 @@ link_directories(
     "D:/MinGW/libs/mkl/lib"
 )
 
+
 add_executable(check_structures
     include/stdx/exceptions.h
     include/stdx/float64/arith.h
@@ -65,7 +66,6 @@ add_executable(test_structures
     tests/test_float64.cpp
 )
 
-
 add_executable(check_mkl
     include/stdx/exceptions.h
     include/stdx/float64/arith.h
@@ -107,7 +107,6 @@ target_link_libraries(check_structures
     openblas
 )
 
-
 target_link_libraries(check_mkl
     mkl_core
     mkl_intel_thread
@@ -116,3 +115,4 @@ target_link_libraries(check_mkl
 #    mkl_intel_ilp64
 #    mkl_intel_lp64
 )
+

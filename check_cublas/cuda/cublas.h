@@ -3,24 +3,17 @@
 //
 // cuBLAS library uses column-major storage, and 1-based indexing
 
-#ifndef CHECK_CUBLAS_CUBLAS_H
-#define CHECK_CUBLAS_CUBLAS_H
+#ifndef CUDA_CUBLAS_H
+#define CUDA_CUBLAS_H
 
 #include <exception>
 #include <stdexcept>
 #include <map>
+#include "language.h"
 
 #undef __cdecl
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
-
-#ifndef self
-#define self (*this)
-#endif
-
-#ifndef elif
-#define elif else if
-#endif
 
 
 namespace cuda {
@@ -106,8 +99,8 @@ namespace cuda {
 
     struct array_t {
         struct info_t {
-            size_t refc;
-            size_t size;
+            size_t   refc;
+            size_t   size;
             device_t dev;
             layout_t lay;
 
@@ -160,6 +153,7 @@ namespace cuda {
     vector_t  ones(size_t n);
     vector_t range(size_t n);
     vector_t uniform(size_t n, real_t min=0, real_t max=1);
+    vector_t like(const vector_t& v);
 
     void print(const vector_t& m);
 
@@ -182,9 +176,9 @@ namespace cuda {
         [[nodiscard]] size_t rows() const { return self.size()/self.ncols; }
         [[nodiscard]] size_t cols() const { return self.ncols; }
 
-        matrix_t& to(device_t dev);// { super::to_dev(dev); return self; }
+        matrix_t& to(device_t dev);
         matrix_t& layout(layout_t l);
-        layout_t layout() const { return self._info->lay; }
+        layout_t  layout() const { return self._info->lay; }
 
         matrix_t& operator =(const matrix_t& that) {
             that.add_ref();
@@ -219,6 +213,9 @@ namespace cuda {
     matrix_t identity(size_t rows, size_t cols=-1);
     matrix_t uniform(size_t rows, size_t cols, real_t min=0, real_t max=1);
 
+    matrix_t zeros_like(const matrix_t& m) { return zeros(m.rows(), m.cols()).to(m.dev()); }
+    matrix_t like(const matrix_t& m);
+
     void print(const matrix_t& m);
 
     // ----------------------------------------------------------------------
@@ -227,4 +224,4 @@ namespace cuda {
 
 }
 
-#endif //CHECK_CUBLAS_CUBLAS_H
+#endif //CUDA_CUBLAS_H

@@ -16,6 +16,10 @@ namespace stdx::float64 {
     matrix_t uniform(size_t nr, size_t nc, real_t min=0, real_t max=1);
     matrix_t zeros_like(const matrix_t& m);
 
+    inline matrix_t like(const matrix_t& m) {
+        return matrix_t{ m.rows(), m.cols() };
+    }
+
     bool operator == (const matrix_t& a, const matrix_t& b);
 
     real_t min(const matrix_t& m);

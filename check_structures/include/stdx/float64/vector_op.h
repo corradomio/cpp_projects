@@ -17,6 +17,10 @@ namespace stdx::float64 {
     vector_t uniform(size_t n, real_t min=0., real_t max=1.);
     vector_t zeros_like(const vector_t& v);
 
+    inline vector_t like(const vector_t& v) {
+        return vector_t{ v.size() };
+    }
+
     bool operator == (const vector_t& u, const vector_t& v);
 
     real_t min(const vector_t& v);

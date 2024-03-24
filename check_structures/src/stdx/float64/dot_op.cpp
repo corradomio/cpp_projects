@@ -5,6 +5,7 @@
 #include <openblas/cblas.h>
 #include "stdx/exceptions.h"
 #include "stdx/float64/array_op.h"
+#include "stdx/float64/matrix_op.h"
 #include "stdx/float64/dot_op.h"
 
 namespace stdx::float64 {
@@ -226,7 +227,7 @@ namespace stdx::float64 {
     }
 
     matrix_t ddot(const matrix_t& m, const vector_t& v, bool tr) {
-        matrix_t r = matrix_t::like(m);
+        matrix_t r = like(m);
         ddot_eq(r, m, v, tr);
         return r;
     }

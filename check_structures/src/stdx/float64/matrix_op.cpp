@@ -167,25 +167,25 @@ namespace stdx::float64 {
     // ----------------------------------------------------------------------
 
     matrix_t sum(const matrix_t& a, const matrix_t& b) {
-        matrix_t r = matrix_t::like(a);
+        matrix_t r = like(a);
         sum_eq(r, a, b);
         return r;
     }
 
     matrix_t sub(const matrix_t& a, const matrix_t& b) {
-        matrix_t r = matrix_t::like(a);
+        matrix_t r = like(a);
         sub_eq(r, a, b);
         return r;
     }
 
     matrix_t mul(const matrix_t& a, const matrix_t& b) {
-        matrix_t r = matrix_t::like(a);
+        matrix_t r = like(a);
         mul_eq(r, a, b);
         return r;
     }
 
     matrix_t div(const matrix_t& a, const matrix_t& b) {
-        matrix_t r = matrix_t::like(a);
+        matrix_t r = like(a);
         div_eq(r, a, b);
         return r;
     }

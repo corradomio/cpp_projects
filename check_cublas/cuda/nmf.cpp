@@ -1,13 +1,12 @@
 //
-// Created by Corrado Mio on 17/03/2024.
+// Created by Corrado Mio on 24/03/2024.
 //
-#include <cmath>
-#include "stdx/float64/dot_op.h"
-#include "stdx/float64/array_op.h"
-#include "stdx/float64/matrix_op.h"
-#include "stdx/float64/nmf.h"
 
-namespace stdx::float64 {
+#include "dot_op.h"
+#include "nmf.h"
+
+
+namespace cuda {
 
     // ----------------------------------------------------------------------
     // Non negative matrix factorization
@@ -15,9 +14,9 @@ namespace stdx::float64 {
     // https://en.wikipedia.org/wiki/Non-negative_matrix_factorization
 
     static stdx::options_t nmf_opts = stdx::options_t()
-            ("eps", 1.e-8)
-            ("niter", 1000)
-            ("verbose", 0);
+        ("eps", 1.e-8)
+        ("niter", 1000)
+        ("verbose", 0);
 
     std::tuple<matrix_t, matrix_t> nmf(const matrix_t& V, size_t k, const stdx::options_t& opts) {
         // V       =   W      .  H
@@ -33,7 +32,7 @@ namespace stdx::float64 {
         //
         // WH:   (10,5)
         //
-        auto eps   = opts.get<real_t>("eps", nmf_opts);
+        auto eps = opts.get<real_t>("eps", nmf_opts);
         auto niter = opts.get<size_t>("niter", nmf_opts);
         auto verbose = opts.get<size_t>("verbose", nmf_opts);
 
