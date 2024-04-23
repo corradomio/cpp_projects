@@ -19,5 +19,6 @@
 
 #include "dot_op.h"
 #include "nmf.h"
+#include "svd.h"
 
 #endif //STDX_FLOAT64_LINALG_H

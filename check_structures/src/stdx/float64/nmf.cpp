@@ -36,6 +36,7 @@ namespace stdx::float64 {
         auto eps   = opts.get<real_t>("eps", nmf_opts);
         auto niter = opts.get<size_t>("niter", nmf_opts);
         auto verbose = opts.get<size_t>("verbose", nmf_opts);
+        if (niter == 0) niter = 0x0FFFFFFFFFFFFFFFLL;
 
         size_t it = 0;
         real_t min_ = std::sqrt(min(V));

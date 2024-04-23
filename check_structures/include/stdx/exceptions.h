@@ -46,13 +46,19 @@
 namespace stdx {
 
     struct not_implemented: public std::runtime_error {
-        not_implemented(const std::string what): std::runtime_error(what) {}
+        not_implemented(): std::runtime_error("Not implemented") {}
+        explicit not_implemented(const std::string& what): std::runtime_error(what) {}
     };
 
     struct bad_dimensions : public std::runtime_error {
         bad_dimensions(): std::runtime_error("Incompatible dimensions") {}
+        explicit bad_dimensions(const std::string& what): std::runtime_error(what) {}
     };
 
+    struct unsupported_method : public std::runtime_error {
+        unsupported_method(): std::runtime_error("Unsupported method") {}
+        explicit unsupported_method(const std::string& what): std::runtime_error(what) {}
+    };
 }
 
 #endif //STDX_EXCEPTIONS_H

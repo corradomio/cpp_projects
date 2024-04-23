@@ -2,10 +2,10 @@
 // Created by Corrado Mio on 08/03/2024.
 //
 
-#include "array.h"
-
 #ifndef STDX_FLOAT64_MATRIX_H
 #define STDX_FLOAT64_MATRIX_H
+
+#include "array.h"
 
 namespace stdx::float64 {
 

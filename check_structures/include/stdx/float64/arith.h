@@ -16,7 +16,10 @@ namespace stdx::float64 {
     inline real_t sub(real_t x, real_t y)   { return x - y; }
     inline real_t mul(real_t x, real_t y)   { return x * y; }
     inline real_t div(real_t x, real_t y)   { return x / y; }
-    inline real_t sqsub(real_t x, real_t y) { return sq(x-y); }
+
+    inline real_t absub(real_t x, real_t y) { return std::abs(x-y); }   // |x-y|
+    inline real_t sqsub(real_t x, real_t y) { return sq(x-y); }         // (x-1)^2
+
     inline real_t eps(real_t x, int n=3)    { return x*std::pow(2.,-16+n); }
     inline real_t nozero(real_t x)          { return (x != 0.) ? 1. : 0.; }
 

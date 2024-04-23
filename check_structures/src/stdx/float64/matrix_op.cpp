@@ -103,16 +103,15 @@ namespace stdx::float64 {
         switch (p){
             case 0:
                 // ||v||_0
-                res = reduce((array_t&)m, nozero);
+                res = reduce(static_cast<const array_t&>(m), nozero);
                 break;
             case 1:
                 // ||v||_1
-                res = reduce((array_t&)m, abs);
+                res = reduce(static_cast<const array_t&>(m), abs);
                 break;
             case 2:
                 // ||v||_2
-                res = reduce((array_t&)m, sq);
-                res = sqrt(res);
+                res = sqrt(reduce(static_cast<const array_t&>(m), sq));
                 break;
             case -1:
                 // ||v||_infinity
@@ -139,6 +138,10 @@ namespace stdx::float64 {
     }
 
     // ----------------------------------------------------------------------
+
+    void neg_eq(matrix_t& r) {
+        apply_eq(static_cast<array_t&>(r), neg);
+    }
 
     void sum_eq(matrix_t& r, const matrix_t& a, const matrix_t& b) {
         check(r, a, b);

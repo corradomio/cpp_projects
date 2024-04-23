@@ -2,8 +2,8 @@
 // Created by Corrado Mio on 17/03/2024.
 //
 
-#ifndef STDX_FLOAT64_MATRIX_FACTORIZATION_H
-#define STDX_FLOAT64_MATRIX_FACTORIZATION_H
+#ifndef STDX_FLOAT64_NMF_H
+#define STDX_FLOAT64_NMF_H
 
 #include <tuple>
 #include "../options.h"
@@ -24,4 +24,4 @@ namespace stdx::float64 {
 
 }
 
-#endif //STDX_FLOAT64_MATRIX_FACTORIZATION_H
+#endif //STDX_FLOAT64_NMF_H

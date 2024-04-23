@@ -11,12 +11,14 @@
 using namespace stdx::float64;
 
 
-int main() {
+int main74() {
     matrix_t m1 = range(5,4);
     matrix_t m2 = range(4,5);
 
     matrix_t r = dot(m1, m2);
     print(r);
+
+    return 0;
 }
 
 
