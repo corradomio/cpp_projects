@@ -22,10 +22,10 @@ namespace stdx {
 
         value_t(value_type type): type(type) { }
 
-        virtual bool   get_bool()   { throw stdx::not_implemented("get_bool"); }
-        virtual long   get_long()   { throw stdx::not_implemented("get_long"); }
-        virtual double get_double() { throw stdx::not_implemented("get_double"); }
-        virtual const std::string& get_string() { throw stdx::not_implemented("get_string"); }
+        virtual bool   get_bool()   const { throw stdx::not_implemented("get_bool"); }
+        virtual long   get_long()   const { throw stdx::not_implemented("get_long"); }
+        virtual double get_double() const { throw stdx::not_implemented("get_double"); }
+        virtual const std::string get_string() const { throw stdx::not_implemented("get_string"); }
     };
 
     struct bool_value: public options_t::value_t {
@@ -34,9 +34,9 @@ namespace stdx {
         bool value;
         bool_value(bool value): super(options_t::value_type::BOOL), value(value) { }
 
-        virtual bool   get_bool()   override { return self.value; }
-        virtual long   get_long()   override { return self.value ? 1 : 0; }
-        virtual double get_double() override { return self.value ? 1. : 0.; }
+        virtual bool   get_bool()   const override { return self.value; }
+        virtual long   get_long()   const override { return self.value ? 1 : 0; }
+        virtual double get_double() const override { return self.value ? 1. : 0.; }
     };
 
     struct long_value: public options_t::value_t {
@@ -45,8 +45,8 @@ namespace stdx {
         long value;
         long_value(long value): super(options_t::value_type::LONG), value(value) { }
 
-        virtual long get_long() override { return self.value; }
-        virtual bool get_bool() override { return self.value != 0; }
+        virtual long get_long() const override { return self.value; }
+        virtual bool get_bool() const override { return self.value != 0; }
 
     };
 
@@ -56,18 +56,18 @@ namespace stdx {
         double value;
         double_value(double value): super(options_t::value_type::DOUBLE), value(value) { }
 
-        virtual double get_double() override { return self.value; }
-        virtual bool   get_bool()   override { return self.value != 0; }
+        virtual double get_double() const override { return self.value; }
+        virtual bool   get_bool()   const override { return self.value != 0; }
 
     };
 
     struct string_value: public options_t::value_t {
         typedef options_t::value_t super;
 
-        const std::string& value;
+        const std::string value;
         string_value(const std::string& value): super(options_t::value_type::STRING), value(value) { }
 
-        virtual const std::string& get_string() override { return self.value; }
+        virtual const std::string get_string() const override { return self.value; }
     };
 
     // ----------------------------------------------------------------------
@@ -183,12 +183,15 @@ namespace stdx {
     void options_t::clear() {
         for (auto it = self.opts.begin(); it != self.opts.end(); ++it) {
             value_t* pv = it->second;
+            it->second = nullptr;
             delete pv;
         }
         self.opts.clear();
     }
 
     void options_t::assign(const stdx::options_t &other) {
+        std::string  empty;
+
         for (auto it = other.opts.begin(); it != other.opts.end(); ++it) {
             switch(it->second->type) {
                 case options_t::value_type::BOOL:
@@ -201,7 +204,7 @@ namespace stdx {
                     self.set(it->first, other.get(it->first, 0.));
                     break;
                 case options_t::value_type::STRING:
-                    self.set(it->first, other.get(it->first, std::string()));
+                    self.set(it->first, other.get(it->first, empty));
                     break;
                 default:
                     throw stdx::not_implemented("option type");

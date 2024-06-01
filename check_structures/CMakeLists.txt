@@ -5,18 +5,20 @@ set(CMAKE_CXX_STANDARD 23)
 
 include_directories(
     /libs/include
+#    /libs/mkl/include
     ./include
-    "D:/MinGW/libs/mkl/include"
 )
 
 link_directories(
     /libs/lib
-    "D:/MinGW/libs/mkl/lib"
+#    libs/mkl/lib
 )
 
 
 add_executable(check_structures
+    include/stdx/options.h
     include/stdx/exceptions.h
+
     include/stdx/float64/arith.h
     include/stdx/float64/array.h
     include/stdx/float64/array_op.h
@@ -27,10 +29,10 @@ add_executable(check_structures
     include/stdx/float64/nmf.h
     include/stdx/float64/vector.h
     include/stdx/float64/vector_op.h
-    include/stdx/options.h
-    src/main5.cpp
-    src/main6.cpp
-    src/main7.cpp
+
+    src/stdx/options.cpp
+    src/stdx/tprint.cpp
+
     src/stdx/float64/array.cpp
     src/stdx/float64/array_op.cpp
     src/stdx/float64/dot_op.cpp
@@ -39,10 +41,13 @@ add_executable(check_structures
     src/stdx/float64/nmf.cpp
     src/stdx/float64/vector.cpp
     src/stdx/float64/vector_op.cpp
-    src/stdx/options.cpp
-    src/stdx/tprint.cpp
-    src/matrix8.cpp
     src/stdx/float64/svd.cpp
+
+#    src/main5.cpp
+#    src/main6.cpp
+#    src/main7.cpp
+    src/matrix8.cpp
+    src/stdx/float64/eigen.cpp
 )
 
 add_executable(test_structures

@@ -71,18 +71,16 @@ namespace stdx::float64 {
 
     // ----------------------------------------------------------------------
 
-    bool equals (const matrix_t& a, const matrix_t& b, real_t eps) {
+    bool operator == (const matrix_t& a, const matrix_t& b) {
         if (a.rows() != b.rows())
             return false;
         if (a.cols() != b.cols())
             return false;
 
         size_t n = a.size();
-        for (size_t i=0; i<n; ++i) {
-            real_t diff = a[i] - b[i];
-            if (diff < -eps || eps < diff)
+        for (size_t i=0; i<n; ++i)
+            if (a[i] != b[i])
                 return false;
-        }
 
         return true;
     }
@@ -250,7 +248,7 @@ namespace stdx::float64 {
         }
 
         // std::cout << lpar << std::endl;
-        printf("%s\n", lpar);
+        printf("%s", lpar);
         
         for(int i=0; i<nr; ++i) {
             // std::cout << "  " << lpar;

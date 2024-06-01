@@ -2,86 +2,69 @@
 // Created by Corrado Mio on 19/04/2024.
 //
 #include <cmath>
+#include <openblas/lapacke.h>
 #include "stdx/float64/dot_op.h"
 #include "stdx/float64/array_op.h"
 #include "stdx/float64/vector_op.h"
 #include "stdx/float64/matrix_op.h"
 #include "stdx/float64/svd.h"
 
+//
+//  s   float
+//  d   double
+//  c   complex<float>
+//  z   complex<double>
+//
+//  ge  general matrix
+//
+// LAPACKE: d<mtype><algo>
+
 
 namespace stdx::float64 {
 
-    static stdx::options_t svd_opts = stdx::options_t()
-            ("eps", 1.e-8)
-            ("niter", 1000)
-            ("method", "power")
-            ("verbose", 0);
+    // ----------------------------------------------------------------------
+    // Singular Value Decomposition
+    // ----------------------------------------------------------------------
+    // A: n,m
+    // U.D.V^T = svd(A)
+    // U: n, n
+    // D: n,m
+    // V: m,m
 
-    std::pair<real_t, vector_t> power_method(const matrix_t& m, const stdx::options_t& opts) {
-        auto eps   = opts.get<real_t>("eps", svd_opts);
-        auto niter = opts.get<size_t>("niter", svd_opts);
-        auto verbose = opts.get<size_t>("verbose", svd_opts);
-        if (niter == 0) niter = 0x0FFFFFFFFFFFFFFFLL;
+    static stdx::options_t svd_opts = stdx::options_t();
 
-        size_t it = 0;
-        vector_t u = uversor(m.cols(), -1., +1);
-        vector_t v = uversor(m.cols(), -1., +1);
+    std::tuple<matrix_t, vector_t, matrix_t> svd(const matrix_t &mat, const stdx::options_t &opts) {
+        matrix_t M(mat, true);
+        size_t m = M.rows();
+        size_t n = M.cols();
 
-        real_t   eval = 0;
-        vector_t evec;
+        matrix_t U(m, m);
+        vector_t D(n);
+        matrix_t Vt(n, n);
+        vector_t superb(std::min(m, n) - 1);
 
-        while(norm(u, v) > eps && it < niter) {
-            dot_eq(v, m, u);
-            eval = norm(v);
-            div_eq(v, eval);
-            evec = v.clone();
+        lapack_int lda = n, ldu = m, ldvt = n, info;
 
-            swap(u, v);
-        }
+        // matrix_layout: LAPACK_ROW_MAJOR (C) | LAPACK_COL_MAJOR (Fortran)
+        // jobu, jobvt:
+        //      A)LL         All left (or right) singular vectors are returned in supplied matrix U (or Vt).
+        //      C)OMPACT     The first min(m, n) singular vectors are returned in supplied matrix U (or Vt).
+        //      N)O_VECTORS  No singular vectors are computed.
+        //      O)VERWRITE   The first min(m, n) singular vectors are overwritten on the matrix A.
 
-        // return std::make_pair(eval, evec);
-        return std::make_pair(eval, u);
-    }
+        // lapack_int LAPACKE_dgesvd( int matrix_layout, char jobu, char jobvt,
+        //                            lapack_int m, lapack_int n, double* a,
+        //                            lapack_int lda, double* s, double* u, lapack_int ldu,
+        //                            double* vt, lapack_int ldvt, double* superb );
+        info = LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A',
+                              m, n,
+                              M.data(), lda,
+                              D.data(),
+                              U.data(), ldu,
+                              Vt.data(), ldvt,
+                              superb.data());
 
-    std::pair<real_t, vector_t> lanczos_method(const matrix_t& m, const stdx::options_t& opts) {
-        auto eps   = opts.get<real_t>("eps", svd_opts);
-        auto niter = opts.get<size_t>("niter", svd_opts);
-        auto verbose = opts.get<size_t>("verbose", svd_opts);
-        if (niter == 0) niter = 0x0FFFFFFFFFFFFFFFLL;
-
-        size_t it = 0;
-        real_t alpha, beta;
-        vector_t r(m.cols());
-        vector_t v = uversor(m.cols(), -1., +1);
-        vector_t u = dot(m, v);
-        vector_t w = div(u, norm(u));
-
-        vector_t evec;
-
-        while(norm(w, v) > eps && it < niter) {
-            alpha = dot(u, v);
-            linear_eq(r, u, -alpha, v);
-            beta = norm(r, 2);
-            div_eq(v, beta);
-            dot_eq(u, m, v);
-            linear_eq(u, u, -beta, v);
-        }
-
-        return std::make_pair(beta, v);
-    }
-
-    std::pair<real_t, vector_t> largest_eigenval(const matrix_t& m, const stdx::options_t& opts) {
-        if (m.rows() != m.cols())
-            throw bad_dimensions("not squared");
-
-        auto method = opts.get<std::string>("method", svd_opts);
-        if ("power" == method)
-            return power_method(m, opts);
-        elif ("lanczos" == method)
-            return lanczos_method(m, opts);
-
-        else
-            throw stdx::unsupported_method(method);
+        return std::make_tuple(U, D, Vt);
     }
 
 }

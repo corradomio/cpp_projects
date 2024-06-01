@@ -10,7 +10,7 @@
 using namespace stdx::float64;
 
 
-int main() {
+int main_mkl1() {
     printf("Hello cruel world\n");
     MKLVersion mkl_version;
     mkl_get_version(&mkl_version);

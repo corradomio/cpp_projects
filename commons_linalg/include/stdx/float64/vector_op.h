@@ -43,12 +43,9 @@ namespace stdx::float64 {
     inline vector_t div(const vector_t& u, const vector_t& v) { vector_t r(u.size()); div_eq(r, u, v); return r; }
 
     inline void neg_eq(vector_t& r) { apply_eq(r, neg); }
-    // inline void abs_eq(vector_t& r) { apply_eq(r, abs); }
     inline void mul_eq(vector_t& r, real_t s) { apply_eq(r, mul, s); }
     inline void div_eq(vector_t& r, real_t s) { apply_eq(r, div, s); }
 
-    inline vector_t neg(const vector_t& u) { vector_t r(u, true); neg_eq(r); return r; }
-    // inline vector_t abs(const vector_t& u, real_t s) { vector_t r(u, true); abs_eq(r); return r; }
     inline vector_t mul(const vector_t& u, real_t s) { vector_t r(u, true); apply_eq(r, mul, s); return r; }
     inline vector_t div(const vector_t& u, real_t s) { vector_t r(u, true); apply_eq(r, div, s); return r; }
 

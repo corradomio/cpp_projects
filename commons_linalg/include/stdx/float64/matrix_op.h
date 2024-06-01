@@ -20,10 +20,7 @@ namespace stdx::float64 {
         return matrix_t{ m.rows(), m.cols() };
     }
 
-    bool equals(const matrix_t& a, const matrix_t& b, real_t eps);
-    inline bool operator == (const matrix_t& a, const matrix_t& b) {
-        return equals(a, b, 0.0);
-    }
+    bool operator == (const matrix_t& a, const matrix_t& b);
 
     real_t min(const matrix_t& m);
     real_t max(const matrix_t& m);
@@ -44,8 +41,8 @@ namespace stdx::float64 {
     matrix_t mul(const matrix_t& a, const matrix_t& b);
     matrix_t div(const matrix_t& a, const matrix_t& b);
 
-    inline matrix_t operator + (const matrix_t& a) { matrix_t r(a, true);                return r; }
-    inline matrix_t operator - (const matrix_t& a) { matrix_t r(a, true); neg_eq(r); return r; }
+    inline matrix_t operator + (const matrix_t& a) { matrix_t r(a);                return r; }
+    inline matrix_t operator - (const matrix_t& a) { matrix_t r(a); neg_eq(r); return r; }
     inline matrix_t operator + (const matrix_t& a, const matrix_t& b) { return sum(a, b); }
     inline matrix_t operator - (const matrix_t& a, const matrix_t& b) { return sub(a, b); }
     inline matrix_t operator * (const matrix_t& a, const matrix_t& b) { return mul(a, b); }

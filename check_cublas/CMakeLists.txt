@@ -7,11 +7,11 @@ set(CMAKE_CXX_STANDARD 23)
 
 
 include_directories(
-    "D:/Programming/CUDA/v12.2/include"
+    "D:/Programming/CUDA/v12.4/include"
 )
 
 link_directories(
-    "D:/Programming/CUDA/v12.2/bin"
+    "D:/Programming/CUDA/v12.4/bin"
 )
 
 add_executable(check_cublas main1.cpp
