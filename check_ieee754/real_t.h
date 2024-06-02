@@ -10,7 +10,6 @@
 #define elif else if
 #endif
 
-
 #ifndef IEEE754_REAL_T_H
 #define IEEE754_REAL_T_H
 
@@ -131,12 +130,7 @@
 // normalize some definitions
 //
 
-typedef _Float16 __float16;             // supported
-typedef __bf16   __bfloat16;            // supported ?
-typedef float    __float32;             // compatibility
-typedef double   __float64;             // compatibility
-typedef          __int128 int128_t;     // compatibility
-typedef unsigned __int128 uint128_t;    // compatibility
+#include "intfloat.h"
 
 
 namespace ieee754 {
@@ -233,12 +227,12 @@ namespace ieee754 {
     // ----------------------------------------------------------------------
 
     typedef real_t<15,112, uint128_t> float128_t;
-    typedef real_t<11,52,uint64_t> float64_t;
-    typedef real_t< 8,23,uint32_t> float32_t;
-    typedef real_t< 8, 7,uint16_t> bfloat16_t;
-    typedef real_t< 5,10,uint16_t> float16_t;
-    typedef real_t< 5, 2,uint8_t > bfloat8_t;
-    typedef real_t< 4, 3,uint8_t > float8_t;
+    typedef real_t<11,52,uint64_t>    float64_t;
+    typedef real_t< 8,23,uint32_t>    float32_t;
+    typedef real_t< 8, 7,uint16_t>    bfloat16_t;
+    typedef real_t< 5,10,uint16_t>    float16_t;
+    typedef real_t< 5, 2,uint8_t >    bfloat8_t;
+    typedef real_t< 4, 3,uint8_t >    float8_t;
 
     // ----------------------------------------------------------------------
     // union types used in conversions

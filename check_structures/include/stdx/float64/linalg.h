@@ -5,7 +5,7 @@
 #ifndef STDX_FLOAT64_LINALG_H
 #define STDX_FLOAT64_LINALG_H
 
-#include "../language.h"
+#include "../../language.h"
 #include "../exceptions.h"
 #include "../options.h"
 

@@ -1,30 +1,26 @@
-cmake_minimum_required(VERSION 3.16)
-project(check_cuda CUDA)
+cmake_minimum_required(VERSION 3.28)
+project(check_cuda)
 
-set(CMAKE_CUDA_STANDARD 17)
 
 include_directories(
-    deps
+    /libs/include
+    "D:/Programming/CUDA/v12.4/include"
 )
 
 link_directories(
-    deps
+    /libs/lib
+    "D:/Programming/CUDA/v12.4/bin"
 )
 
-add_executable(check_cuda
-#    main.cu
-    main2.cu
-#    main3.cu
-    cugraph.h
-)
 
-set_target_properties(
-    check_cuda
-    PROPERTIES
-    CUDA_SEPARABLE_COMPILATION ON
-)
+set(CMAKE_CXX_STANDARD 17)
+
+add_executable(check_cuda main.cpp
+    cudacpp.h
+    cudacpp.cpp)
+
 
 target_link_libraries(check_cuda
-    igraph
-    curand
+#    cudart64_12
+    nvcuda
 )
