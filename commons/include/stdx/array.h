@@ -93,14 +93,14 @@ namespace stdx {
     /// \tparam T
     template<typename T>
     struct array_t {
-
-        detail::info_t *_info;
+        // DOESN'T change the order!
         T *_data;
+        detail::info_t *_info;
 
-        void add_ref() const { _info->refc++; }
-        void release() { if (0 == --_info->refc) {
-            delete   _info;
-            delete[] _data;
+        void add_ref() const { self._info->refc++; }
+        void release() { if (0 == --self._info->refc) {
+            delete[] self._data;
+            delete   self._info;
         }}
 
         void alloc(size_t c, size_t n) {
@@ -110,9 +110,9 @@ namespace stdx {
             size_t d = c % MIN_ALLOC;
             c = c + (d ? (MIN_ALLOC - d) : 0);
 
-            _info = new detail::info_t(c, n);
-            _data = new T[c];
-            add_ref();
+            self._info = new detail::info_t(c, n);
+            self._data = new T[c];
+            self.add_ref();
         }
 
         void init(const array_t &that) {
@@ -142,14 +142,16 @@ namespace stdx {
         void fill(const T &s) {
             // init _data with s
             size_t n=size();
-            for (int i=0; i<n; ++i) _data[i] = s;
+            for (int i=0; i<n; ++i) self._data[i] = s;
         }
 
-        void fill(const array_t &a) {
+        void copy(const array_t &a) {
             // init _data with the content of a
             // THIS array can be shorter than 'a' NEVER longer
-            size_t n=size();
-            for (int i=0; i<n; ++i) _data[i] = a._data[i];
+            // size_t n=size();
+            // for (int i=0; i<n; ++i) _data[i] = a._data[i];
+            size_t n = self._info->n;
+            memcpy(self._data, a._data, n*sizeof(T));
         }
 
     public:
@@ -172,7 +174,7 @@ namespace stdx {
         array_t(): array_t(0, 0){ }
 
         /// Create an array with the specified max_size and size.
-        /// If 'n' is -1, size and max_size will be the same
+        /// If 'n' is -1, size and capacity/max_size will be the same
         explicit array_t(size_t n): array_t(n, n) {}
         array_t(int c, int n) {
             alloc(c, n);
@@ -184,8 +186,9 @@ namespace stdx {
         /// Create an array by cloning
         array_t(const array_t &that, bool clone) {
             if (clone) {
-                alloc(that.size(), that.size());
-                fill(that);
+                size_t n = that._info->n;
+                alloc(n, n);
+                copy(that);
             }
             else {
                 init(that);
@@ -202,20 +205,20 @@ namespace stdx {
 
         /// Ensure that the array has a single reference.
         /// If it has multiple references, it is cloned
-        array_t norefs() const { return (_info->refc == 1) ? self : self.clone(); }
+        array_t norefs() const { return (self._info->refc == 1) ? self : self.clone(); }
 
         // ------------------------------------------------------------------
         // properties
 
         /// array size, n of elements (<= capacity)
-        [[nodiscard]] size_t size()     const { return _info->n; }
+        [[nodiscard]] size_t size()     const { return self._info->n; }
         /// array max_size/capacity
-        [[nodiscard]] size_t max_size() const { return _info->c; }
+        [[nodiscard]] size_t max_size() const { return self._info->c; }
         /// if the array is empty (size == 0)
-        [[nodiscard]] bool   empty()    const { return _info->n == 0; }
+        [[nodiscard]] bool   empty()    const { return self._info->n == 0; }
 
         /// return the pointer to the internal data
-        [[nodiscard]] T* data() const { return _data; }
+        [[nodiscard]] T* data() const { return self._data; }
 
         /// return a standalone pointer to the internal data.
         /// the data is clones if this object has a refc > 1
@@ -259,11 +262,11 @@ namespace stdx {
         // accessors
         // at(i) supports negative indices
 
-        T &at(int i)       { return _data[i>=0 ? i : size()+i]; }
-        T  at(int i) const { return _data[i>=0 ? i : size()+i]; }
+        T &at(int i)       { return self._data[i>=0 ? i : size()+i]; }
+        T  at(int i) const { return self._data[i>=0 ? i : size()+i]; }
 
-        T &operator[](size_t i)       { return _data[i]; }
-        T  operator[](size_t i) const { return _data[i]; }
+        T &operator[](size_t i)       { return self._data[i]; }
+        T  operator[](size_t i) const { return self._data[i]; }
 
         // ------------------------------------------------------------------
         // assignment
@@ -284,19 +287,19 @@ namespace stdx {
 
         /// change size, AND capacity if size > current max_size/capacity
         void size(size_t n) {
-            if (n > _info->c) max_size(n);
-            _info->n = n;
+            if (n > self._info->c) max_size(n);
+            self._info->n = n;
         }
 
         /// change capacity ONLY if new max_size/capacity > current max_size/capacity
         void max_size(size_t c) {
-            if (c <= _info->c) return;
+            if (c <= self._info->c) return;
 
-            size_t n = _info->n;// keep current size
+            size_t n = self._info->n;// keep current size
             array_t t(self);    // to avoid de-allocation on release()
             release();          // 't' contains an extra reference of the current array
             alloc(c, n);        // allocate the new capacity (same size)
-            fill(t);            // copy the content of t
+            copy(t);         // copy the content of t
         }
 
     };

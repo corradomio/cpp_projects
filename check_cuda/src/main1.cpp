@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cuda.h>
-#include "cudacpp.h"
-#include "cudamem.h"
+#include "cudacpp/cudacpp.h"
+#include "cudacpp/cudamem.h"
 
 using namespace cudacpp;
 

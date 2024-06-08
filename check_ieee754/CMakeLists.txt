@@ -3,17 +3,23 @@ project(check_ieee754)
 
 set(CMAKE_CXX_STANDARD 17)
 
+include_directories(
+    /libs/include
+    ../commons/include
+)
+
+link_directories(
+    /libs/lib
+    ../commons/lib
+)
+
 add_executable(check_ieee754
     main.cpp
-    real_t.h
-    real_limits.h
 )
 
 
 add_executable(test_ieee754
     tests/test_ieee754.cpp
-    real_t.h
-    real_limits.h
 )
 
 

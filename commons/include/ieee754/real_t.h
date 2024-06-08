@@ -130,7 +130,7 @@
 // normalize some definitions
 //
 
-#include "intfloat.h"
+#include <intfloat.h>
 
 
 namespace ieee754 {

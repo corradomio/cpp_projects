@@ -7,7 +7,7 @@
 
 namespace stdx {
 
-    void tprint();
+    void tprintf(const char *__format, ...);
 }
 
 #endif //STDX_TPRINTF_H

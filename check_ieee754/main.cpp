@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <iostream>
-#include "real_t.h"
-#include "real_limits.h"
+#include <ieee754/real_t.h>
+#include <std/real_limits.h>
 
 using namespace ieee754;
 using namespace std;
@@ -27,8 +27,8 @@ int main7() {
     u.f64 = float64_t(0,0,-1);
 
     float32_u v;
-    v.f32 = u.f64;
 
+    v.f32 = u.f64;
     v.flt = 1;
 
     u.f64 = float64_t(0,float64_t::EBIAS, 0);

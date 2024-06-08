@@ -3,7 +3,7 @@
 //
 
 #include "cuda.h"
-#include "../include/cudacpp.h"
+#include "cudacpp/cudacpp.h"
 #include <map>
 
 #define info  (*this->_info)

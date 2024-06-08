@@ -6,7 +6,7 @@
 #define STDX_FLOAT64_NMF_H
 
 #include <tuple>
-#include "../options.h"
+#include <stdx/options.h>
 #include "matrix.h"
 
 namespace stdx::float64 {

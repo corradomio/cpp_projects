@@ -6,7 +6,7 @@
 #define STDX_FLOAT64_SVD_H
 
 #include <tuple>
-#include "../options.h"
+#include <stdx/options.h>
 #include "vector.h"
 #include "matrix.h"
 

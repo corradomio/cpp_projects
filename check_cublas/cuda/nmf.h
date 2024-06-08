@@ -6,7 +6,7 @@
 #define CUDA_NMF_H
 
 #include "cublas.h"
-#include "options.h"
+#include <stdx/options.h>
 
 namespace cuda {
 

@@ -5,8 +5,8 @@
 #include <stdexcept>
 #include <cstdio>
 #include <cuda.h>
-#include "cudacpp.h"
-#include "cudamem.h"
+#include "cudacpp/cudacpp.h"
+#include "cudacpp/cudamem.h"
 
 
 using namespace cudacpp;
@@ -17,7 +17,7 @@ extern void tprintf(const char *__format, ...);
 
 
 
-int main() {
+int main21() {
     tprintf("Hello World\n");
 
     try {

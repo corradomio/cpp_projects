@@ -1,6 +1,12 @@
+//
+// Created by Corrado Mio on 08/06/2024.
+//
 #include <iostream>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <stdx/tprintf.h>
+
+using namespace stdx;
 
 
 void check(CUresult res) {
@@ -12,24 +18,25 @@ void check(CUresult res) {
         ::cuGetErrorName(res, &name);
         ::cuGetErrorString(res, &message);
         ::snprintf(stream, MSG_LEN, "%s: %s", name, message);
-        printf("%s", stream);
+        tprintf("%s", stream);
     }
 }
 
 
 
-int main11() {
+int main() {
     std::cout << "Hello, World!" << std::endl;
 
     size_t N = 1l*1024*1024;
-    float *x, *y;
+    float *x, *y, *z;
 
-    printf("allocate unified memory\n");
+    tprintf("allocate unified memory for %d elements\n", N);
     // Allocate Unified Memory -- accessible from CPU or GPU
     cudaMallocManaged(&x, N*sizeof(float));
     cudaMallocManaged(&y, N*sizeof(float));
+    cudaMallocManaged(&z, N*sizeof(float));
 
-    printf("initialize x and y arrays on the host\n");
+    tprintf("initialize x and y arrays on the host\n");
     // initialize x and y arrays on the host
     for (int i = 0; i < N; i++) {
         x[i] = 1.0f;
@@ -37,25 +44,25 @@ int main11() {
     }
     float c = 1.0f;
 
-    printf("load module\n");
+    tprintf("load module\n");
     CUmodule hmod;
-    check(::cuModuleLoad(&hmod, "D:/Projects.github/cpp_projects/check_cudart/cu/vecadd.ptx"));
+    check(::cuModuleLoad(&hmod, "D:/Projects.github/cpp_projects/check_cuda/cu/vecadd.ptx"));
 
-    printf("retrieve function\n");
+    tprintf("retrieve function\n");
     CUfunction hfun;
     check(::cuModuleGetFunction(&hfun, hmod, "VecAdd"));
 
-    printf("compute block/grid size\n");
+    tprintf("compute block/grid size\n");
     // Launch kernel on 1M elements on the GPU
-    unsigned int blockSize = 256;
-    unsigned int numBlocks = (N + blockSize - 1) / blockSize;
+    unsigned int numThreads = 1024;
+    unsigned int numBlocks = (N + numThreads - 1) / numThreads;
     unsigned int shared_mem = 0;
 
-    dim3 grid_dim{numBlocks};
-    dim3 block_dim{blockSize};
+    dim3  grid_dim{numBlocks};
+    dim3 block_dim{numThreads};
 
-    printf("launch kernel\n");
-    void* args[] { &x, &y, &c };
+    tprintf("launch kernel on %d/%d\n", numBlocks, numThreads);
+    void* args[] { &x, &y, &z, &c };
     check(::cuLaunchKernel(
         hfun,
         grid_dim.x, grid_dim.y, grid_dim.z,
@@ -63,10 +70,10 @@ int main11() {
         shared_mem, 0, args, nullptr
     ));
 
-    printf("wait for termination\n");
+    tprintf("wait for termination\n");
     ::cudaDeviceSynchronize();
 
-    printf("dispose everything\n");
+    tprintf("dispose everything\n");
     check(::cuModuleUnload(hmod));
     ::cudaFree(x);
     ::cudaFree(y);

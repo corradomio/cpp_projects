@@ -4,8 +4,8 @@
 
 #include <memory>
 #include <cuda.h>
-#include "cudacpp.h"
-#include "cudamem.h"
+#include "cudacpp/cudacpp.h"
+#include "cudacpp/cudamem.h"
 #include "language.h"
 
 #define NO_SIZE size_t(-1)

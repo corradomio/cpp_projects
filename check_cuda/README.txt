@@ -9,3 +9,9 @@
 7) copiare i risultati dalla memoria della scheda nel computer
 8) rilasciare la memoria
 9) scaricare i moduli
+
+Driver      cu*
+Runtime     cuda*
+
+Namespaces  cudacpp
+            curtcpp

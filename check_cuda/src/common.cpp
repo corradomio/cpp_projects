@@ -6,7 +6,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <cuda.h>
-#include "cudamem.h"
+#include "cudacpp/cudamem.h"
 
 using namespace cudacpp;
 
