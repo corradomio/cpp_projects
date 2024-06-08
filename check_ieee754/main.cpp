@@ -6,9 +6,11 @@
 using namespace ieee754;
 using namespace std;
 
+
 typedef real_t<3,4, uint8_t>  f34_t;
 typedef real_t<2,5, uint8_t>  f25_t;
 typedef real_t<4,3, uint8_t>  f43_t;
+
 
 int main() {
     float64_u f64, g64;
