@@ -25,10 +25,6 @@
 #define elsif else if
 #endif
 
-#ifndef elif
-#define elif else if
-#endif
-
 // #ifndef raise
 // #define raise throw
 // #endif
@@ -50,6 +46,5 @@ template<typename T>
 typename T::super& up_cast(T& elem) {
     return reinterpret_cast<typename T::super&>(elem);
 }
-
 
 #endif //LANGUAGE_H

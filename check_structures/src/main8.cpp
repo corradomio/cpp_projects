@@ -8,7 +8,7 @@
 
 using namespace stdx::float64;
 
-int main() {
+int main8() {
     matrix_t m = uniform(5,4, 1., 10.);
     print(m, array_style::MATHEMATICA);
 

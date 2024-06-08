@@ -1,0 +1,84 @@
+
+    namespace detail {
+
+        struct info_t {
+            size_t refc;    // refcount
+            size_t n;       // size
+            size_t c;       // capacity
+            location_t loc; // location
+
+            info_t(size_t n, location_t l) : refc(0), c(n), n(n), loc(l) {}
+            info_t(size_t c, size_t n, location_t l) : refc(0), c(c), n(n), loc(l) {}
+        };
+    }
+
+    struct buffer_t {
+    private:
+        detail::info_t *_info;
+        void *_data;
+
+        void add_ref() const { _info->refc++; }
+        void release() { if (0 == --_info->refc) {
+                self.free();
+                delete self._info;
+            }}
+
+        void init(const buffer_t &that) {
+            // init by refcount
+            self._info = that._info;
+            self._data = that._data;
+            self.add_ref();
+        }
+
+        void assign(const buffer_t &that) {
+            // assign by refcount
+            that.add_ref();
+            self.release();
+            self._info = that._info;
+            self._data = that._data;
+        }
+
+    public:
+        // ------------------------------------------------------------------
+        // constructors
+
+        buffer_t(): buffer_t(nullptr, 0, host){ }
+        buffer_t(void* buffer, size_t size, location_t loc);
+        buffer_t(const buffer_t& that) { self.init(that); }
+
+        ~buffer_t(){ release(); }
+
+        void free();
+
+        // ------------------------------------------------------------------
+        // properties
+
+        [[nodiscard]] size_t size()     const { return _info->n; }
+        [[nodiscard]] bool   empty()    const { return _info->n == 0; }
+        [[nodiscard]] void*  data()     const { return _data; }
+        [[nodiscard]] location_t loc()  const { return _info->loc; }
+
+        // ------------------------------------------------------------------
+        // assignment
+
+        buffer_t &operator =(const buffer_t &that) {
+            if (this == &that){} // disable warning
+            assign(that);
+            return self;
+        }
+
+    };
+
+
+
+
+    buffer_t::buffer_t(void* buffer, size_t size, location_t loc) {
+        self._data = buffer;
+        self._info = new detail::info_t(size, loc);
+    }
+
+    void buffer_t::free() {
+        mem_free(self._data, self._info->loc);
+        self._data = nullptr;
+        self._info->n = 0;
+    }

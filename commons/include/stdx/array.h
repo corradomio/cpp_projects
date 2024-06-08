@@ -176,13 +176,12 @@ namespace stdx {
         explicit array_t(size_t n): array_t(n, n) {}
         array_t(int c, int n) {
             alloc(c, n);
-            // fill(T());
         }
 
         /// Create an array by reference
         array_t(const array_t &that): array_t(that, false) {}
 
-        /// Create an arry by cloning
+        /// Create an array by cloning
         array_t(const array_t &that, bool clone) {
             if (clone) {
                 alloc(that.size(), that.size());
@@ -210,7 +209,7 @@ namespace stdx {
 
         /// array size, n of elements (<= capacity)
         [[nodiscard]] size_t size()     const { return _info->n; }
-        /// array capacity
+        /// array max_size/capacity
         [[nodiscard]] size_t max_size() const { return _info->c; }
         /// if the array is empty (size == 0)
         [[nodiscard]] bool   empty()    const { return _info->n == 0; }
@@ -227,10 +226,16 @@ namespace stdx {
             // 0) it is possible to detach the T[] from THIS object
             //    ONLY if it has a single reference
             if (self._info->refc == 1) {
+                // 2) retrieve the data pointer
                 data = self._data;
+                // 3) replace the data pointer with an empty array
+                //    to maintain the data structure 'consistent'
+                self._data = new T[0];
+                // 4) update the internal data structure consistency
+                //    In theory it is not necessary, but it is better
+                //    to be safe
                 self._info->n = 0;
                 self._info->c = 0;
-                self._data = new T[0];
             }
             else {
                 // 1) ensure an object with a single reference
@@ -240,7 +245,7 @@ namespace stdx {
                 // 3) replace the data pointer with an empty array
                 //    to maintain the data structure 'consistent'
                 cloned._data = new T[0];
-                // 4) update the interla data structure consistency
+                // 4) update the internal data structure consistency
                 //    In theory it is not necessary, but it is better
                 //    to be safe
                 cloned._info->n = 0;
@@ -268,26 +273,26 @@ namespace stdx {
             return self;
         }
 
-        array_t &operator =(const array_t &a) {
-            if (this == &a){} // disable warning
-            assign(a);
+        array_t &operator =(const array_t &that) {
+            if (this == &that){} // disable warning
+            assign(that);
             return self;
         }
 
         // ------------------------------------------------------------------
         // operations
 
-        /// change size, AND capacity if size > current capacity
+        /// change size, AND capacity if size > current max_size/capacity
         void size(size_t n) {
             if (n > _info->c) max_size(n);
             _info->n = n;
         }
 
-        /// change capacity ONLY if new capacity > current capacity
+        /// change capacity ONLY if new max_size/capacity > current max_size/capacity
         void max_size(size_t c) {
-            if (c <= max_size()) return;
+            if (c <= _info->c) return;
 
-            size_t n = size();  // keep current size
+            size_t n = _info->n;// keep current size
             array_t t(self);    // to avoid de-allocation on release()
             release();          // 't' contains an extra reference of the current array
             alloc(c, n);        // allocate the new capacity (same size)
@@ -304,26 +309,28 @@ namespace stdx {
     }
 
     // apply_eq functions
-
+    // a[i] = f(a[i])
     template<typename T>
-     void apply_eq(T (*fun)(T),  array_t<T>& a) {
-        T* d = a.data();
+    void apply_eq(T (*fun)(T),  array_t<T>& a) {
+        T* y = a.data();
         size_t n = a.size();
 
         for (int i=0; i<n; ++i)
-            d[i] = fun(d[i]);
+            y[i] = fun(y[i]);
     }
 
+    // a[i] = f(a[i], s)
     template<typename T>
-     void apply_eq(T (*fun)(T, T),  array_t<T>& a, T s) {
+    void apply_eq(T (*fun)(T, T),  array_t<T>& a, T s) {
         T* y = a.data();
         size_t n = a.size();
         for (int i=0; i<n; ++i)
             y[i] = fun(y[i], s);
     }
 
+    // a[i] = f(a[i], b[i])
     template<typename T>
-     void apply_eq(T (*fun)(T, T),  array_t<T>& a, const  array_t<T>& b) {
+    void apply_eq(T (*fun)(T, T),  array_t<T>& a, const  array_t<T>& b) {
         check(a, b);
 
         T* y = a.data();
@@ -333,8 +340,9 @@ namespace stdx {
             y[i] = fun(y[i], x[i]);
     }
 
+    // a[i] = f(a[i], s, b[i])
     template<typename T>
-     void apply_eq(T (*fun)(T, T, T),  array_t<T>& a, T s, const  array_t<T>& b) {
+    void apply_eq(T (*fun)(T, T, T),  array_t<T>& a, T s, const  array_t<T>& b) {
         check(a, b);
 
         T* y = a.data();
@@ -345,31 +353,34 @@ namespace stdx {
     }
 
     // apply functions
-
+    // r[i] = f(a[i])
     template<typename T>
     array_t<T> apply(T (*fun)(T),  array_t<T>& a) {
-        array_t<T> r = a.clone();
+        array_t<T> r(a, true);
         apply_eq(fun, r);
         return r;
     }
 
+    // r[i] = f(a[i], s)
     template<typename T>
     array_t<T> apply(T (*fun)(T, T),  array_t<T>& a, T s) {
-        array_t<T> r = a.clone();
+        array_t<T> r(a, true);
         apply_eq(fun, r, s);
         return r;
     }
 
+    // r[i] = f(a[i], b[i])
     template<typename T>
     array_t<T> apply(T (*fun)(T, T),  array_t<T>& a, const  array_t<T>& b) {
-        array_t<T> r = a.clone();
+        array_t<T> r(a, true);
         apply_eq(fun, r, b);
         return r;
     }
 
+    // r[i] = f(a[i], s, b[i])
     template<typename T>
     array_t<T> apply(T (*fun)(T, T, T),  array_t<T>& a, T s, const  array_t<T>& b) {
-        array_t<T> r = a.clone();
+        array_t<T> r(a, true);
         apply_eq(fun, r, s, b);
         return r;
     }

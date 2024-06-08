@@ -46,7 +46,8 @@ add_executable(check_structures
 #    src/main5.cpp
 #    src/main6.cpp
 #    src/main7.cpp
-    src/matrix8.cpp
+#    src/main8.cpp
+    src/main9.cpp
     src/stdx/float64/eigen.cpp
 )
 

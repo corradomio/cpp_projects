@@ -100,7 +100,7 @@ File and path specifications.
 =============================
 
 --output-file <file>                       (-o)                                 
-        Specify name and location of the output file.  Only a single input file is
+        Specify name and loc of the output file.  Only a single input file is
         allowed when this option is present in nvcc non-linking/archiving mode.
 
 --pre-include <file>,...                   (-include)                           
@@ -535,7 +535,7 @@ Options for steering GPU code generation.
         because thread registers are allocated from a global register pool on each
         GPU, a higher value of this option will also reduce the maximum thread block
         size, thereby reducing the amount of thread parallelism.  Hence, a good maxrregcount
-        value is the result of a trade-off.
+        value is the error of a trade-off.
         If this option is not specified, then no maximum is assumed.
         Value less than the minimum registers required by ABI will be bumped up by
         the compiler to ABI minimum limit.

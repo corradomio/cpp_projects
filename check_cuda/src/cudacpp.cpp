@@ -3,7 +3,7 @@
 //
 
 #include "cuda.h"
-#include "cudacpp.h"
+#include "../include/cudacpp.h"
 #include <map>
 
 #define info  (*this->_info)
@@ -161,36 +161,43 @@ namespace cudacpp {
         {"ipc_event_supported", CU_DEVICE_ATTRIBUTE_IPC_EVENT_SUPPORTED},
         {"mem_sync_domain_count", CU_DEVICE_ATTRIBUTE_MEM_SYNC_DOMAIN_COUNT},
         {"tensor_map_access_supported", CU_DEVICE_ATTRIBUTE_TENSOR_MAP_ACCESS_SUPPORTED},
-        {"handle_type_fabric_supported", CU_DEVICE_ATTRIBUTE_HANDLE_TYPE_FABRIC_SUPPORTED},
+        // {"handle_type_fabric_supported", CU_DEVICE_ATTRIBUTE_HANDLE_TYPE_FABRIC_SUPPORTED},     // v12.4
         {"unified_function_pointer", CU_DEVICE_ATTRIBUTE_UNIFIED_FUNCTION_POINTERS},
         {"numa_config", CU_DEVICE_ATTRIBUTE_NUMA_CONFIG},
         {"numa_id", CU_DEVICE_ATTRIBUTE_NUMA_ID},
         {"multicast_supported", CU_DEVICE_ATTRIBUTE_MULTICAST_SUPPORTED},
-        {"mps_enabled", CU_DEVICE_ATTRIBUTE_MPS_ENABLED},
+        // {"mps_enabled", CU_DEVICE_ATTRIBUTE_MPS_ENABLED},               // v12.4
         {"host_numa_id", CU_DEVICE_ATTRIBUTE_HOST_NUMA_ID},
+        // {"d3d12_cig_supported", CU_DEVICE_ATTRIBUTE_D3D12_CIG_SUPPORTED}    // v12.5
 
         // {"max", CU_DEVICE_ATTRIBUTE_MAX},
-        // {"end", CU_DEVICE_ATTRIBUTE_MAX},
     };
 
     // ----------------------------------------------------------------------
     // cuda_error
     // ----------------------------------------------------------------------
 
-    cuda_error::cuda_error(int result)
-    : result(result), std::runtime_error("CUDA error"){
+    cuda_error::cuda_error(CUresult error)
+    : _error(error), std::runtime_error("CUDA error") {
 
-    }
-
-    static void check(CUresult res) {
-        if (res != CUDA_SUCCESS)
-            throw cuda_error(res);
     }
 
     const char* cuda_error::what() const noexcept {
+        const int MSG_LEN = 512;
         const char *name = nullptr;
-        check(::cuGetErrorName(CUresult (self.result), &name));
-        return name;
+        const char *message = nullptr;
+        char stream[MSG_LEN + 2];
+        ::cuGetErrorName(self._error, &name);
+        ::cuGetErrorString(self._error, &message);
+        ::snprintf(stream, MSG_LEN, "%s: %s", name, message);
+        self._what = std::string(stream);
+        return self._what.c_str();
+    }
+
+    void check(CUresult res) {
+        if (res != CUDA_SUCCESS) {
+            throw cuda_error(res);
+        }
     }
 
     // ----------------------------------------------------------------------
@@ -198,92 +205,89 @@ namespace cudacpp {
     //     cuda_info_t
     // ----------------------------------------------------------------------
 
-    struct cuda_internal_t {
-        int ordinal;
-        CUdevice dev;
-        cuda_internal_t(): ordinal(0){ }
-    };
+    cuda_t* this_device = nullptr;
 
-    cuda_device_t::cuda_device_t() {
-        self._info = new cuda_internal_t();
+    cuda_t::cuda_t() {
+        self.ordinal = 0;
         check(::cuInit(0));
-        check(::cuDeviceGet(&info.dev, info.ordinal));
+        check(::cuDeviceGet(&self.dev, self.ordinal));
+        check(::cuCtxCreate(&self.ctx, 0, self.dev));
+        self.attrs.initialized = false;
+        this_device = this;
     }
 
-    cuda_device_t::~cuda_device_t() {
-        delete self._info;
+    cuda_t::~cuda_t() {
+        check(::cuCtxDestroy(self.ctx));
+        this_device = nullptr;
     }
 
-    std::string cuda_device_t::name() const {
+    std::string cuda_t::name() const {
         char name[32+1];
-        check(::cuDeviceGetName(name, 32, info.dev));
+        check(::cuDeviceGetName(name, 32, self.dev));
         name[32] = 0;
         return {name};
     }
 
-    cuda_capabilities_t cuda_device_t::capabilities() const {
-        cuda_capabilities_t cap;
+    const cuda_attributes_t& cuda_t::attributes() const {
+        cuda_attributes_t& cap = self.attrs;
+        if (cap.initialized)
+        return cap;
 
         {
             size_t bytes = 0;
-            check(::cuDeviceTotalMem(&bytes, info.dev));
+            check(::cuDeviceTotalMem(&bytes, self.dev));
             cap.total_memory_mb = int(bytes/(1024*0124)+1);
         }
 
         {
-            ::cuDeviceGetAttribute(&cap.compute_capability_major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, info.dev);
-            ::cuDeviceGetAttribute(&cap.compute_capability_minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, info.dev);
-            ::cuDeviceGetAttribute(&cap.multiprocessors, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, info.dev);
-            ::cuDeviceGetAttribute(&cap.max_threads_per_block, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, info.dev);
-            ::cuDeviceGetAttribute(&cap.max_threads_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, info.dev);
-            ::cuDeviceGetAttribute(&cap.warp_size, CU_DEVICE_ATTRIBUTE_WARP_SIZE, info.dev);
-            ::cuDeviceGetAttribute(&cap.max_shared_memory_per_block, CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, info.dev);
-            ::cuDeviceGetAttribute(&cap.max_blocks_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_BLOCKS_PER_MULTIPROCESSOR, info.dev);
-            ::cuDeviceGetAttribute(&cap.concurrent_kernels, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, info.dev);
+            ::cuDeviceGetAttribute(&cap.compute_capability_major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, self.dev);
+            ::cuDeviceGetAttribute(&cap.compute_capability_minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, self.dev);
+            ::cuDeviceGetAttribute(&cap.multiprocessors, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, self.dev);
+            ::cuDeviceGetAttribute(&cap.max_threads_per_block, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, self.dev);
+            ::cuDeviceGetAttribute(&cap.max_threads_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, self.dev);
+            ::cuDeviceGetAttribute(&cap.warp_size, CU_DEVICE_ATTRIBUTE_WARP_SIZE, self.dev);
+            ::cuDeviceGetAttribute(&cap.max_shared_memory_per_block, CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, self.dev);
+            ::cuDeviceGetAttribute(&cap.max_blocks_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_BLOCKS_PER_MULTIPROCESSOR, self.dev);
+            ::cuDeviceGetAttribute(&cap.concurrent_kernels, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, self.dev);
         }
 
         {
-            ::cuDeviceGetAttribute(&cap.max_grid_dim.x, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, info.dev);
-            ::cuDeviceGetAttribute(&cap.max_grid_dim.y, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y, info.dev);
-            ::cuDeviceGetAttribute(&cap.max_grid_dim.z, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z, info.dev);
+            ::cuDeviceGetAttribute(&cap.max_grid_dim.x, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, self.dev);
+            ::cuDeviceGetAttribute(&cap.max_grid_dim.y, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y, self.dev);
+            ::cuDeviceGetAttribute(&cap.max_grid_dim.z, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z, self.dev);
 
-            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, info.dev);
-            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, info.dev);
-            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, info.dev);
+            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
+            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
+            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
         }
 
+        cap.initialized = true;
         return cap;
     }
 
-    int cuda_device_t::attribute(const std::string& name) const {
+    int cuda_t::attribute(const std::string& name) const {
         int attrib = ATTRIBUTES[name];
         return self.attribute(attrib);
     }
 
-    int cuda_device_t::attribute(int attrib) const {
+    int cuda_t::attribute(int attrib) const {
         int value = -1;
         if (attrib >= 0)
-            // check(::cuDeviceGetAttribute(&value, CUdevice_attribute(attrib), info.dev));
-            ::cuDeviceGetAttribute(&value, CUdevice_attribute(attrib), info.dev);
-        elif (attrib == -1) {
+            // check(::cuDeviceGetAttribute(&value, CUdevice_attribute(attrib), self.dev));
+            ::cuDeviceGetAttribute(&value, CUdevice_attribute(attrib), self.dev);
+        elsif (attrib == -1) {
             size_t bytes;
-            ::cuDeviceTotalMem(&bytes, info.dev);
+            ::cuDeviceTotalMem(&bytes, self.dev);
             value = int(bytes/(1024*1024));
         }
-        elif (attrib == -2) {
+        elsif (attrib == -2) {
             ::cuDeviceGetCount(&value);
         }
-        elif (attrib == -3) {
+        elsif (attrib == -3) {
             ::cuDriverGetVersion(&value);
         }
         return value;
     }
-
-    // ----------------------------------------------------------------------
-    // memory
-    // ----------------------------------------------------------------------
-    // copy host->device
-    // copy device->host
 
     // ----------------------------------------------------------------------
     // modules
@@ -291,6 +295,34 @@ namespace cudacpp {
     // load_modules([file1,...]) -> module
     // module.destroy();
 
+    module_t::module_t(const char* module_path) {
+        self.hmod = nullptr;
+        self.load(module_path);
+    }
 
+    module_t::~module_t() {
+        self.unload();
+    }
 
+    void module_t::load(const char* module_path) {
+        self.unload();
+        check(::cuModuleLoad(&self.hmod, module_path));
+    }
+
+    void module_t::unload() {
+        if (self.hmod != nullptr) {
+            check(::cuModuleUnload(self.hmod));
+            self.hmod = nullptr;
+        }
+    }
+
+    // func_t module_t::function(const char* fun_name) const {
+    //     CUfunction hfun = nullptr;
+    //     check(::cuModuleGetFunction(&hfun, self.hmod, fun_name));
+    //     return func_t{hfun};
+    // }
+
+    // ----------------------------------------------------------------------
+    // end
+    // ----------------------------------------------------------------------
 }
