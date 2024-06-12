@@ -5,15 +5,13 @@
 #include <stdexcept>
 #include <cstdio>
 #include <cuda.h>
+#include <stdx/tprintf.h>
 #include "cudacpp/cudacpp.h"
 #include "cudacpp/cudamem.h"
+#include "common.h"
 
-
+using namespace stdx;
 using namespace cudacpp;
-
-extern double sum(array_t<float> A, array_t<float> B, float c);
-extern double sum(array_t<float> C);
-extern void tprintf(const char *__format, ...);
 
 
 
@@ -67,7 +65,7 @@ int main21() {
         cudacpp::module_t module("D:/Projects.github/cpp_projects/check_cuda/cu/vecadd.ptx");
 
         tprintf("... ... kernel launch\n");
-        module.call(nblocks, nthreads, "VecAdd", A, B, C, c);
+        module.launch(nblocks, nthreads, "VecAdd", A, B, C, c);
         tprintf("... kernel done\n");
 
         tprintf("... transfer to host\n");

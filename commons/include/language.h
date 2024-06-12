@@ -1,6 +1,11 @@
 //
 // Created by Corrado Mio on 08/03/2024.
 //
+// Some simple C++ language extensions
+//
+//      interface
+//      self        Python/Java
+//      elif        Python
 
 // f16, f32, f64, i8, i16, i32, i64, u8, u16, u32, u64,
 // f128? i128? u128?
@@ -21,9 +26,9 @@
 #define self (*this)
 #endif
 
-#ifndef elsif
-#define elsif else if
-#endif
+// #ifndef elsif
+// #define elsif else if
+// #endif
 
 #ifndef elif
 #define elif else if
@@ -37,11 +42,13 @@
 /// cast the object of type 'T' to 'T::super&'
 /// where 'super' is defined as
 ///
+/// \code
 ///     class D : public A {
 ///     public:
 ///         using super = A;
 ///         ...
 ///     }
+/// \endcode
 ///
 /// \tparam T
 /// \param object

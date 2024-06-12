@@ -8,21 +8,58 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <cuda.h>
-#include "language.h"
+#include <language.h>
 
 #define MIN_ALLOC 16
 
 namespace cudacpp {
 
+    /// Where the allocated memory is locates
+    ///
+    ///     - host: host memory
+    ///     - host_locked: host memory but the memory is 'locked' to speedup
+    ///         memory transfers
+    ///     - host_mapped: host memory mapped into the device address space
+    ///         but using a different address
+    ///     - device mapped: as host_mapped but from th point of view of the
+    ///         device. It is not available for the allocation
+    ///     - unified: device memory mapped into the host address space
+    ///         using the same address
+    ///
     enum loc_t {
         host, device, host_locked,
         host_mapped, device_mapped,
         unified
     };
 
+    /// Alloc a block of memory to contain n elements of esize bytes each one
+    /// located in the specified location (host/device)
+    ///
+    /// \param n num of elements
+    /// \param esize element size
+    /// \param loc where to locate the memory
+    /// \return the allocated block of memory
     void* cuda_alloc(size_t n, size_t esize, loc_t loc);
-    void* cuda_free(void* t, loc_t loc);
+
+    /// Free the block of memory located located in the specified location (host/device)
+    ///
+    /// \param p memory pointer (in host or device)
+    /// \param loc where the memory is located
+    /// \return null
+    void* cuda_free(void* p, loc_t loc);
+
+    /// Copy the content of src (located at src_loc) into the memory identified by dst
+    /// and located at dst_loc
+    ///
+    /// \param dst pointer to destination memory
+    /// \param dst_loc destination memory location
+    /// \param src pointer to source memory
+    /// \param src_loc source memory location
+    /// \param size num of bytes to copy
+    /// \return
     void* cuda_copy(void* dst, loc_t dst_loc, void* src, loc_t src_loc, size_t size);
+
+    void cuda_fill(void* dst, loc_t dst_loc, size_t dst_size, int src, size_t src_size);
 
     namespace detail {
 
@@ -31,7 +68,8 @@ namespace cudacpp {
             size_t n;       // size
             size_t c;       // capacity
             loc_t  loc;     // location
-            void*  ptr;     // saved host pointer for pinned memory
+            void*  ptr;     // saved host pointer for host_mapped when converted into
+                            // device_mapped
 
             info_t(size_t n, loc_t l) : refc(0), c(n), n(n), loc(l) {}
             info_t(size_t c, size_t n, loc_t l) : refc(0), c(c), n(n), loc(l) {}
@@ -83,9 +121,7 @@ namespace cudacpp {
 
         void copy(const array_t &a) {
             // init _data with the content of a
-            // THIS array can be shorter than 'a' NEVER longer
-            // size_t n=size();
-            // for (int i=0; i<n; ++i) _data[i] = a._data[i];
+            // THIS array can be longer than 'a' NEVER shorter
             if (self._info->c < a._info->n)
                 throw std::bad_alloc();
 
@@ -116,7 +152,7 @@ namespace cudacpp {
         /// Create an array with the specified max_size and size.
         /// If 'n' is -1, size and capacity/max_size will be the same
         explicit array_t(size_t n, loc_t loc): array_t(n, n, loc) {}
-        array_t(int c, int n, loc_t loc) {
+        array_t(size_t c, size_t n, loc_t loc) {
             alloc(c, n, loc);
         }
 
@@ -149,20 +185,20 @@ namespace cudacpp {
             if (curr_loc == loc_t::unified) {
                 // it is not necessary to move the memory
             }
-            elsif (curr_loc == to_loc) {
+            elif (curr_loc == to_loc) {
                 // memory already located in the correct position
             }
-            elsif (curr_loc == loc_t::host_mapped && to_loc == loc_t::device) {
+            elif (curr_loc == loc_t::host_mapped && to_loc == loc_t::device) {
                 self._info->ptr = self._data;
                 void *copy = cuda_copy(nullptr, loc_t::device_mapped, self._data, curr_loc, bytes);
                 self._data = reinterpret_cast<T*>(copy);
                 self._info->loc = loc_t::device_mapped;
             }
-            elsif (curr_loc == loc_t::device_mapped && to_loc == loc_t::host) {
+            elif (curr_loc == loc_t::device_mapped && to_loc == loc_t::host) {
                 self._data = reinterpret_cast<T*>(self._info->ptr);
                 self._info->loc = loc_t::host_mapped;
             }
-            elsif (curr_loc != to_loc) {
+            elif (curr_loc != to_loc) {
                 void *copy = cuda_alloc(self._info->n, sizeof(T), to_loc);
                 cuda_copy(copy, to_loc, self._data, curr_loc, bytes);
                 cuda_free(self._data, curr_loc);
@@ -186,16 +222,15 @@ namespace cudacpp {
         [[nodiscard]] bool   empty()    const { return self._info->n == 0; }
         /// location of the array
         [[nodiscard]] loc_t  loc()      const { return self._info->loc; }
-
         /// return the pointer to the internal data
-        [[nodiscard]] T*& data() const { return self._data; }
+        [[nodiscard]] T*     data()     const { return self._data; }
 
         // ------------------------------------------------------------------
         // accessors
         // at(i) supports negative indices
 
-        T &at(int i)       { return self._data[i>=0 ? i : size()+i]; }
-        T  at(int i) const { return self._data[i>=0 ? i : size()+i]; }
+        T &at(size_t i)       { return self._data[i>=0 ? i : size()+i]; }
+        T  at(size_t i) const { return self._data[i>=0 ? i : size()+i]; }
 
         T &operator[](size_t i)       { return self._data[i]; }
         T  operator[](size_t i) const { return self._data[i]; }

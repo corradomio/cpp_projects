@@ -1,27 +1,170 @@
 #include <iostream>
-#include <Fastor/Fastor.h>
+#include "stdx/tensor.h"
 
-using namespace Fastor;
+using namespace stdx::linalg;
 
-enum {I,J,K,L,M,N};
+void init_tensor(tensor_t<float> t, float off=0) {
+
+    switch(t.rank()) {
+        case 0:
+            t = 1.f;
+            break;
+        case 1:
+            for (uint16 i0 = 0; i0 < t.dim(0); ++i0)
+                t[{i0}] = float(i0+off);
+            break;
+        case 2:
+            for (uint16 i0 = 0; i0 < t.dim(0); ++i0)
+                for (uint16 i1 = 0; i1 < t.dim(1); ++i1)
+                    t[{i0, i1}] = float(i0+off)*100 + float(i1+off);
+            break;
+        case 3:
+            for (uint16 i0 = 0; i0 < t.dim(0); ++i0)
+                for (uint16 i1 = 0; i1 < t.dim(1); ++i1)
+                    for (uint16 i2 = 0; i2 < t.dim(2); ++i2)
+                        t[{i0, i1, i2}] = float(((i0 + off)*100 + (i1 + off))*100 + (i2 + off));
+    }
+}
+
+void print_tensor(tensor_t<float> t) {
+    switch(t.rank()) {
+        case 0:
+            printf("---- rank: 0\n");
+            printf("%f\n ", (float)t);
+            break;
+        case 1:
+            printf("---- rank: 1, dims: (%zu)\n", t.dim(0));
+            for (uint16 i0 = 0; i0 < t.dim(0); ++i0) {
+                printf("%4.0f ", t[{i0}]);
+            }
+            break;
+        case 2:
+            printf("---- rank: 2, dims: (%zu, %zu)\n", t.dim(0), t.dim(1));
+            for (uint16 i0 = 0; i0 < t.dim(0); ++i0) {
+                for (uint16 i1 = 0; i1 < t.dim(1); ++i1) {
+                    printf("%4.0f ", t[{i0, i1}]);
+                }
+                printf("\n");
+            }
+            break;
+        case 3:
+            printf("---- rank: 3, dims: (%zu, %zu, %zu)\n", t.dim(0), t.dim(1), t.dim(2));
+            for (uint16 i0 = 0; i0 < t.dim(0); ++i0) {
+                for (uint16 i1 = 0; i1 < t.dim(1); ++i1) {
+                    for (uint16 i2 = 0; i2 < t.dim(2); ++i2) {
+                        printf("%6.0f ", t[{i0, i1, i2}]);
+                    }
+                    printf("\n");
+                }
+                printf("----\n");
+            }
+    }
+    printf("\n");
+    fflush(stdout);
+}
+
 
 int main() {
-    // An example of Einstein summation
-    Tensor<double,2,3,5> A; Tensor<double,3,5,2,4> B;
-    // fill A and B
-    A.random(); B.random();
-    auto C = einsum<Index<I,J,K>,Index<J,L,M,N>>(A,B);
 
-    // An example of summing over three indices
-    Tensor<double,5,5,5> D; D.random();
-    auto E = inner(D);
+    std::cout << sizeof(short) << "," << sizeof(int) << "," << sizeof(size_t) << std::endl;
 
-    // An example of tensor permutation
-    Tensor<float,3,4,5,2> F; F.random();
-    auto G = permute<Index<J,K,I,L>>(F);
+    tensor_t<float> b{3, 4, 5}, t;
+    init_tensor(b);
+    // print_tensor(b);
 
-    // Output the results
-    print("Our big tensors:",C,E,G);
+    // t = b.sel({{1,ANY}, {1,ANY}});
+    // print_tensor(t);
+    //
+    // t = b.sel({{1,3}, {2,4}});
+    // print_tensor(t);
+
+    t = b.sel({1, 1});
+    print_tensor(t);
+
+    return 0;
+}
+
+
+
+int main13() {
+
+    tensor_t<float> b{9, 9};
+    init_tensor(b);
+    print_tensor(b);
+
+    tensor_t<float> t = b.sel({{1,ANY}, {1,ANY}});
+    print_tensor(t);
+
+    t = b.sel({{1,3}, {4,7}});
+    print_tensor(t);
+
+    t = b.sel({ANY, 2});
+    print_tensor(t);
+
+    return 0;
+}
+
+
+int main12() {
+
+    tensor_t<float> b{20};
+    init_tensor(b);
+
+    // ----------------------------------------------------------------------
+    print_tensor(b);
+
+    tensor_t<float> c = b.sel({{1,4}});
+    print_tensor(c);
+
+    // ----------------------------------------------------------------------
+    tensor_t<float> t = b.sel({{0,ANY, 2}});
+    print_tensor(t);
+
+    // ----------------------------------------------------------------------
+    tensor_t<float> u = t.sel({{2,ANY, 2}});
+    print_tensor(u);
+
+    return 0;
+}
+
+
+int main11() {
+
+    tensor_t<float> s;
+    s = 10;
+
+    printf("rank: %zu, dim[0]: %zu\n", s.rank(), s.dim(0));
+    printf("   %f\n", float(s));
+    fflush(stdout);
+
+    tensor_t<float> t{5, 3, 4};
+    tensor_t<float> u{t};
+    tensor_t<float> c{t, true};
+
+    printf("t[%zu,%zu,%zu]\n", t.dim(0), t.dim(1), t.dim(2));
+    fflush(stdout);
+
+    init_tensor(t);
+
+    // c = t;
+    t = t.sel({ANY, ANY, ANY});
+
+    t.dump();
+    fflush(stdout);
+    return 0;
+
+    printf("----\n");
+    for (uint16 i0 = 0; i0 < t.dim(0); ++i0) {
+        for (uint16 i1 = 0; i1 < t.dim(1); ++i1) {
+            for (uint16 i2 = 0; i2 < t.dim(2); ++i2) {
+                printf("%3.0f ", t[{i0, i1, i2}]);
+            }
+            printf("\n");
+        }
+        printf("----\n");
+    }
+
+    c = t.sel({0});
 
     return 0;
 }

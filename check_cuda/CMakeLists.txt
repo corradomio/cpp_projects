@@ -7,14 +7,14 @@ include_directories(
     ./include
     ../commons/include
     /libs/include
-    "D:/Programming/CUDA/v12.2/include"
+    "D:/Programming/CUDA/v12.5/include"
 )
 
 link_directories(
     /libs/lib
     ../commons/lib
-    "D:/Programming/CUDA/v12.2/bin"
-    "D:/Programming/CUDA/v12.2/lib/x64"
+    "D:/Programming/CUDA/v12.5/bin"
+    "D:/Programming/CUDA/v12.5/lib/x64"
 )
 
 set(CMAKE_CXX_STANDARD 17)

@@ -2,13 +2,11 @@ cmake_minimum_required(VERSION 3.19)
 project(check_tbb)
 
 include_directories(
-    "D:/MinGW/libs/include"
-    "D:/Projects.github/cpp_projects/hlsext/include"
+    /libs/include
 )
 
 link_directories(
-    "D:/MinGW/libs/lib"
-    "D:/Projects.github/cpp_projects/hlsext/lib"
+    /libs/lib
 )
 
 set(CMAKE_CXX_STANDARD 14)

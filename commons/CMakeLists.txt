@@ -8,6 +8,9 @@ include_directories(
 )
 
 add_library(commons STATIC
+    include/std/real_limits.h
+    include/ieee754/real_t.h
+
     include/intfloat.h
     include/language.h
 
@@ -17,10 +20,13 @@ add_library(commons STATIC
     include/stdx/array.h
     include/stdx/tryexc.h
     include/stdx/trycatch.h
+    include/stdx/memory.h
 
     src/stdx/options.cpp
     src/stdx/tprintf.cpp
     src/stdx/tryexc.cpp
+    src/stdx/memory.cpp
+    include/stdx/linalg.h
 )
 
 add_custom_command(

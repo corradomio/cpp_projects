@@ -27,12 +27,28 @@ double sum(array_t<float> C) {
     return r;
 }
 
-void tprintf(const char *__format, ...) {
-    time_t t = time(nullptr);
-    tm *lt = localtime(&t);
-    printf("[%02d:%02d:%02d] ", lt->tm_hour, lt->tm_min, lt->tm_sec);
-    va_list argv; va_start( argv, __format );
-    vfprintf( stdout, __format, argv );
-    va_end( argv );
-    fflush(stdout);
-}
+
+// void tprintf(const char *__format, ...) {
+//     time_t t = time(nullptr);
+//     tm *lt = localtime(&t);
+//     printf("[%02d:%02d:%02d] ", lt->tm_hour, lt->tm_min, lt->tm_sec);
+//     va_list argv; va_start( argv, __format );
+//     vfprintf( stdout, __format, argv );
+//     va_end( argv );
+//     fflush(stdout);
+// }
+
+
+
+// void check(CUresult res) {
+//     if (res != CUDA_SUCCESS) {
+//         const int MSG_LEN = 512;
+//         const char *name = nullptr;
+//         const char *message = nullptr;
+//         char stream[MSG_LEN + 2];
+//         ::cuGetErrorName(res, &name);
+//         ::cuGetErrorString(res, &message);
+//         ::snprintf(stream, MSG_LEN, "%s: %s", name, message);
+//         tprintf("%s", stream);
+//     }
+// }

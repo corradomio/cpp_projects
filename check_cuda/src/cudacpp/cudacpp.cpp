@@ -161,14 +161,14 @@ namespace cudacpp {
         {"ipc_event_supported", CU_DEVICE_ATTRIBUTE_IPC_EVENT_SUPPORTED},
         {"mem_sync_domain_count", CU_DEVICE_ATTRIBUTE_MEM_SYNC_DOMAIN_COUNT},
         {"tensor_map_access_supported", CU_DEVICE_ATTRIBUTE_TENSOR_MAP_ACCESS_SUPPORTED},
-        // {"handle_type_fabric_supported", CU_DEVICE_ATTRIBUTE_HANDLE_TYPE_FABRIC_SUPPORTED},     // v12.4
+        {"handle_type_fabric_supported", CU_DEVICE_ATTRIBUTE_HANDLE_TYPE_FABRIC_SUPPORTED},     // v12.4
         {"unified_function_pointer", CU_DEVICE_ATTRIBUTE_UNIFIED_FUNCTION_POINTERS},
         {"numa_config", CU_DEVICE_ATTRIBUTE_NUMA_CONFIG},
         {"numa_id", CU_DEVICE_ATTRIBUTE_NUMA_ID},
         {"multicast_supported", CU_DEVICE_ATTRIBUTE_MULTICAST_SUPPORTED},
-        // {"mps_enabled", CU_DEVICE_ATTRIBUTE_MPS_ENABLED},               // v12.4
+        {"mps_enabled", CU_DEVICE_ATTRIBUTE_MPS_ENABLED},               // v12.4
         {"host_numa_id", CU_DEVICE_ATTRIBUTE_HOST_NUMA_ID},
-        // {"d3d12_cig_supported", CU_DEVICE_ATTRIBUTE_D3D12_CIG_SUPPORTED}    // v12.5
+        {"d3d12_cig_supported", CU_DEVICE_ATTRIBUTE_D3D12_CIG_SUPPORTED}    // v12.5
 
         // {"max", CU_DEVICE_ATTRIBUTE_MAX},
     };
@@ -240,25 +240,25 @@ namespace cudacpp {
         }
 
         {
-            ::cuDeviceGetAttribute(&cap.compute_capability_major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, self.dev);
-            ::cuDeviceGetAttribute(&cap.compute_capability_minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, self.dev);
             ::cuDeviceGetAttribute(&cap.multiprocessors, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, self.dev);
-            ::cuDeviceGetAttribute(&cap.max_threads_per_block, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, self.dev);
-            ::cuDeviceGetAttribute(&cap.max_threads_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, self.dev);
+            ::cuDeviceGetAttribute(&cap.compute_capability.major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, self.dev);
+            ::cuDeviceGetAttribute(&cap.compute_capability.minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.threads_per_block, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.threads_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.shared_memory_per_block, CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.blocks_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_BLOCKS_PER_MULTIPROCESSOR, self.dev);
             ::cuDeviceGetAttribute(&cap.warp_size, CU_DEVICE_ATTRIBUTE_WARP_SIZE, self.dev);
-            ::cuDeviceGetAttribute(&cap.max_shared_memory_per_block, CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK, self.dev);
-            ::cuDeviceGetAttribute(&cap.max_blocks_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_BLOCKS_PER_MULTIPROCESSOR, self.dev);
             ::cuDeviceGetAttribute(&cap.concurrent_kernels, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, self.dev);
         }
 
         {
-            ::cuDeviceGetAttribute(&cap.max_grid_dim.x, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, self.dev);
-            ::cuDeviceGetAttribute(&cap.max_grid_dim.y, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y, self.dev);
-            ::cuDeviceGetAttribute(&cap.max_grid_dim.z, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.grid_dim.x, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.grid_dim.y, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.grid_dim.z, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z, self.dev);
 
-            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
-            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
-            ::cuDeviceGetAttribute(&cap.max_block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
+            ::cuDeviceGetAttribute(&cap.max.block_dim.x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, self.dev);
         }
 
         cap.initialized = true;
@@ -275,19 +275,38 @@ namespace cudacpp {
         if (attrib >= 0)
             // check(::cuDeviceGetAttribute(&value, CUdevice_attribute(attrib), self.dev));
             ::cuDeviceGetAttribute(&value, CUdevice_attribute(attrib), self.dev);
-        elsif (attrib == -1) {
+        elif (attrib == -1) {
             size_t bytes;
             ::cuDeviceTotalMem(&bytes, self.dev);
             value = int(bytes/(1024*1024));
         }
-        elsif (attrib == -2) {
+        elif (attrib == -2) {
             ::cuDeviceGetCount(&value);
         }
-        elsif (attrib == -3) {
+        elif (attrib == -3) {
             ::cuDriverGetVersion(&value);
         }
         return value;
     }
+
+    // ----------------------------------------------------------------------
+    // occupancy
+    // ----------------------------------------------------------------------
+
+    // void check_occupancy(const dim_t& grid_dim, const dim_t& block_dim) {
+    //     const cuda_attributes_t& attrs = this_device->attributes();
+    //     if (grid_dim.x > attrs.max.grid_dim.x  ||
+    //         grid_dim.y > attrs.max.grid_dim.y  ||
+    //         grid_dim.z > attrs.max.grid_dim.z)
+    //         throw std::runtime_error("Invalid grid_dim");
+    //     if (block_dim.x > attrs.max.block_dim.x  ||
+    //         block_dim.y > attrs.max.block_dim.y  ||
+    //         block_dim.z > attrs.max.block_dim.z)
+    //         throw std::runtime_error("Invalid block_dim");
+    //     if (block_dim.x*block_dim.y*block_dim.z > attrs.max.threads_per_block)
+    //         throw std::runtime_error("Too threads in block");
+    // }
+
 
     // ----------------------------------------------------------------------
     // modules
@@ -315,12 +334,6 @@ namespace cudacpp {
             self.hmod = nullptr;
         }
     }
-
-    // func_t module_t::function(const char* fun_name) const {
-    //     CUfunction hfun = nullptr;
-    //     check(::cuModuleGetFunction(&hfun, self.hmod, fun_name));
-    //     return func_t{hfun};
-    // }
 
     // ----------------------------------------------------------------------
     // end

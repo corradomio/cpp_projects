@@ -5,32 +5,22 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <stdx/tprintf.h>
+#include "common.h"
 
 using namespace stdx;
+using namespace cudacpp;
 
 
-void check(CUresult res) {
-    if (res != CUDA_SUCCESS) {
-        const int MSG_LEN = 512;
-        const char *name = nullptr;
-        const char *message = nullptr;
-        char stream[MSG_LEN + 2];
-        ::cuGetErrorName(res, &name);
-        ::cuGetErrorString(res, &message);
-        ::snprintf(stream, MSG_LEN, "%s: %s", name, message);
-        tprintf("%s", stream);
-    }
-}
-
-
-
-int main() {
+int main51() {
     std::cout << "Hello, World!" << std::endl;
 
-    size_t N = 1l*1024*1024;
-    float *x, *y, *z;
+    printf("%d\n", sizeof(1ll));
 
-    tprintf("allocate unified memory for %d elements\n", N);
+    size_t N = 1024ll*1024ll*1024ll;
+    float *x, *y, *z;
+    size_t bytes = N*sizeof(float);
+
+    tprintf("allocate unified memory for %d elements %lld MB\n", N, 3ll*bytes/(1024ll*1024ll));
     // Allocate Unified Memory -- accessible from CPU or GPU
     cudaMallocManaged(&x, N*sizeof(float));
     cudaMallocManaged(&y, N*sizeof(float));
@@ -77,5 +67,6 @@ int main() {
     check(::cuModuleUnload(hmod));
     ::cudaFree(x);
     ::cudaFree(y);
+    ::cudaFree(z);
     return 0;
 }

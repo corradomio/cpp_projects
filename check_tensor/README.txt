@@ -1,3 +1,10 @@
+size:   size_t
+esize:  size_t
+dim:    uint16
+rank    uint16
+
+
+
 https://en.wikipedia.org/wiki/Tensor_software#Software_for_use_with_Maxima
 
 https://github.com/ValeevGroup/tiledarray

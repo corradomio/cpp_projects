@@ -7,8 +7,10 @@
 
 #include <map>
 #include <stdexcept>
-#include "language.h"
 #include <cuda.h>
+#include <language.h>
+#include "cthread.h"
+
 
 namespace cudacpp {
 
@@ -31,22 +33,6 @@ namespace cudacpp {
     // Utilities
     // ----------------------------------------------------------------------
 
-    /// Used to specify grid/block dimensions
-    struct dim_t {
-        int x,y,z;
-
-        // dim_t(){ }
-        explicit dim_t(size_t x=1, size_t y=1, size_t z=1): x(x),y(y),z(z){ }
-        dim_t(const dim_t& dim): x(dim.x),y(dim.y),z(dim.z){ }
-
-        dim_t& operator =(const dim_t& dim) {
-            self.x = dim.x;
-            self.y = dim.y;
-            self.z = dim.z;
-            return self;
-        }
-    };
-
     /// Map CUDA attribute name -> attribute id
     extern std::map<std::string, int> ATTRIBUTES;
 
@@ -54,19 +40,26 @@ namespace cudacpp {
     /// (all values can be retrieved using 'attribute(...)')
     struct cuda_attributes_t {
         bool initialized;
-        int compute_capability_major;
-        int compute_capability_minor;
+
+        struct {
+            int major;
+            int minor;
+        } compute_capability;
+
         int total_memory_mb;
         int multiprocessors;
-        int max_threads_per_block;
-        int max_blocks_per_multiprocessor;
-        int max_threads_per_multiprocessor;
-        int max_shared_memory_per_block;
         int warp_size;
         int concurrent_kernels;
 
-        dim_t max_grid_dim;
-        dim_t max_block_dim;
+        struct {
+            int threads_per_block;
+            int blocks_per_multiprocessor;
+            int threads_per_multiprocessor;
+            int shared_memory_per_block;
+
+            dim_t grid_dim;
+            dim_t block_dim;
+        } max;
     };
 
     // ----------------------------------------------------------------------
@@ -102,6 +95,7 @@ namespace cudacpp {
 
     /// Current device, if a 'cuda_t' object is created
     extern cuda_t* this_device;
+    extern void check_occupancy(const dim_t& grid_dim, const dim_t& block_dim);
 
     // ----------------------------------------------------------------------
     // Module object
@@ -112,6 +106,7 @@ namespace cudacpp {
     class module_t {
         CUmodule hmod;
 
+        // disable copy constructor and assignment
         module_t(const module_t& m) = delete;
         module_t& operator =(const module_t& m) = delete;
 
@@ -121,7 +116,8 @@ namespace cudacpp {
         explicit module_t(const char* module_path);
         ~module_t();
 
-        /// Call a kernel.
+    public:
+        /// Launch a kernel.
         /// It is necessary to specify:
         ///
         ///     1) the grid size (n of blocks)
@@ -129,40 +125,17 @@ namespace cudacpp {
         ///     3) the kernel name
         ///     4) the list of parameters
         ///
-        /// Missing parameter:
-        ///
-        ///     5) shared memory to use by threads in the block
-        ///
+
         template<class... Types>
-        void call(size_t nthreads, const char* name, Types... params) {
-            dim_t grid_dim{};
-            dim_t block_dim{nthreads};
+        void launch(const dim_t& grid_dim, const dim_t& block_dim, const char* name, Types... params) {
             size_t shared_mem = 0;
-            self.call(grid_dim, block_dim, shared_mem, name, params...);
-        }
-        template<class... Types>
-        void call(size_t nblocks, size_t nthreads, const char* name, Types... params) {
-            dim_t grid_dim{nblocks};
-            dim_t block_dim{nthreads};
-            size_t shared_mem = 0;
-            self.call(grid_dim, block_dim, shared_mem, name, params...);
-        }
-        template<class... Types>
-        void call(const dim_t& block_dim, const char* name, Types... params) {
-            dim_t grid_dim{};
-            size_t shared_mem = 0;
-            self.call(grid_dim, block_dim, shared_mem, name, params...);
+            self.launch(grid_dim, block_dim, shared_mem, name, params...);
         }
 
         template<class... Types>
-        void call(const dim_t& grid_dim, const dim_t& block_dim, const char* name, Types... params) {
-            size_t shared_mem = 0;
-            self.call(grid_dim, block_dim, shared_mem, name, params...);
-        }
-
-        template<class... Types>
-        void call(const dim_t& grid_dim, const dim_t& block_dim, size_t shared_mem, const char* name, Types... params) {
+        void launch(const dim_t& grid_dim, const dim_t& block_dim, size_t shared_mem, const char* name, Types... params) {
             CUfunction hfun = nullptr;
+            // check_occupancy(grid_dim, block_dim);
             check(::cuModuleGetFunction(&hfun, self.hmod, name));
             void* args[] = {&params...};
             check(::cuLaunchKernel(
