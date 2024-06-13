@@ -26,82 +26,114 @@ namespace stdx::linalg {
 
     constexpr uint16 ANY = uint16(-1);
 
+    /**
+     * Used to create a tensor and tensor/view  size
+     */
     struct shape_t {
         uint16  rank;
         uint16  dims[8];
 
-        shape_t(): shape_t(0){ }
-        shape_t(uint16 r);
+        shape_t();
         shape_t(const std::initializer_list<uint16>& dims);
         shape_t(const shape_t& shape) = default;
 
-        shape_t& operator =(const shape_t& shape) = default;
-
         [[nodiscard]] bool   empty() const { return self.size() == 0; };
         [[nodiscard]] size_t size() const;
-        uint16 operator[](uint16 i) const { return self.dims[i]; };
+
+        shape_t& operator =(const shape_t& shape) = default;
+        uint16   operator[](uint16 i) const { return self.dims[i]; };
     };
 
-    // span:
-    //  span()      == span(0,ALL,1)
-    //  span(b)     == span(b,b+1,1)
-    //  span(b,e)   == span(b,e,1)
-
+    /**
+     * Used to create a view inside the tensor
+     */
     struct span_t {
         uint16 off;     // offset
         uint16 end;     // length
-        int    step;    // step
+        uint16 step;    // step
 
-        span_t():                          span_t(0, ANY, 1) { }
-        span_t(uint16 o):                  span_t(o, o+1, 1) { }
-        span_t(uint16 o, uint16 e):        span_t(o, e, (o <= e) ? 1 : -1) { }
-        span_t(uint16 o, uint16 e, int s): off(o), end(e), step(s) {
-            assert (o == ANY || e == ANY || o <= e);
-        }
+        span_t():                          span_t(0, ANY, 1)  { }
+        span_t(uint16 o):                  span_t(o, o+1, 1)     { }
+        span_t(uint16 o, uint16 e):        span_t(o, e, 1)          { }
+        span_t(uint16 o, uint16 e, uint16 s): off(o), end(e), step(s)  { }
+
+        // [[nodiscard]] uint16 len() const { return self.end-self.off; }
 
         span_t(const span_t& s) = default;
         span_t& operator =(const span_t& s) = default;
-
-        [[nodiscard]] uint16 len() const { return self.end-self.off; }
     };
 
+    /**
+     * Contains the information for a single dimension
+     *
+     *      1) dimension size (doff, dlen, esize)
+     *          doff: if the dimension 0 starts at the begin of the array or
+     *                elements of the array are skipped.
+     *                It is used quen the rank of the tensors is reduced because
+     *                some dimensions are selected for single value
+     *          dlen:  n of contiguous elements in this dimension
+     *          esize: n of elements composing the dimension.
+     *                It is the product of dlen of all dimensions
+     *                lower than the current one
+     *
+     *      2) the current view in the dimension (off, len, step)
+     *          off:  position of the element with index 0
+     *          len:  n of elements in the view
+     *          step: distance from the previous element.
+     *                1 for contiguous elements
+     *
+     */
     struct dim_t {
         // global
-        uint16 dlen;    // dimension length (
+        size_t doff;    // dimension offset
+        uint16 dlen;    // dimension length
         size_t esize;   // dimension element size;
         // view
-        uint16 off;     // offset
-        uint16 len;     // length
-        uint16 step;    // step
+        uint16 off;     // view offset
+        uint16 len;     // view length
+        uint16 step;    // view step
 
         dim_t() { }
-        dim_t(uint16 d): dlen(d), esize(1), off(0), len(d), step(1) { }
+        dim_t(uint16 d): doff(0), dlen(d), esize(1), off(0), len(d), step(1) { }
         dim_t(const dim_t& that) = default;
-        dim_t& operator =(const dim_t& that) = default;
 
-        // dimension in terms of steps
-        [[nodiscard]] uint16 dim_() const { return self.len/self.step; }
+        dim_t& operator =(const dim_t& that) = default;
     };
 
+    /**
+     * Vector rank
+     */
     struct rank_t {
-        uint16  r;   // n_dimensions
-        dim_t   dims[8];
+        uint16  r;          // n of dimensions
+        dim_t   dims[8];    // properties of each dimension
+        uint16  dord[8];    // dimensions order
 
-        rank_t(uint16 r);
+        // rank_t(uint16 r);
         rank_t(const shape_t& dims);
-        rank_t(const rank_t& that) = default;
+        rank_t(const rank_t&  that) = default;
 
-        // -- based on dims[i].len/dims[i].step
+        /// Number of dimensions
         [[nodiscard]] uint16  rank() const;
+        /// Number of elements composing the tensor (not the view)
         [[nodiscard]] size_t  size() const;
+        /// Length of the selected dimensions in terms of steps
         [[nodiscard]] uint16  dim(uint16 i) const;
+        /// Length of the selected dimensions in terms of dlen
+        [[nodiscard]] uint16  dim_(uint16 i) const;
+        /// Shape of the tensor in terms of steps and dimensions
+        ///     with length not 1 (0 is included)
         [[nodiscard]] shape_t shape() const;
 
-        // -- based on dims[i].dim
-        [[nodiscard]] size_t  size_() const;
+        void swap(uint16 d1, uint16 d2);
+        void swap(const std::initializer_list<uint16>& dorder);
 
+        /// Update the this rank to match the selected view
+        void view(const std::initializer_list<span_t>& spans);
+        /// Compact the rank removing dimensions with length = 1
+        void compact();
+
+        /// Location of the element at specified indices
         [[nodiscard]] size_t at(const std::initializer_list<uint16>& indices) const;
-        void sel(const std::initializer_list<span_t>& spans);
     };
 
     template<typename T>
@@ -115,9 +147,9 @@ namespace stdx::linalg {
         };
 
         // DOESN'T change the order!
-        T      *_data;      // reference counted
-        info_t *_info;      // reference counted
-        rank_t *_rank;      // instance
+        T      *_data;      // allocated memory
+        info_t *_info;      // reference counting for memory
+        rank_t *_rank;      // per instance tensor information
 
         void add_ref() const { self._info->refc++; }
 
@@ -205,8 +237,7 @@ namespace stdx::linalg {
 
         [[nodiscard]] uint16 rank() const { return self._rank->r; }
         [[nodiscard]] uint16 dim(uint16 i) const {
-            assert (i <= self._rank->r);
-            return self._rank->dims[i].dim_();
+            return self._rank->dim_(i);
         }
 
         [[nodiscard]] shape_t shape() const { return self._rank->shape(); }
@@ -217,7 +248,7 @@ namespace stdx::linalg {
 
         explicit operator float() const {
             assert(self.rank() == 0);
-            return self._data[0];
+            return self._data[self._rank->at({})];
         }
 
         float  at(const std::initializer_list<uint16>& indices) const {
@@ -236,11 +267,26 @@ namespace stdx::linalg {
         }
 
         // ------------------------------------------------------------------
+        // dimensions
+
+        tensor_t swap(uint16 d1, uint16 d2) {
+            tensor_t r(self);
+            r._rank->swap(d1, d2);
+            return r;
+        }
+        tensor_t swap(const std::initializer_list<uint16>& dorder) {
+            tensor_t r(self);
+            r._rank->swap(dorder);
+            return r;
+        }
+
+        // ------------------------------------------------------------------
         // sub tensor
 
-        tensor_t sel(const std::initializer_list<span_t>& ranges) {
+        tensor_t view(const std::initializer_list<span_t>& ranges) {
             tensor_t r(self);
-            r._rank->sel(ranges);
+            r._rank->view(ranges);
+            r._rank->compact();
             return r;
         }
 
@@ -261,12 +307,18 @@ namespace stdx::linalg {
         void dump() {
             uint16 r = self._rank->r;
             printf("rank: %d\n", r);
-            for (uint16 i=0; i<r; ++i) {
-                printf("... [%2d] %3d, %3d, %3d\n",
+            for (uint16 i=0; i<=r; ++i) {
+                dim_t& dim = self._rank->dims[i];
+                printf("... [%2d] off:%3d, len:%3d, step:%3d (doff:%3d, dlen:%3d, esize:%3d)\n",
                        i,
-                       self._rank->dims[i].off,
-                       self._rank->dims[i].len,
-                       self._rank->dims[i].step);
+                       dim.off,
+                       dim.len,
+                       dim.step,
+
+                       dim.doff,
+                       dim.dlen,
+                       dim.esize
+                );
             }
         }
     };

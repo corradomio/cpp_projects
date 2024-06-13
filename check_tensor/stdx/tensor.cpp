@@ -13,10 +13,14 @@ namespace stdx::linalg {
     // shape_t
     // ----------------------------------------------------------------------
 
-    shape_t::shape_t(uint16 r): rank(r) {
-        for (uint16 i=0; i<=r; ++i)
-            dims[i] = 0;
+    shape_t::shape_t(): rank(0) {
+            dims[0] = 0;
     }
+
+    // shape_t::shape_t(uint16 r): rank(r) {
+    //     for (uint16 i=0; i<=r; ++i)
+    //         dims[i] = 0;
+    // }
 
     shape_t::shape_t(const std::initializer_list<uint16>& dims)
     : rank((uint16)dims.size())
@@ -38,41 +42,48 @@ namespace stdx::linalg {
     // rank_t
     // ----------------------------------------------------------------------
 
-    rank_t::rank_t(uint16 r): r(r)/*, dims(new dim_t[r+1])*/ {
-        for(uint16 i=0; i<=r; ++i)
-            self.dims[i] = {0};
-    }
-
-    rank_t::rank_t(const shape_t& shape): rank_t(shape.rank) {
+    rank_t::rank_t(const shape_t& shape)
+    // : rank_t(shape.rank)
+    : r(shape.rank)
+    {
         for(uint16 i = 0; i < shape.rank; ++i) {
             uint16 sz = shape[i];
             self.dims[i] = {sz };
             for (int d=i-1; d >=0; --d)
-                self.dims[d].dlen *= sz;
+                self.dims[d].esize *= sz;
+            self.dord[i] = i;
         }
+        self.dims[self.r] = {1};
     }
 
     // ---
 
-    size_t rank_t::size_() const {
-        size_t sz = 1;
-        for (uint16 i=0; i< self.r; ++i)
-            sz *= self.dims[i].dlen;
-        return sz;
-    }
+    // size_t rank_t::size_() const {
+    //     size_t sz = 1;
+    //     for (uint16 i=0; i < self.r; ++i)
+    //         sz *= self.dims[i].dlen;
+    //     return sz;
+    // }
 
     // ---
 
     uint16 rank_t::rank() const {
-        uint16 r = 0;
-        for (uint16 i=0; i< self.r; ++i)
-            if (self.dim(i) > 1)
-                r++;
+        // uint16 r = 0;
+        // for (uint16 i=0; i< self.r; ++i)
+        //     if (self.dim(i) > 1)
+        //         r++;
+        // return r;
         return r;
     }
 
     uint16 rank_t::dim(uint16 i) const {
-        return self.dims[i].len/self.dims[i].step;
+        uint16 d = self.dord[i];
+        return self.dims[d].len/self.dims[d].step;
+    }
+
+    uint16 rank_t::dim_(uint16 i) const {
+        uint16 d = self.dord[i];
+        return self.dims[d].dlen;
     }
 
     size_t rank_t::size() const {
@@ -83,30 +94,57 @@ namespace stdx::linalg {
     }
 
     shape_t rank_t::shape() const {
-        shape_t shape(self.rank());
-        for (uint16 i=0, j=0; i<self.r; ++i)
-            if (self.dim(i) > 0)
-                shape.dims[j++] = self.dim(i);
+        shape_t shape;
+        for (uint16 i=0; i<self.r; ++i) {
+            uint16 d = self.dord[i];
+            shape.dims[i] = self.dim(d);
+        }
+        shape.rank = self.r;
         return shape;
+    }
+
+    // ---
+
+    void rank_t::swap(uint16 d1, uint16 d2) {
+        std::swap(self.dord[d1], self.dord[d2]);
+    }
+
+    void rank_t::swap(const std::initializer_list<uint16>& dorder) {
+        uint16 i = 0;
+        int consistency = 0;
+
+        assert (dorder.size() == self.r);
+
+        for (auto it= dorder.begin(); it != dorder.end(); ++it, ++i) {
+            uint16 d = *it;
+            self.dord[i] = d;
+            consistency += (i-d);
+        }
+
+        assert (consistency == 0);
     }
 
     // ---
 
     size_t rank_t::at(const std::initializer_list<uint16>& indices) const {
         assert(indices.size() == self.r);
-        size_t sz  = self.size_();
-        size_t at  = 0;
-        uint16 i   = 0;
-        for (auto it=indices.begin(); it!=indices.end(); ++it,++i) {
+        size_t at = 0;
+        uint16 i  = 0;
+        uint16 index;
+        for (auto it= indices.begin(); it!=indices.end(); ++it,++i) {
+            uint16 d = self.dord[i];
+            const dim_t& dim = self.dims[d];
+            index = *it;
+            at += dim.doff + (dim.off + index*dim.step)*dim.esize;
+        }
+        {
             const dim_t& dim = self.dims[i];
-            uint16 index = *it;
-            sz /=  dim.dlen;
-            at += (dim.off + index*dim.step)*sz;
+            at += dim.doff + (dim.off + 0*dim.step)*dim.esize;
         }
         return at;
     }
 
-    void rank_t::sel(const std::initializer_list<span_t>& spans) {
+    void rank_t::view(const std::initializer_list<span_t>& spans) {
         assert(spans.size() <= self.r);
 
         //   i
@@ -124,7 +162,10 @@ namespace stdx::linalg {
         // ------------------------------------
 
         uint16 i = 0;
-        for(auto it= spans.begin(), itend=spans.end(); it != itend; ++it, ++i) {
+        for(auto it= spans.begin(), itend= spans.end();
+            it != itend;
+            ++it, ++i)
+        {
             dim_t& dim  = self.dims[i];
             span_t span = *it;
             uint16 dim_step = dim.step;
@@ -136,8 +177,6 @@ namespace stdx::linalg {
             if (span.end == ANY)
                 span.end = dim.len/dim_step;
 
-            assert(span.step > 0);
-
             dim.off  +=  span.off*dim_step;
             dim.len   = (span.end-span.off)*dim_step;
             dim.step *=  span.step;
@@ -147,6 +186,25 @@ namespace stdx::linalg {
                 dim.off = dim.dlen;
             if ((dim.off+dim.len) > dim.dlen)
                 dim.len = dim.dlen - dim.off;
+        }
+    }
+
+
+    void rank_t::compact() {
+        uint16 i = 0;
+        uint16 rank = self.r;
+        while (i < rank) {
+            const dim_t& dim = self.dims[i];
+            if (dim.len == 1) {
+                size_t doff = dim.doff + dim.off*dim.esize;
+                self.dims[i+1].doff += doff;
+                ::memcpy(&self.dims[i], &self.dims[i+1], (rank-i)*sizeof(dim_t));
+                rank -= 1;
+                self.r = rank;
+            }
+            else {
+                i++;
+            }
         }
     }
 

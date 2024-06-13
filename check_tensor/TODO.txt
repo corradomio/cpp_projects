@@ -1,0 +1,12 @@
+
+    copy & clone
+        vanno fatte in  base alla corrente view
+
+    assignament single value
+        in base alla view corrente
+
+    broadcasting
+        in base alla view corrente
+
+    implementazione ricorsiva per rendere
+    indipendente dal numero di dimensioni

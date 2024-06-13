@@ -35,14 +35,14 @@ void print_tensor(tensor_t<float> t) {
         case 1:
             printf("---- rank: 1, dims: (%zu)\n", t.dim(0));
             for (uint16 i0 = 0; i0 < t.dim(0); ++i0) {
-                printf("%4.0f ", t[{i0}]);
+                printf("%04.0f ", t[{i0}]);
             }
             break;
         case 2:
             printf("---- rank: 2, dims: (%zu, %zu)\n", t.dim(0), t.dim(1));
             for (uint16 i0 = 0; i0 < t.dim(0); ++i0) {
                 for (uint16 i1 = 0; i1 < t.dim(1); ++i1) {
-                    printf("%4.0f ", t[{i0, i1}]);
+                    printf("%04.0f ", t[{i0, i1}]);
                 }
                 printf("\n");
             }
@@ -52,7 +52,7 @@ void print_tensor(tensor_t<float> t) {
             for (uint16 i0 = 0; i0 < t.dim(0); ++i0) {
                 for (uint16 i1 = 0; i1 < t.dim(1); ++i1) {
                     for (uint16 i2 = 0; i2 < t.dim(2); ++i2) {
-                        printf("%6.0f ", t[{i0, i1, i2}]);
+                        printf("%06.0f ", t[{i0, i1, i2}]);
                     }
                     printf("\n");
                 }
@@ -65,20 +65,55 @@ void print_tensor(tensor_t<float> t) {
 
 
 int main() {
+    tensor_t<float> b{3,4}, t;
+    init_tensor(b);
+    print_tensor(b);
 
-    std::cout << sizeof(short) << "," << sizeof(int) << "," << sizeof(size_t) << std::endl;
+    tensor_t<float> v = b.swap(0, 1);
+    print_tensor(v);
+}
+
+
+int main15() {
+
+    tensor_t<float> b{10,10,10}, t;
+    init_tensor(b);
+    b.dump();
+
+    tensor_t<float> v = b.view({{2,4}, {1,3},{3,7}});
+    v.dump();
+    print_tensor(v);
+
+    tensor_t<float> e = b.view({2,3,4});
+    e.dump();
+    print_tensor(e);
+
+    return 0;
+}
+
+
+int main14() {
 
     tensor_t<float> b{3, 4, 5}, t;
     init_tensor(b);
     // print_tensor(b);
 
-    // t = b.sel({{1,ANY}, {1,ANY}});
+    // t = b.view({{1, -1}, {1, -1}});
     // print_tensor(t);
     //
-    // t = b.sel({{1,3}, {2,4}});
+    // t = b.view({{1, 3}, {2, 4}});
+    // print_tensor(t);
+    //
+    // t = b.view({1, 1});
+    // print_tensor(t);
+    //
+    // t = b.view({-1, -1, 3});
     // print_tensor(t);
 
-    t = b.sel({1, 1});
+    // t = b.view({0,0,-1});
+    // print_tensor(t);
+
+    t = b.view({2,3,3});
     print_tensor(t);
 
     return 0;
@@ -92,13 +127,13 @@ int main13() {
     init_tensor(b);
     print_tensor(b);
 
-    tensor_t<float> t = b.sel({{1,ANY}, {1,ANY}});
+    tensor_t<float> t = b.view({{1, ANY}, {1, ANY}});
     print_tensor(t);
 
-    t = b.sel({{1,3}, {4,7}});
+    t = b.view({{1, 3}, {4, 7}});
     print_tensor(t);
 
-    t = b.sel({ANY, 2});
+    t = b.view({0, 2});
     print_tensor(t);
 
     return 0;
@@ -113,15 +148,15 @@ int main12() {
     // ----------------------------------------------------------------------
     print_tensor(b);
 
-    tensor_t<float> c = b.sel({{1,4}});
+    tensor_t<float> c = b.view({{1, 4}});
     print_tensor(c);
 
     // ----------------------------------------------------------------------
-    tensor_t<float> t = b.sel({{0,ANY, 2}});
+    tensor_t<float> t = b.view({{0, ANY, 2}});
     print_tensor(t);
 
     // ----------------------------------------------------------------------
-    tensor_t<float> u = t.sel({{2,ANY, 2}});
+    tensor_t<float> u = t.view({{2, ANY, 2}});
     print_tensor(u);
 
     return 0;
@@ -147,7 +182,7 @@ int main11() {
     init_tensor(t);
 
     // c = t;
-    t = t.sel({ANY, ANY, ANY});
+    t = t.view({ANY, ANY, ANY});
 
     t.dump();
     fflush(stdout);
@@ -164,7 +199,7 @@ int main11() {
         printf("----\n");
     }
 
-    c = t.sel({0});
+    c = t.view({0});
 
     return 0;
 }
