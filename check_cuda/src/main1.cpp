@@ -38,7 +38,7 @@ int main11() {
     std::cout << "Hello, World!" << std::endl;
 
     cuda_t cu;
-    cuda_capabilities_t cap;
+    cuda_attributes_t cap;
 
     // printf("count: %d\n", cu.count());
     printf("name: %s\n", cu.name().c_str());

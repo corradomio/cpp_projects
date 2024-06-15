@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <cuda.h>
 #include <language.h>
-#include "cthread.h"
+#include <intfloat.h>
 
 
 namespace cudacpp {
@@ -28,10 +28,20 @@ namespace cudacpp {
     };
 
     void check(CUresult res);
+    // void check(cudaError_t res);
 
     // ----------------------------------------------------------------------
     // Utilities
     // ----------------------------------------------------------------------
+
+    struct dim_t {
+        int x,y,z;
+
+        dim_t(uint16_t x=1): dim_t(x,1,1) { };
+        dim_t(uint16_t x, uint16_t y, uint16_t z=1): x(x),y(y),z(z) { }
+        dim_t(const dim_t& dim) = default;
+        dim_t& operator =(const dim_t& dim) = default;
+    };
 
     /// Map CUDA attribute name -> attribute id
     extern std::map<std::string, int> ATTRIBUTES;
@@ -60,6 +70,7 @@ namespace cudacpp {
             dim_t grid_dim;
             dim_t block_dim;
         } max;
+
     };
 
     // ----------------------------------------------------------------------
@@ -69,10 +80,11 @@ namespace cudacpp {
 
     /// Main CUDA object, used to initialize the library and the default
     /// device. It is supported ONLY ONE device.
-    class cuda_t {
+    struct cuda_t {
         int ordinal;
-        CUdevice dev;
-        CUcontext ctx;
+        CUdevice   dev;
+        CUcontext  ctx;
+        CUcontext pctx; // primary context
 
         mutable cuda_attributes_t attrs;
 
@@ -95,12 +107,11 @@ namespace cudacpp {
 
     /// Current device, if a 'cuda_t' object is created
     extern cuda_t* this_device;
-    extern void check_occupancy(const dim_t& grid_dim, const dim_t& block_dim);
 
     // ----------------------------------------------------------------------
     // Module object
     // ----------------------------------------------------------------------
-    // Load in memory a CUDA module and call a kernel
+    // Load a CUDA module and call a kernel
     //
 
     class module_t {
@@ -127,6 +138,12 @@ namespace cudacpp {
         ///
 
         template<class... Types>
+        void launch(const dim_t& block_dim, const char* name, Types... params) {
+            size_t shared_mem = 0;
+            self.launch({}, block_dim, shared_mem, name, params...);
+        }
+
+        template<class... Types>
         void launch(const dim_t& grid_dim, const dim_t& block_dim, const char* name, Types... params) {
             size_t shared_mem = 0;
             self.launch(grid_dim, block_dim, shared_mem, name, params...);
@@ -135,7 +152,6 @@ namespace cudacpp {
         template<class... Types>
         void launch(const dim_t& grid_dim, const dim_t& block_dim, size_t shared_mem, const char* name, Types... params) {
             CUfunction hfun = nullptr;
-            // check_occupancy(grid_dim, block_dim);
             check(::cuModuleGetFunction(&hfun, self.hmod, name));
             void* args[] = {&params...};
             check(::cuLaunchKernel(
@@ -144,6 +160,7 @@ namespace cudacpp {
                 block_dim.x, block_dim.y, block_dim.z,
                 shared_mem, 0, args, nullptr
             ));
+            check(::cuCtxSynchronize());
         }
 
     public:

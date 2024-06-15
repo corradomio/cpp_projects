@@ -16,7 +16,7 @@ using namespace stdx;
 using namespace cudacpp;
 
 
-int main() {
+int main41() {
     tprintf("Hello World\n");
     // sizeof(size_t) = 8
     // sizeof(1LL)    = 8

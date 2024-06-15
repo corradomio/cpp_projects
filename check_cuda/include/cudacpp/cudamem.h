@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <cuda.h>
 #include <language.h>
+#include "cudacpp.h"
 
 #define MIN_ALLOC 16
 
@@ -32,6 +33,19 @@ namespace cudacpp {
         unified
     };
 
+    struct info_t {
+        size_t refc;    // refcount
+        size_t n;       // size
+        size_t c;       // capacity
+        loc_t  loc;     // location
+        void*  ptr;     // saved host pointer for host_mapped when converted into
+        void*  data;    // pointer of the allocated memory
+        // device_mapped
+
+        info_t(size_t n, loc_t l) : refc(0), c(n), n(n), loc(l) {}
+        info_t(size_t c, size_t n, loc_t l) : refc(0), c(c), n(n), loc(l) {}
+    };
+
     /// Alloc a block of memory to contain n elements of esize bytes each one
     /// located in the specified location (host/device)
     ///
@@ -52,35 +66,22 @@ namespace cudacpp {
     /// and located at dst_loc
     ///
     /// \param dst pointer to destination memory
-    /// \param dst_loc destination memory location
+    /// \param to_loc destination memory location
     /// \param src pointer to source memory
     /// \param src_loc source memory location
     /// \param size num of bytes to copy
     /// \return
-    void* cuda_copy(void* dst, loc_t dst_loc, void* src, loc_t src_loc, size_t size);
+    void* cuda_copy(void* dst, loc_t to_loc, void* src, loc_t src_loc, size_t size);
+
+    void* cuda_copy(loc_t dst_loc, info_t* data, size_t esize);
 
     void cuda_fill(void* dst, loc_t dst_loc, size_t dst_size, int src, size_t src_size);
-
-    namespace detail {
-
-        struct info_t {
-            size_t refc;    // refcount
-            size_t n;       // size
-            size_t c;       // capacity
-            loc_t  loc;     // location
-            void*  ptr;     // saved host pointer for host_mapped when converted into
-                            // device_mapped
-
-            info_t(size_t n, loc_t l) : refc(0), c(n), n(n), loc(l) {}
-            info_t(size_t c, size_t n, loc_t l) : refc(0), c(c), n(n), loc(l) {}
-        };
-    }
 
     template<typename T>
     struct array_t {
         // DOESN'T change the order!
         T *_data;
-        detail::info_t *_info;
+        info_t *_info;
 
         void add_ref() const { self._info->refc++; }
         void release() { if (0 == --self._info->refc) {
@@ -99,7 +100,7 @@ namespace cudacpp {
             size_t d = c % MIN_ALLOC;
             c = c + (d ? (MIN_ALLOC - d) : 0);
 
-            self._info = new detail::info_t(c, n, loc);
+            self._info = new info_t(c, n, loc);
             self._data = (T*)cuda_alloc(c, sizeof(T), loc);
             self.add_ref();
         }
@@ -179,35 +180,7 @@ namespace cudacpp {
         /// Clone the current array
         array_t  clone() const { return array_t(self, true); }
         array_t& to(loc_t to_loc) {
-            loc_t curr_loc = self._info->loc;
-            size_t bytes = self._info->n * sizeof(T);
-
-            if (curr_loc == loc_t::unified) {
-                // it is not necessary to move the memory
-            }
-            elif (curr_loc == to_loc) {
-                // memory already located in the correct position
-            }
-            elif (curr_loc == loc_t::host_mapped && to_loc == loc_t::device) {
-                self._info->ptr = self._data;
-                void *copy = cuda_copy(nullptr, loc_t::device_mapped, self._data, curr_loc, bytes);
-                self._data = reinterpret_cast<T*>(copy);
-                self._info->loc = loc_t::device_mapped;
-            }
-            elif (curr_loc == loc_t::device_mapped && to_loc == loc_t::host) {
-                self._data = reinterpret_cast<T*>(self._info->ptr);
-                self._info->loc = loc_t::host_mapped;
-            }
-            elif (curr_loc != to_loc) {
-                void *copy = cuda_alloc(self._info->n, sizeof(T), to_loc);
-                cuda_copy(copy, to_loc, self._data, curr_loc, bytes);
-                cuda_free(self._data, curr_loc);
-                self._data = reinterpret_cast<T*>(copy);
-                self._info->loc = to_loc;
-            }
-            else {
-                // throw cuda_error(CUresult::CUDA_ERROR_ILLEGAL_ADDRESS);
-            }
+            self._data = (T*)cuda_copy(to_loc, self._info, sizeof(T));
             return self;
         }
 

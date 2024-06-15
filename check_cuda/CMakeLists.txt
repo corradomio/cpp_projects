@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.28)
 project(check_cuda)
 include(ExternalProject)
 
+include(FetchContent)
+FetchContent_Declare(cuda-api-wrappers_library
+    GIT_REPOSITORY https://github.com/eyalroz/cuda-api-wrappers.git
+    GIT_TAG v0.6.9 # Replace this with a real available version
+    OVERRIDE_FIND_PACKAGE
+)
 
 include_directories(
     ./include
@@ -37,6 +43,7 @@ add_executable(check_cuda
 #    src/main3.cpp
     src/main4.cpp
     src/main5.cpp
+    src/main6.cpp
 )
 
 target_link_libraries(check_cuda

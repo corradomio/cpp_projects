@@ -2,7 +2,6 @@
 // Created by Corrado Mio on 02/06/2024.
 //
 
-#include "cuda.h"
 #include "cudacpp/cudacpp.h"
 #include <map>
 
@@ -200,6 +199,12 @@ namespace cudacpp {
         }
     }
 
+    // void check(cudaError_t res) {
+    //     if (res != cudaError_t::cudaSuccess) {
+    //         throw cuda_error((CUresult)res);
+    //     }
+    // }
+
     // ----------------------------------------------------------------------
     // cuda_device_t
     //     cuda_info_t
@@ -212,11 +217,12 @@ namespace cudacpp {
         check(::cuInit(0));
         check(::cuDeviceGet(&self.dev, self.ordinal));
         check(::cuCtxCreate(&self.ctx, 0, self.dev));
-        self.attrs.initialized = false;
-        this_device = this;
+        check(::cuCtxSetCurrent(self.ctx));
+        check(::cuDevicePrimaryCtxRetain(&self.pctx, self.dev));
     }
 
     cuda_t::~cuda_t() {
+        check(::cuDevicePrimaryCtxRelease(self.dev));
         check(::cuCtxDestroy(self.ctx));
         this_device = nullptr;
     }
@@ -288,24 +294,6 @@ namespace cudacpp {
         }
         return value;
     }
-
-    // ----------------------------------------------------------------------
-    // occupancy
-    // ----------------------------------------------------------------------
-
-    // void check_occupancy(const dim_t& grid_dim, const dim_t& block_dim) {
-    //     const cuda_attributes_t& attrs = this_device->attributes();
-    //     if (grid_dim.x > attrs.max.grid_dim.x  ||
-    //         grid_dim.y > attrs.max.grid_dim.y  ||
-    //         grid_dim.z > attrs.max.grid_dim.z)
-    //         throw std::runtime_error("Invalid grid_dim");
-    //     if (block_dim.x > attrs.max.block_dim.x  ||
-    //         block_dim.y > attrs.max.block_dim.y  ||
-    //         block_dim.z > attrs.max.block_dim.z)
-    //         throw std::runtime_error("Invalid block_dim");
-    //     if (block_dim.x*block_dim.y*block_dim.z > attrs.max.threads_per_block)
-    //         throw std::runtime_error("Too threads in block");
-    // }
 
 
     // ----------------------------------------------------------------------

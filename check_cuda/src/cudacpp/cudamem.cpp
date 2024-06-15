@@ -3,7 +3,6 @@
 //
 
 #include <cstring>
-#include <cuda.h>
 #include <stdx/memory.h>
 #include "cudacpp/cudacpp.h"
 #include "cudacpp/cudamem.h"
@@ -90,16 +89,16 @@ namespace cudacpp {
     // host     host | host_locked
     //
 
-    void* cuda_copy(void* dst, loc_t dst_loc, void* src, loc_t src_loc, size_t size) {
+    void* cuda_copy(void* dst, loc_t to_loc, void* src, loc_t src_loc, size_t size) {
         CUdeviceptr dptr;
         CUdeviceptr sptr;
 
         // host, device, page_locked, page_mapped, device_mapped, unified
 
         bool src_host   = (src_loc == host   || src_loc == host_locked   || src_loc == host_mapped);
-        bool dst_host   = (dst_loc == host   || dst_loc == host_locked   || dst_loc == host_mapped);
+        bool dst_host   = (to_loc == host || to_loc == host_locked || to_loc == host_mapped);
         bool src_device = (src_loc == device || src_loc == device_mapped);
-        bool dst_device = (dst_loc == device || dst_loc == device_mapped);
+        bool dst_device = (to_loc == device || to_loc == device_mapped);
 
         // special case
         if (dst_device && src_loc == host_mapped) {
@@ -122,7 +121,7 @@ namespace cudacpp {
             dptr = reinterpret_cast<CUdeviceptr>(dst);
             check(::cuMemcpyHtoD(dptr, src, size));
         }
-        elif (dst_loc == unified || src_loc == unified) {
+        elif (to_loc == unified || src_loc == unified) {
             dptr = reinterpret_cast<CUdeviceptr>(dst);
             sptr = reinterpret_cast<CUdeviceptr>(src);
             check(::cuMemcpy(dptr, sptr, size));
@@ -132,6 +131,69 @@ namespace cudacpp {
         }
 
         return dst;
+    }
+
+    // loc_t curr_loc = self._info->loc;
+    // size_t bytes = self._info->n * sizeof(T);
+    //
+    // if (curr_loc == loc_t::unified) {
+    //     // it is not necessary to move the memory
+    // }
+    // elif (curr_loc == to_loc) {
+    //     // memory already located in the correct position
+    // }
+    // elif (curr_loc == loc_t::host_mapped && to_loc == loc_t::device) {
+    //     self._info->ptr = self._data;
+    //     void *copy = cuda_copy(nullptr, loc_t::device_mapped, self._data, curr_loc, bytes);
+    //     self._data = reinterpret_cast<T*>(copy);
+    //     self._info->loc = loc_t::device_mapped;
+    // }
+    // elif (curr_loc == loc_t::device_mapped && to_loc == loc_t::host) {
+    //     self._data = reinterpret_cast<T*>(self._info->ptr);
+    //     self._info->loc = loc_t::host_mapped;
+    // }
+    // elif (curr_loc != to_loc) {
+    //     void *copy = cuda_alloc(self._info->n, sizeof(T), to_loc);
+    //     cuda_copy(copy, to_loc, self._data, curr_loc, bytes);
+    //     cuda_free(self._data, curr_loc);
+    //     self._data = reinterpret_cast<T*>(copy);
+    //     self._info->loc = to_loc;
+    // }
+    // else {
+    //     // throw cuda_error(CUresult::CUDA_ERROR_ILLEGAL_ADDRESS);
+    // }
+
+    void* cuda_copy(loc_t to_loc, info_t* info, size_t esize) {
+        loc_t curr_loc = info->loc;
+        size_t bytes = info->n * esize;
+        void* data = info->data;
+
+        if (curr_loc == loc_t::unified) {
+            // it is not necessary to move the memory
+        }
+        elif (curr_loc == to_loc) {
+            // memory already located in the correct position
+        }
+        elif (curr_loc == loc_t::host_mapped && to_loc == loc_t::device) {
+            info->ptr = data;
+            info->data = cuda_copy(nullptr, loc_t::device_mapped, data, curr_loc, bytes);
+            info->loc = loc_t::device_mapped;
+        }
+        elif (curr_loc == loc_t::device_mapped && to_loc == loc_t::host) {
+            info->data = info->ptr;
+            info->loc = loc_t::host_mapped;
+        }
+        elif (curr_loc != to_loc) {
+            void *copy = cuda_alloc(info->n, esize, to_loc);
+            cuda_copy(copy, to_loc, data, curr_loc, bytes);
+            cuda_free(data, curr_loc);
+            info->data = copy;
+            info->loc = to_loc;
+        }
+        else {
+            // throw cuda_error(CUresult::CUDA_ERROR_ILLEGAL_ADDRESS);
+        }
+        return info->data;
     }
 
     void cuda_fill(void* dst, loc_t loc, size_t size, int src, size_t src_size) {
@@ -166,4 +228,5 @@ namespace cudacpp {
                 throw cuda_error(CUDA_ERROR_INVALID_VALUE);
         }
     }
+
 }

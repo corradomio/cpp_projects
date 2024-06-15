@@ -2,7 +2,6 @@
 // Created by Corrado Mio on 08/06/2024.
 //
 #include <iostream>
-#include <cuda.h>
 #include <cuda_runtime.h>
 #include <stdx/tprintf.h>
 #include "common.h"
@@ -14,9 +13,7 @@ using namespace cudacpp;
 int main51() {
     std::cout << "Hello, World!" << std::endl;
 
-    printf("%d\n", sizeof(1ll));
-
-    size_t N = 1024ll*1024ll*1024ll;
+    size_t N = 2ull*1024ull*1024ull*1024ull;
     float *x, *y, *z;
     size_t bytes = N*sizeof(float);
 
@@ -26,7 +23,7 @@ int main51() {
     cudaMallocManaged(&y, N*sizeof(float));
     cudaMallocManaged(&z, N*sizeof(float));
 
-    tprintf("initialize x and y arrays on the host\n");
+    tprintf("initialize x and y arrays\n");
     // initialize x and y arrays on the host
     for (int i = 0; i < N; i++) {
         x[i] = 1.0f;
@@ -61,7 +58,6 @@ int main51() {
     ));
 
     tprintf("wait for termination\n");
-    ::cudaDeviceSynchronize();
 
     tprintf("dispose everything\n");
     check(::cuModuleUnload(hmod));
