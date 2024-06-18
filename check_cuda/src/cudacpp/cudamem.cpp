@@ -86,8 +86,13 @@ namespace cudacpp {
         return nullptr;
     }
 
-    // host     host | host_locked
-    //
+    void* cuda_free(info_t* info) {
+        if (info->loc == device_mapped) {
+            info->data = info->ptr;
+            info->loc = host_mapped;
+        }
+        return cuda_free(info->data, info->loc);
+    }
 
     void* cuda_copy(void* dst, loc_t to_loc, void* src, loc_t src_loc, size_t size) {
         CUdeviceptr dptr;
@@ -163,10 +168,10 @@ namespace cudacpp {
     //     // throw cuda_error(CUresult::CUDA_ERROR_ILLEGAL_ADDRESS);
     // }
 
-    void* cuda_copy(loc_t to_loc, info_t* info, size_t esize) {
-        loc_t curr_loc = info->loc;
-        size_t bytes = info->n * esize;
-        void* data = info->data;
+    void* cuda_move(loc_t to_loc, info_t* info, size_t esize) {
+        loc_t  curr_loc = info->loc;
+        size_t bytes    = info->n*esize;
+        void*  data     = info->data;
 
         if (curr_loc == loc_t::unified) {
             // it is not necessary to move the memory
@@ -175,15 +180,17 @@ namespace cudacpp {
             // memory already located in the correct position
         }
         elif (curr_loc == loc_t::host_mapped && to_loc == loc_t::device) {
-            info->ptr = data;
+            info->ptr  = data;
+            // it is not a real copy, ONLY a address change
             info->data = cuda_copy(nullptr, loc_t::device_mapped, data, curr_loc, bytes);
-            info->loc = loc_t::device_mapped;
+            info->loc  = loc_t::device_mapped;
         }
         elif (curr_loc == loc_t::device_mapped && to_loc == loc_t::host) {
             info->data = info->ptr;
-            info->loc = loc_t::host_mapped;
+            info->loc  = loc_t::host_mapped;
         }
         elif (curr_loc != to_loc) {
+            // it is a real copy
             void *copy = cuda_alloc(info->n, esize, to_loc);
             cuda_copy(copy, to_loc, data, curr_loc, bytes);
             cuda_free(data, curr_loc);

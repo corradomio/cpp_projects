@@ -5,15 +5,17 @@
 #ifndef STDX_NUMBERS_H
 #define STDX_NUMBERS_H
 
-namespace stdx::number::cns {
+namespace stdx::number::i32::cns {
 
-    typedef long iset_t;
+    typedef unsigned long iset_t;
+
+    constexpr iset_t ONE = iset_t(1);
 
     int ihighbit(iset_t S);
     int icard(iset_t S);
 
     /// integer value into combinatorial number system
-    long ilexset(iset_t L, int n);
+    iset_t ilexset(iset_t L, int n);
 
     /// combinarorial number system's integer to integer
     iset_t ilexidx(iset_t S, int n);

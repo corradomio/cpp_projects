@@ -7,6 +7,7 @@
 
 namespace stdx {
 
+    bool can_tprint(bool force=false);
     void tprintf(const char *__format, ...);
 }
 

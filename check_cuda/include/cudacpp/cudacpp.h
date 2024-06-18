@@ -27,8 +27,7 @@ namespace cudacpp {
         virtual const char* what() const noexcept override;
     };
 
-    void check(CUresult res);
-    // void check(cudaError_t res);
+    extern void check(CUresult res);
 
     // ----------------------------------------------------------------------
     // Utilities
@@ -37,10 +36,12 @@ namespace cudacpp {
     struct dim_t {
         int x,y,z;
 
-        dim_t(uint16_t x=1): dim_t(x,1,1) { };
-        dim_t(uint16_t x, uint16_t y, uint16_t z=1): x(x),y(y),z(z) { }
+        dim_t(uint32_t x=1): dim_t(x,1,1) { };
+        dim_t(uint32_t x_, uint32_t y_, uint32_t z_=1): x((int)x_),y((int)y_),z((int)z_) { }
         dim_t(const dim_t& dim) = default;
         dim_t& operator =(const dim_t& dim) = default;
+
+        size_t size() const { return size_t(x)*size_t(y)*size_t(z); }
     };
 
     /// Map CUDA attribute name -> attribute id
@@ -88,6 +89,7 @@ namespace cudacpp {
 
         mutable cuda_attributes_t attrs;
 
+        // make noncopyable
         cuda_t(const cuda_t& c) = delete;
         cuda_t& operator =(const cuda_t& c) = delete;
     public:
@@ -103,6 +105,7 @@ namespace cudacpp {
         /// The list of attributes is available in ATTRIBUTES
         [[nodiscard]] int attribute(const std::string& name) const;
         [[nodiscard]] int attribute(int attrib) const;
+
     };
 
     /// Current device, if a 'cuda_t' object is created
@@ -140,7 +143,7 @@ namespace cudacpp {
         template<class... Types>
         void launch(const dim_t& block_dim, const char* name, Types... params) {
             size_t shared_mem = 0;
-            self.launch({}, block_dim, shared_mem, name, params...);
+            self.launch({1}, block_dim, shared_mem, name, params...);
         }
 
         template<class... Types>

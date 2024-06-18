@@ -17,7 +17,7 @@ int main() {
     cuda_t cu;
 
     try {
-        size_t N = 1ull * 256ull * 1024ull * 1024ull;
+        size_t N = 1ull * 256ull * 1024ull * 1024ull / 1024ull;
         size_t N_THREADS_PER_BLOCK = 512;
 
         size_t nthreads, nblocks;
@@ -29,14 +29,19 @@ int main() {
             nthreads = N_THREADS_PER_BLOCK;
         }
 
+        dim_t gridDim(nblocks);
+        dim_t blockDim(nthreads);
+
+        assert(gridDim.size() == nblocks);
+        assert(blockDim.size() == nthreads);
         assert(N == nblocks * nthreads);
 
         size_t bytes = N * sizeof(float);
         tprintf("memory allocation: %.02f MB\n", 3.f * float(bytes) / (1024.f * 1024.f));
 
-        cudacpp::array_t<float> A(N, loc_t::unified);
-        cudacpp::array_t<float> B(N, loc_t::unified);
-        cudacpp::array_t<float> C(N, loc_t::unified);
+        cudacpp::array_t<float> A(N, loc_t::host);
+        cudacpp::array_t<float> B(N, loc_t::host);
+        cudacpp::array_t<float> C(N, loc_t::host);
 
         tprintf("array initialization\n");
         std::fill(A.data(), A.data() + A.size(), 1.f);
@@ -68,6 +73,8 @@ int main() {
     catch (cuda_error &e) {
         std::cerr << e.what() << std::endl;
     }
+    tprintf("end\n");
+    fflush(stdout);
 
     return 0;
 }

@@ -12,7 +12,4 @@
 extern double sum(cudacpp::array_t<float> A, cudacpp::array_t<float> B, float c);
 extern double sum(cudacpp::array_t<float> C);
 
-// extern void tprintf(const char *__format, ...);
-// extern void check(CUresult res);
-
 #endif //CHECK_CUDA_COMMON_H

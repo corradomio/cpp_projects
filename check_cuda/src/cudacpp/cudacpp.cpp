@@ -2,8 +2,9 @@
 // Created by Corrado Mio on 02/06/2024.
 //
 
-#include "cudacpp/cudacpp.h"
+#include <cassert>
 #include <map>
+#include "cudacpp/cudacpp.h"
 
 #define info  (*this->_info)
 
@@ -183,9 +184,9 @@ namespace cudacpp {
 
     const char* cuda_error::what() const noexcept {
         const int MSG_LEN = 512;
+        char stream[MSG_LEN + 2];
         const char *name = nullptr;
         const char *message = nullptr;
-        char stream[MSG_LEN + 2];
         ::cuGetErrorName(self._error, &name);
         ::cuGetErrorString(self._error, &message);
         ::snprintf(stream, MSG_LEN, "%s: %s", name, message);
@@ -195,33 +196,71 @@ namespace cudacpp {
 
     void check(CUresult res) {
         if (res != CUDA_SUCCESS) {
+            const char* name = nullptr;
+            const char* message= nullptr;
+            ::cuGetErrorName(res, &name);
+            ::cuGetErrorString(res, &message);
+            printf("CUDA ERROR %d\n", res);
+            printf("  %s\n", name);
+            printf("  %s\n", message);
             throw cuda_error(res);
         }
     }
 
-    // void check(cudaError_t res) {
-    //     if (res != cudaError_t::cudaSuccess) {
-    //         throw cuda_error((CUresult)res);
-    //     }
-    // }
-
     // ----------------------------------------------------------------------
-    // cuda_device_t
-    //     cuda_info_t
+    // cuda_t
+    //     this_device
     // ----------------------------------------------------------------------
 
     cuda_t* this_device = nullptr;
 
     cuda_t::cuda_t() {
+        int active = 0;
+        unsigned int flags = 0;
+
+        // ------------------------------------------------------------------
+
         self.ordinal = 0;
+        self.dev = 0;
+        self.ctx = nullptr;
+        self.pctx = nullptr;
+
+        // ------------------------------------------------------------------
+
         check(::cuInit(0));
         check(::cuDeviceGet(&self.dev, self.ordinal));
+
+        // ------------------------------------------------------------------
+        // primary context not active/existent
+
+        // active is false
+        //check(::cuDevicePrimaryCtxGetState(self.dev, &flags, &active));
+        // context not exist
+        //check(::cuCtxGetCurrent(&cctx));
+
         check(::cuCtxCreate(&self.ctx, 0, self.dev));
-        check(::cuCtxSetCurrent(self.ctx));
+        // the current context is the context just created
+        // the primary context is not active yet
+
+        // CUcontext cctx;
+        //check(::cuCtxGetCurrent(&cctx));
+        //check(::cuDevicePrimaryCtxGetState(self.dev, &flags, &active));
+
+        // ------------------------------------------------------------------
+
+        // enable the primary context
         check(::cuDevicePrimaryCtxRetain(&self.pctx, self.dev));
+        check(::cuDevicePrimaryCtxGetState(self.dev, &flags, &active));
+        assert(active == 1);
+
+        // serve ???
+        // check(::cuCtxPushCurrent(self.ctx));
+        return;
     }
 
     cuda_t::~cuda_t() {
+        // CUcontext cctx;
+        // check(::cuCtxPopCurrent(&cctx));
         check(::cuDevicePrimaryCtxRelease(self.dev));
         check(::cuCtxDestroy(self.ctx));
         this_device = nullptr;

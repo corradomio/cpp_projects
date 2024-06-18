@@ -39,8 +39,8 @@ namespace cudacpp {
         size_t c;       // capacity
         loc_t  loc;     // location
         void*  ptr;     // saved host pointer for host_mapped when converted into
-        void*  data;    // pointer of the allocated memory
-        // device_mapped
+                        // device_mapped
+        void*  data;    // copy of pointer the allocated memory
 
         info_t(size_t n, loc_t l) : refc(0), c(n), n(n), loc(l) {}
         info_t(size_t c, size_t n, loc_t l) : refc(0), c(c), n(n), loc(l) {}
@@ -50,7 +50,7 @@ namespace cudacpp {
     /// located in the specified location (host/device)
     ///
     /// \param n num of elements
-    /// \param esize element size
+    /// \param esize element size in bytes
     /// \param loc where to locate the memory
     /// \return the allocated block of memory
     void* cuda_alloc(size_t n, size_t esize, loc_t loc);
@@ -59,8 +59,9 @@ namespace cudacpp {
     ///
     /// \param p memory pointer (in host or device)
     /// \param loc where the memory is located
-    /// \return null
+    /// \return nullptr
     void* cuda_free(void* p, loc_t loc);
+    void* cuda_free(info_t* info);
 
     /// Copy the content of src (located at src_loc) into the memory identified by dst
     /// and located at dst_loc
@@ -73,23 +74,36 @@ namespace cudacpp {
     /// \return
     void* cuda_copy(void* dst, loc_t to_loc, void* src, loc_t src_loc, size_t size);
 
-    void* cuda_copy(loc_t dst_loc, info_t* data, size_t esize);
+    /// move the content of info to the location to_loc. The element size is
+    /// necessary because data->n is specified in number of elements
+    void* cuda_move(loc_t to_loc, info_t* info, size_t esize);
 
-    void cuda_fill(void* dst, loc_t dst_loc, size_t dst_size, int src, size_t src_size);
+    /// fill the allocated memory dst, located at dst_loc, with the value src,
+    /// of esize btes
+    ///
+    /// \param dst pointer to destination memory
+    /// \param dst_loc destination memory location
+    /// \param dst_size num of bytes to the destination
+    /// \param src source value (max 4 bytes)
+    /// \param esize num of bytes of the source value
+    void cuda_fill(void* dst, loc_t dst_loc, size_t dst_size, int src, size_t esize);
 
+    /// Reference counted vector transferable between host & device memory
+    ///
     template<typename T>
     struct array_t {
         // DOESN'T change the order!
-        T *_data;
+        T *_data;           // it MUST BE the same than '_info->data'
         info_t *_info;
 
         void add_ref() const { self._info->refc++; }
         void release() { if (0 == --self._info->refc) {
-            if (self._info->loc == device_mapped) {
-                self._data = reinterpret_cast<T*>(self._info->ptr);
-                self._info->loc = host_mapped;
-            }
-            cuda_free(self._data, self._info->loc);
+            // if (self._info->loc == device_mapped) {
+            //     self._data = reinterpret_cast<T*>(self._info->ptr);
+            //     self._info->loc = host_mapped;
+            // }
+            // cuda_free(self._data, self._info->loc);
+            cuda_free(self._info);
             delete   self._info;
         }}
 
@@ -101,7 +115,8 @@ namespace cudacpp {
             c = c + (d ? (MIN_ALLOC - d) : 0);
 
             self._info = new info_t(c, n, loc);
-            self._data = (T*)cuda_alloc(c, sizeof(T), loc);
+            self._info->data = cuda_alloc(c, sizeof(T), loc);
+            self._data = (T*) self._info->data;
             self.add_ref();
         }
 
@@ -128,7 +143,8 @@ namespace cudacpp {
 
             size_t n = a._info->n;
             self._info->n = n;
-            cuda_copy(self._data, self._info->loc, a._data, a._info->loc, n*sizeof(T));
+            self._data = (T*)cuda_copy(self._info, self._info->loc, a._data, a._info->loc,
+                                       n * sizeof(T));
         }
 
     public:
@@ -180,7 +196,7 @@ namespace cudacpp {
         /// Clone the current array
         array_t  clone() const { return array_t(self, true); }
         array_t& to(loc_t to_loc) {
-            self._data = (T*)cuda_copy(to_loc, self._info, sizeof(T));
+            self._data  = (T*) cuda_move(to_loc, self._info, sizeof(T));
             return self;
         }
 
@@ -202,8 +218,8 @@ namespace cudacpp {
         // accessors
         // at(i) supports negative indices
 
-        T &at(size_t i)       { return self._data[i>=0 ? i : size()+i]; }
-        T  at(size_t i) const { return self._data[i>=0 ? i : size()+i]; }
+        T &at(int64_t i)       { return self._data[i>=0 ? i : size()+i]; }
+        T  at(int64_t i) const { return self._data[i>=0 ? i : size()+i]; }
 
         T &operator[](size_t i)       { return self._data[i]; }
         T  operator[](size_t i) const { return self._data[i]; }

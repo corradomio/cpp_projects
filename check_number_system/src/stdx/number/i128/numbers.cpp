@@ -3,7 +3,7 @@
 //
 #include <cassert>
 #include <map>
-#include "stdx/numbers.h"
+#include "stdx/number/i128/numbers.h"
 
 // n!/k!
 // 9! / 3!*6!
@@ -15,9 +15,9 @@
 // binomial(n, k) = (n!) / (k! (n-k)!)
 //                = binomial(n-1, k-1) + binomial(n-1, k)
 //
-#include "stdx/numbers.h"
+#include "stdx/number/i128/numbers.h"
 
-namespace stdx::number::cns {
+namespace stdx::number::i128::cns {
 
     static std::map<std::pair<int, int>, iset_t> _binomial_cache;
 
