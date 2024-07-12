@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.25)
 project(check_mathematica_llu)
 
 include_directories(
-    "C:/Program Files/Wolfram Research/Mathematica/13.3/SystemFiles/IncludeFiles/C"
-    "C:/Program Files/Wolfram Research/Mathematica/13.3/SystemFiles/Links/WSTP/DeveloperKit/Windows-x86-64/CompilerAdditions"
+    "C:/Program Files/Wolfram Research/Mathematica/14.0/SystemFiles/IncludeFiles/C"
+    "C:/Program Files/Wolfram Research/Mathematica/14.0/SystemFiles/Links/WSTP/DeveloperKit/Windows-x86-64/CompilerAdditions"
     "D:/Projects/cpp/LibraryLinkUtilities-3.2.0/include"
 )
 
