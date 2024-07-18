@@ -1,5 +1,5 @@
 #include <iostream>
-#include <stdx/linalg.h>
+#include "stdx/linalg.h"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;

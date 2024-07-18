@@ -20,7 +20,10 @@ namespace stdx::float64 {
         return matrix_t{ m.rows(), m.cols() };
     }
 
-    bool operator == (const matrix_t& a, const matrix_t& b);
+    bool equals(const matrix_t& a, const matrix_t& b, real_t eps);
+    inline bool operator == (const matrix_t& a, const matrix_t& b) {
+        return equals(a, b, 0.0);
+    }
 
     real_t min(const matrix_t& m);
     real_t max(const matrix_t& m);

@@ -25,84 +25,19 @@ ExternalProject_Add(commons_project
 
 
 add_executable(check_structures
-    include/stdx/float64/arith.h
-    include/stdx/float64/array.h
-    include/stdx/float64/array_op.h
-    include/stdx/float64/dot_op.h
-    include/stdx/float64/linalg.h
-    include/stdx/float64/matrix.h
-    include/stdx/float64/matrix_op.h
-    include/stdx/float64/nmf.h
-    include/stdx/float64/vector.h
-    include/stdx/float64/vector_op.h
-
-    src/stdx/float64/array.cpp
-    src/stdx/float64/array_op.cpp
-    src/stdx/float64/dot_op.cpp
-    src/stdx/float64/matrix.cpp
-    src/stdx/float64/matrix_op.cpp
-    src/stdx/float64/nmf.cpp
-    src/stdx/float64/vector.cpp
-    src/stdx/float64/vector_op.cpp
-    src/stdx/float64/svd.cpp
-
 #    src/main5.cpp
 #    src/main6.cpp
 #    src/main7.cpp
 #    src/main8.cpp
     src/main9.cpp
-    src/stdx/float64/eigen.cpp
 )
 
 add_executable(test_structures
-    include/stdx/float64/arith.h
-    include/stdx/float64/array.h
-    include/stdx/float64/array_op.h
-    include/stdx/float64/dot_op.h
-    include/stdx/float64/matrix.h
-    include/stdx/float64/matrix_op.h
-    include/stdx/float64/vector.h
-    include/stdx/float64/vector_op.h
-    src/stdx/float64/array.cpp
-    src/stdx/float64/array_op.cpp
-    src/stdx/float64/dot_op.cpp
-    src/stdx/float64/matrix.cpp
-    src/stdx/float64/matrix_op.cpp
-    src/stdx/float64/vector.cpp
-    src/stdx/float64/vector_op.cpp
     tests/test_float64.cpp
 )
 
-#add_executable(check_mkl
-#    include/stdx/exceptions.h
-#    include/stdx/float64/arith.h
-#    include/stdx/float64/array.h
-#    include/stdx/float64/array_op.h
-#    include/stdx/float64/dot_op.h
-#    include/stdx/float64/linalg.h
-#    include/stdx/float64/matrix.h
-#    include/stdx/float64/matrix_op.h
-#    include/stdx/float64/nmf.h
-#    include/stdx/float64/vector.h
-#    include/stdx/float64/vector_op.h
-#    include/stdx/options.h
-#    src/stdx/float64/array.cpp
-#    src/stdx/float64/array_op.cpp
-#    src/stdx/float64/dot_op.cpp
-#    src/stdx/float64/matrix.cpp
-#    src/stdx/float64/matrix_op.cpp
-#    src/stdx/float64/nmf.cpp
-#    src/stdx/float64/vector.cpp
-#    src/stdx/float64/vector_op.cpp
-#    src/stdx/options.cpp
-#    src/stdx/tprint.cpp
-#    src/main_mkl.cpp
-#)
-
 
 add_library(catch2_local
-    catch2/catch_amalgamated.hpp
-    catch2/catch_amalgamated.cpp
     include/stdx/float64/svd.h
 )
 

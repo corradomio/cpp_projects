@@ -6,6 +6,7 @@
 #include "stdx/float64/array_op.h"
 #include "stdx/float64/matrix_op.h"
 #include "stdx/float64/nmf.h"
+#include <stdx/options.h>
 
 namespace stdx::float64 {
 

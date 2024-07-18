@@ -25,5 +25,33 @@ ExternalProject_Add(commons_project
 )
 
 add_executable(check_linalg
-    main.cpp
+    include/stdx/float64/arith.h
+    include/stdx/float64/array.h
+    include/stdx/float64/array_op.h
+    include/stdx/float64/dot_op.h
+    include/stdx/float64/matrix.h
+    include/stdx/float64/matrix_op.h
+    include/stdx/float64/vector.h
+    include/stdx/float64/vector_op.h
+    include/stdx/float64/nmf.h
+    include/stdx/float64/svd.h
+
+    src/stdx/float64/array.cpp
+    src/stdx/float64/array_op.cpp
+    src/stdx/float64/dot_op.cpp
+    src/stdx/float64/matrix.cpp
+    src/stdx/float64/matrix_op.cpp
+    src/stdx/float64/vector.cpp
+    src/stdx/float64/vector_op.cpp
+    src/stdx/float64/nmf.cpp
+    src/stdx/float64/svd.cpp
+
+    src/main.cpp
+)
+
+target_link_libraries(check_linalg
+    commons
+#    lapack
+#    lapacke
+    openblas
 )
