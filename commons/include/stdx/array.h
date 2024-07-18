@@ -94,7 +94,7 @@ namespace stdx {
 
         // DOESN'T change the order!
         T *_data;
-        detail::info_t *_info;
+        array_t::info_t *_info;
 
         void add_ref() const { self._info->refc++; }
         void release() { if (0 == --self._info->refc) {
@@ -109,7 +109,7 @@ namespace stdx {
             size_t d = c % MIN_ALLOC;
             c = c + (d ? (MIN_ALLOC - d) : 0);
 
-            self._info = new detail::info_t(c, n);
+            self._info = new array_t::info_t(c, n);
             self._data = new T[c];
             self.add_ref();
         }

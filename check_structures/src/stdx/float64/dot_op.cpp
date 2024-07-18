@@ -101,7 +101,7 @@ namespace stdx::float64 {
 
         for(size_t i=0; i<nr; ++i) {
             for (size_t j=0; j<nc; ++j) {
-                r[i, j] = reduce(a, mul, b, nk, i*nk, 1, j, nc);
+                r[i, j] = reduce(mul, a, b, nk, i*nk, 1, j, nc);
             }
         }
     }
@@ -116,7 +116,7 @@ namespace stdx::float64 {
 
         for(size_t i=0; i<nr; ++i) {
             for (size_t j=0; j<nc; ++j) {
-                r[i, j] = reduce(a, mul, b, nk, i, nr, j, nc);
+                r[i, j] = reduce(mul, a, b, nk, i, nr, j, nc);
             }
         }
     }
@@ -131,7 +131,7 @@ namespace stdx::float64 {
 
         for(size_t i=0; i<nr; ++i) {
             for (size_t j=0; j<nc; ++j) {
-                r[i, j] = reduce(a, mul, b, nk, i*nk, 1, j*nk, 1);
+                r[i, j] = reduce(mul, a, b, nk, i*nk, 1, j*nk, 1);
             }
         }
     }
@@ -146,7 +146,7 @@ namespace stdx::float64 {
 
         for(size_t i=0; i<nr; ++i) {
             for (size_t j=0; j<nc; ++j) {
-                r[i, j] = reduce(a, mul, b, nk, i*nk, 1, j, nc);
+                r[i, j] = reduce(mul, a, b, nk, i*nk, 1, j, nc);
             }
         }
     }

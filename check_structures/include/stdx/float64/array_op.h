@@ -26,14 +26,14 @@ namespace stdx::float64 {
     void apply_eq(array_t& u, real_t (*f)(real_t, real_t), const array_t& v, const array_t& w);
 
     // sum(i, f(u[i]))
-    real_t reduce(const array_t& u, real_t (*f)(real_t));
+    real_t reduce(real_t (*f)(real_t), const array_t& u);
     // sum(i, f(u[i],s)
-    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), real_t s);
+    real_t reduce(real_t (*f)(real_t, real_t), const array_t& u, real_t s);
     // sum(i, f(u[i],v[i]))
-    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), const array_t& v);
+    real_t reduce(real_t (*f)(real_t, real_t), const array_t& u, const array_t& v);
 
     // sum(i, f(u[ou+i*su],v[ov+i*sv])
-    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), const array_t& v,
+    real_t reduce(real_t (*f)(real_t, real_t), const array_t& u, const array_t& v,
                   size_t n,
                   size_t ou, size_t su,     // offset/skip u
                   size_t ov, size_t sv);    // offset/skip v

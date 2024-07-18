@@ -67,15 +67,15 @@ namespace stdx::float64 {
         switch (p){
             case 0:
                 // ||v||_0
-                res = reduce(static_cast<const array_t&>(v), nozero);
+                res = reduce(nozero, static_cast<const array_t&>(v));
                 break;
             case 1:
                 // ||v||_1
-                res = reduce(static_cast<const array_t&>(v), abs);
+                res = reduce(abs, static_cast<const array_t&>(v));
                 break;
             case 2:
                 // ||v||_2
-                res = sqrt(reduce(static_cast<const array_t&>(v), sq));
+                res = sqrt(reduce(sq, static_cast<const array_t&>(v)));
                 break;
             case -1:
                 // ||v||_infinity

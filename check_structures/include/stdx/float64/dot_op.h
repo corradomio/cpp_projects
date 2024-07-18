@@ -21,7 +21,7 @@ namespace stdx::float64 {
     void cross_eq(matrix_t& r, const vector_t& u, const vector_t& v);
     matrix_t cross(const vector_t& u, const vector_t& v);   // u x v == u.v^T
 
-    // R = A.B | A^T.B | A.B^T | A^T.B^T  not supported
+    // R = A.B | A^T.B | A.B^T, A^T.B^T  not supported
     void dot_eq(matrix_t& r, const matrix_t& a, const matrix_t& b, bool tra=false, bool trb=false);
     matrix_t dot(const matrix_t& a, const matrix_t& b, bool tra=false, bool trb=false);
 

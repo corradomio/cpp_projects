@@ -48,7 +48,7 @@ namespace stdx::float64 {
 
     // ----------------------------------------------------------------------
 
-    real_t reduce(const array_t& u, real_t (*f)(real_t)) {
+    real_t reduce(real_t (*f)(real_t), const array_t& u) {
         real_t s = 0;
 
         size_t n = u.size();
@@ -57,7 +57,7 @@ namespace stdx::float64 {
         return s;
     }
 
-    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), real_t s) {
+    real_t reduce(real_t (*f)(real_t, real_t), const array_t& u, real_t s) {
         real_t res = 0;
 
         size_t n = u.size();
@@ -66,7 +66,7 @@ namespace stdx::float64 {
         return res;
     }
 
-    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), const array_t& v,
+    real_t reduce(real_t (*f)(real_t, real_t), const array_t& u, const array_t& v,
                   size_t n,
                   size_t ou, size_t su,     // offset/skip u
                   size_t ov, size_t sv) {   // offset/skip v
@@ -99,7 +99,7 @@ namespace stdx::float64 {
         return res;
     }
 
-    real_t reduce(const array_t& u, real_t (*f)(real_t, real_t), const array_t& v) {
+    real_t reduce(real_t (*f)(real_t, real_t), const array_t& u, const array_t& v) {
         // check(u,v);
         // real_t res = 0;
         //
@@ -107,7 +107,7 @@ namespace stdx::float64 {
         // for(size_t i=0; i<n; ++i)
         //     res += f(u[i], v[i]);
         // return res;
-        return reduce(u, f, v, u.size(), 0, 1, 0, 1);
+        return reduce(f, u, v, u.size(), 0, 1, 0, 1);
     }
 
     // ----------------------------------------------------------------------
