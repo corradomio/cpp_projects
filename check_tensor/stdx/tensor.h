@@ -52,10 +52,10 @@ namespace stdx::linalg {
         uint16 end;     // length
         uint16 step;    // step
 
-        span_t():                          span_t(0, ANY, 1)  { }
-        span_t(uint16 o):                  span_t(o, o+1, 1)     { }
-        span_t(uint16 o, uint16 e):        span_t(o, e, 1)          { }
-        span_t(uint16 o, uint16 e, uint16 s): off(o), end(e), step(s)  { }
+        span_t(): span_t(0, ANY, 1){ }
+        span_t(uint16 o): span_t(o, o+1, 1){ }
+        span_t(uint16 o, uint16 e): span_t(o, e, 1){ }
+        span_t(uint16 o, uint16 e, uint16 s): off(o), end(e), step(s){ }
 
         // [[nodiscard]] uint16 len() const { return self.end-self.off; }
 

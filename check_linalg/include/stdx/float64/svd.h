@@ -21,7 +21,7 @@ namespace stdx::float64 {
     ///     "method": "power"
     std::pair<real_t, vector_t> largest_eigenval(const matrix_t& m, const stdx::options_t& opts);
 
-    /// Retrieve the largest eigenvalue and eigenvector using the Power method
+    /// Singular Value Decomposition
     ///
     /// Options:
     ///        "eps": 1e-8

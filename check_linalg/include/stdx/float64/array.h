@@ -58,6 +58,9 @@ namespace stdx::float64 {
 
     };
 
+    /**
+     * Array iterator
+     */
     struct array_it {
         using value_type        = real_t;
         using iterator_category = std::forward_iterator_tag;
@@ -77,6 +80,12 @@ namespace stdx::float64 {
 
     };
 
+    /**
+     * Style used to dump a vector/matrix"
+     *
+     *       PYTHON: [...]
+     *  MATHEMATICA: {...}
+     */
     enum array_style {
         PYTHON,
         MATHEMATICA
