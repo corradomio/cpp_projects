@@ -5,7 +5,7 @@
 #ifndef CHECK_ASSIGNMENT_ONCE_H
 #define CHECK_ASSIGNMENT_ONCE_H
 
-#include "exception.h"
+#include "exceptions.h"
 
 namespace stdx {
 
@@ -19,9 +19,8 @@ namespace stdx {
         once(): val(T()), assigned(false) {}
         explicit once(const T& v): val(v), assigned(true) {}
 
-        const T& get() const { return val; }
-
-        operator const T&() const{ return val; }
+        const      T& get() const { return val; }
+        operator const T&() const { return val; }
 
         const T& operator=(const T& v) {
             if (assigned)
@@ -36,9 +35,6 @@ namespace stdx {
             return val;
         }
 
-        operator const T&() {
-            return val;
-        }
     };
 
 }

@@ -1,10 +1,23 @@
 #include <iostream>
+#include <vector>
 #include "text.h"
+#include <stdx/containers.h>
+#include <stdx/ranges.h>
 
-typedef int int_t, i32_t;
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
+
+    std::vector<int> v;
+    std::set<int> s;
+    std::unordered_set<int>  u;
+
+    for(int i : stdx::range(0, 10, 2)) {
+        std::cout << i << std::endl;
+        stdx::add(v, i);
+        stdx::add(s, i);
+        stdx::add(u, i);
+    }
 
     text_t t(R"(D:\Projects.github\cpp_projects\check_nlp\La Sacra Bibbia.txt)");
     // t.parse("(\\w+|[.,;:!?])");

@@ -45,6 +45,18 @@
 
 namespace stdx {
 
+    struct exception: public std::exception {
+    private:
+        std::string message;
+    public:
+        exception(): std::exception(){ }
+        exception(const std::string& m): std::exception(), message(m) { }
+
+        virtual const char* what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW override {
+            return message.c_str();
+        }
+    };
+
     struct not_implemented: public std::runtime_error {
         not_implemented(): std::runtime_error("Not implemented") {}
         explicit not_implemented(const std::string& what): std::runtime_error(what) {}
