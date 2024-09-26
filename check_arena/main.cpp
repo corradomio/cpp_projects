@@ -10,7 +10,7 @@ int main() {
 
     *pf = 9.99;
 
-    printf("%.3f\n", *(pf.get()));
+    printf("%.3f\n", *(pf));
 
     std::cout << "Hello, World!" << std::endl;
     return 0;
