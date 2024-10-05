@@ -14,3 +14,18 @@ BLAS
         B = aT^-1B
 
 
+Java
+----
+
+    Efficient Java Matrix Library (EJML)        2023
+        https://ejml.org/wiki/index.php?title=Main_Page
+
+    JAMA            2012
+        https://math.nist.gov/javanumerics/jama/
+
+    LA4J            2021?
+        http://la4j.org/
+
+    Commons Math    2024
+        https://commons.apache.org/proper/commons-math/
+
