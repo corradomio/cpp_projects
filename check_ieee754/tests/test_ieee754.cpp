@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include <catch2/catch_all.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include "../real_limits.h"
+#include "std/real_limits.h"
 
 using namespace std;
 using namespace ieee754;
