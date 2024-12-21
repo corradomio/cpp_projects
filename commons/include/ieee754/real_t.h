@@ -94,7 +94,7 @@
  *                  is to use byte[10], or to implement 'int80_t' (or '__int80')
  *                  The current implementation, float80 is represented with 128 bit
  *
- *      float128_t  in theory it is possible to define it because is available '__int180'
+ *      float128_t  in theory it is possible to define it because is available '__int128'
  *                  and '__float128'
  *                  but it is difficult touse it because there are strange behaviour.
  *                  It is not clear IF it is a problem of the debugger or of the compiler.
@@ -243,7 +243,7 @@ namespace ieee754 {
         double    dbl;
         uint64_t  u64;
         float64_u(){}
-        float64_u(double d): dbl(d){}
+        float64_u(const double d): dbl(d){}
     };
 
     union float32_u {
@@ -251,7 +251,7 @@ namespace ieee754 {
         float     flt;
         uint32_t  u32;
         float32_u(){}
-        float32_u(float f): flt(f){}
+        float32_u(const float f): flt(f){}
     };
 
     union float16_u {
@@ -431,16 +431,16 @@ namespace ieee754 {
     // float/double -> Target
 
     template<typename Target>
-    Target fpconvert(float flt) {
-        float32_u u(flt);
+    Target fpconvert(const float flt) {
+        const float32_u u(flt);
         Target t;
         _fpconvert<Target>(t, u.f32);
         return t;
     }
 
     template<typename Target>
-    Target fpconvert(double dbl) {
-        float64_u u(dbl);
+    Target fpconvert(const double dbl) {
+        const float64_u u(dbl);
         Target t;
         _fpconvert<Target>(t, u.f64);
         return t;
@@ -478,13 +478,13 @@ namespace ieee754 {
     }
 
     template<int E, int M, typename T>
-    real_t<E,M,T>::real_t(float flt) {
+    real_t<E,M,T>::real_t(const float flt) {
         float32_u u(flt);
         _fpconvert(self, u.f32);
     }
 
     template<int E, int M, typename T>
-    real_t<E,M,T>::real_t(double dbl) {
+    real_t<E,M,T>::real_t(const double dbl) {
         float64_u u(dbl);
         _fpconvert(self, u.f64);
     }
@@ -532,14 +532,14 @@ namespace ieee754 {
     }
 
     template<int E, int M, typename T>
-    real_t<E,M,T>& real_t<E,M,T>::operator =(float flt) {
+    real_t<E,M,T>& real_t<E,M,T>::operator =(const float flt) {
         float32_u u(flt);
         _fpconvert(self, u.f32);
         return self;
     }
 
     template<int E, int M, typename T>
-    real_t<E,M,T>& real_t<E,M,T>::operator =(double dbl) {
+    real_t<E,M,T>& real_t<E,M,T>::operator =(const double dbl) {
         float64_u u(dbl);
         _fpconvert(self, u.f64);
         return self;
@@ -576,25 +576,25 @@ namespace ieee754 {
     }
 
     template<int E, int M, typename T>
-    bool operator ==(const real_t<E,M,T>& t, float flt) {
+    bool operator ==(const real_t<E,M,T>& t, const float flt) {
         float32_u u(flt);
         return t == u.f32;
     }
 
     template<int E, int M, typename T>
-    bool operator ==(const real_t<E,M,T>& t, double dbl) {
+    bool operator ==(const real_t<E,M,T>& t, const double dbl) {
         float64_u u(dbl);
         return t == u.f64;
     }
 
     template<int E, int M, typename T>
-    bool operator ==(float flt, const real_t<E,M,T>& t) {
+    bool operator ==(const float flt, const real_t<E,M,T>& t) {
         float32_u u(flt);
         return t == u.f32;
     }
 
     template<int E, int M, typename T>
-    bool operator ==(double dbl, const real_t<E,M,T>& t) {
+    bool operator ==(const double dbl, const real_t<E,M,T>& t) {
         float64_u u(dbl);
         return t == u.f64;
     }
