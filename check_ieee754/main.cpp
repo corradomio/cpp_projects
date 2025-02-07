@@ -12,7 +12,7 @@ typedef real_t<2,5, uint8_t>  f25_t;
 typedef real_t<4,3, uint8_t>  f43_t;
 
 
-int main() {
+int main8() {
     float64_u f64, g64;
 
     f64.f64 = float64_t{0,float64_t::EBIAS, 0};
@@ -144,15 +144,26 @@ int main2() {
 
 
 
-int main1() {
+int main() {
     int x = __FLT_RADIX__;
     float64_t f64;
 
     std::cout << "-- " << std::endl;
+    std::cout << "sizeof(float) "      << sizeof(float) << std::endl;
     std::cout << "sizeof(double) "      << sizeof(double) << std::endl;
     std::cout << "sizeof(long double) " << sizeof(long double) << std::endl;
     std::cout << "sizeof(__float128) "  << sizeof(__float128) << std::endl;
     std::cout << "sizeof(__int128) "    << sizeof(__int128) << std::endl;
+    std::cout << "-- " << std::endl;
+    std::cout << "sizeof(float8_t) "    << sizeof(float8_t) << std::endl;
+    std::cout << "sizeof(bfloat8_t) "   << sizeof(bfloat8_t) << std::endl;
+    std::cout << "sizeof(float16_t) "   << sizeof(float16_t) << std::endl;
+    std::cout << "sizeof(bfloat16_t) "  << sizeof(bfloat16_t) << std::endl;
+    std::cout << "sizeof(float32_t) "   << sizeof(float32_t) << std::endl;
+    std::cout << "sizeof(float64_t) "   << sizeof(float64_t) << std::endl;
+    std::cout << "sizeof(float128_t) "  << sizeof(float128_t) << std::endl;
+
+
 
     // float128_u ldmin1; ldmin1.dbl  = std::numeric_limits<long double>::min();
     // float128_u ldmin2; ldmin2.f128 = std::numeric_limits<float128_t>::min();
@@ -161,6 +172,7 @@ int main1() {
     // float128_u ldeps1; ldeps1.dbl  = std::numeric_limits<long double>::epsilon();
     // float128_u ldeps2; ldeps2.f128 = std::numeric_limits<float128_t>::epsilon();
 
+    std::cout << "== numeric_limits == " << std::endl;
     std::cout << "-- long double" << std::endl;
     std::cout << (long double)std::numeric_limits<long double>::min() << std::endl;
     std::cout << (long double)std::numeric_limits<long double>::epsilon() << std::endl;
